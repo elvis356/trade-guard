@@ -1,0 +1,4 @@
+tradeguard:
+  auth:
+    jwt-secret: ${JWT_SECRET:local-only-tradeguard-secret-change-before-deploy-0123456789}
+    cookie-secure: false

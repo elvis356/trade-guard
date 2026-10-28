@@ -10,3 +10,13 @@ spring:
     open-in-view: false
   flyway:
     enabled: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+tradeguard:
+  auth:
+    jwt-secret: integration-test-secret-at-least-thirty-two-bytes
+    cookie-secure: false
+    allowed-origins:
+      - http://localhost:3000

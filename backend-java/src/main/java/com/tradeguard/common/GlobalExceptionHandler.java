@@ -18,6 +18,9 @@ import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import com.tradeguard.security.AuthStateUnavailableException;
+import com.tradeguard.security.AuthenticationFailedException;
+import com.tradeguard.security.LoginLockedException;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -43,6 +46,27 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<ApiError> handleInvalidRequest(InvalidRequestException ex,
                                                           HttpServletRequest request) {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI(), null);
+    }
+
+    @ExceptionHandler(AuthenticationFailedException.class)
+    public ResponseEntity<ApiError> handleAuthenticationFailed(AuthenticationFailedException ex,
+                                                               HttpServletRequest request) {
+        return build(HttpStatus.UNAUTHORIZED, ex.getMessage(), request.getRequestURI(), null);
+    }
+
+    @ExceptionHandler(LoginLockedException.class)
+    public ResponseEntity<ApiError> handleLoginLocked(LoginLockedException ex,
+                                                       HttpServletRequest request) {
+        return build(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage(), request.getRequestURI(), null);
+    }
+
+    @ExceptionHandler(AuthStateUnavailableException.class)
+    public ResponseEntity<ApiError> handleAuthStateUnavailable(AuthStateUnavailableException ex,
+                                                               HttpServletRequest request) {
+        log.error("Authentication state service unavailable for {} {}",
+                request.getMethod(), request.getRequestURI(), ex);
+        return build(HttpStatus.SERVICE_UNAVAILABLE,
+                "登入狀態服務暫時無法使用，請稍後再試。", request.getRequestURI(), null);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)

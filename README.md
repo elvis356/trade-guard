@@ -4,26 +4,36 @@ TradeGuard is an educational securities trading simulator. It uses fictitious da
 
 ## Current implementation
 
-- `backend-java/`: Java 21 / Spring Boot REST API, Flyway-managed PostgreSQL schema, and instrument CRUD.
-- `docker-compose.yml`: local PostgreSQL 16 and Redis 7 services. Redis is provisioned for later phases and is not yet used by the backend.
+- `backend-java/`: Java 21 / Spring Boot REST API, Flyway-managed PostgreSQL schema, instrument CRUD, JWT-cookie authentication, and role-based authorization.
+- `docker-compose.yml`: local PostgreSQL 16 and Redis 7 services. Redis backs login lockout and JWT revocation.
 - `HANDOFF.md`: phase estimates, current delivery status, and the remaining implementation checklist.
 
 ## Local backend
 
 Prerequisites: JDK 21, Docker Desktop, and network access on the first Maven Wrapper run.
 
-1. Copy `.env.example` to `.env`. Change the password if this environment is shared.
+1. Copy `.env.example` to `.env`. Change the database password if this environment is shared.
 2. Start the local data services with `docker compose up -d postgres redis`.
-3. In PowerShell, run:
+3. Before the first backend start, configure a one-time bootstrap administrator and a signing key in PowerShell. Use unique secrets and do not commit them:
 
    ```powershell
+   $env:SPRING_PROFILES_ACTIVE = "local"
+   $env:BOOTSTRAP_ADMIN_USERNAME = "admin"
+   $env:BOOTSTRAP_ADMIN_PASSWORD = Read-Host "Set a unique admin password (at least 12 characters)"
+   $env:JWT_SECRET = [Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
    cd backend-java
    .\mvnw.cmd spring-boot:run
    ```
 
+   After the first admin account is created, remove `BOOTSTRAP_ADMIN_USERNAME` and `BOOTSTRAP_ADMIN_PASSWORD` from the process environment. The local profile has a development-only signing-key fallback; deployments must set a unique `JWT_SECRET` (at least 32 bytes) and `COOKIE_SECURE=true`.
+
+   If you changed `DB_PASSWORD` in `.env`, set the same value in the backend process (`$env:DB_PASSWORD`) before starting Spring Boot; Docker Compose reads `.env`, but PowerShell does not load it automatically.
+
 4. Open `http://localhost:8080/api/health`.
 
-The API uses `http://localhost:8080/api/market/instruments` for instrument CRUD and `GET /api/market/{symbol}/info` for the TradeGuard market-info route. List responses are paginated (`page`, `size`, `sort`; maximum size 100). Creates return `201 Created` with a `Location` header. Errors use the common JSON shape with `timestamp`, `status`, `error`, `message`, `path`, and optional `details`.
+Log in at `POST /api/auth/login`; the API sets a short-lived HttpOnly, SameSite=Lax cookie. `POST /api/auth/logout` revokes the token in Redis and clears the cookie. Create role-specific accounts while signed in as the bootstrap admin with `POST /api/admin/users` (`TRADER`, `SURVEILLANCE`, `AUDITOR`, or `ADMIN`); admins can page through accounts with `GET /api/admin/users` or fetch one with `GET /api/admin/users/{id}`.
+
+Instrument CRUD is at `http://localhost:8080/api/market/instruments`; market info is at `GET /api/market/{symbol}/info`. Market reads and health checks are public; instrument writes and user administration require `ADMIN`. List responses are paginated (`page`, `size`, `sort`; maximum size 100). Creates return `201 Created` with a `Location` header. Protected trading, surveillance, and audit routes enforce the role mappings in `SecurityConfiguration`. Unsafe `/api` requests with an `Origin` header are accepted only from `CORS_ALLOWED_ORIGINS`. Errors use the common JSON shape with `timestamp`, `status`, `error`, `message`, `path`, and optional `details`.
 
 Run backend integration tests without Docker:
 
@@ -32,4 +42,4 @@ cd backend-java
 .\mvnw.cmd test
 ```
 
-Tests use H2 in PostgreSQL compatibility mode; local development uses PostgreSQL and Flyway migrations. Authentication/authorization and trading features are not implemented yet, so this API is for local development only and must not be exposed as a production service.
+Tests use H2 in PostgreSQL compatibility mode and mock Redis-backed authentication state; local development uses PostgreSQL, Redis, and Flyway migrations. The PostgreSQL/Redis runtime integration has not yet been verified on this machine. Trading, surveillance, audit, and production deployment features remain incomplete.
