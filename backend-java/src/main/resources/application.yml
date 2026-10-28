@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: tradeguard-backend
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/tradeguard}
+    username: ${DB_USERNAME:tradeguard}
+    password: ${DB_PASSWORD:tradeguard_local_only}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+  data:
+    web:
+      pageable:
+        max-page-size: 100
+  mvc:
+    throw-exception-if-no-handler-found: true
+server:
+  error:
+    include-message: never
