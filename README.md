@@ -1,6 +1,6 @@
 # TradeGuard
 
-TradeGuard is an educational securities trading simulator. It uses fictitious data and is not a real trading system or investment advice.
+TradeGuard is an educational securities trading simulator. It uses fictitious data and is not a real trading system or investment advice. PostgreSQL remains the primary/deployment database; a separate local MySQL 8 profile is available for temporary development testing.
 
 ## Current implementation
 
@@ -73,4 +73,23 @@ cd backend-java
 .\mvnw.cmd test
 ```
 
-Tests use H2 in PostgreSQL compatibility mode and mock Redis-backed authentication state; market and surveillance Redis outages are exercised through the PostgreSQL fallback. Local development uses PostgreSQL, Redis, and Flyway migrations. PostgreSQL/Redis runtime integration has not yet been verified on this machine. The surveillance volume/price rule needs a 20-day daily-bar source before implementation; database-level write-protection for event and audit tables and Redis idempotency acceleration remain future hardening work. The frontend has an initial market/read-only vertical slice; authenticated trading, surveillance, case review, and audit workflows plus production deployment remain incomplete.
+## Temporary local MySQL testing
+
+The local `MySQL80` service can be used without Docker or PostgreSQL. MySQL 8 is a temporary development/test target; PostgreSQL remains the deployment target. Create a dedicated empty test database and least-privilege test account using MySQL Workbench or an administrator client. Do not point the test suite at a database containing data you need to keep: integration tests delete rows from their configured schema.
+
+```sql
+CREATE DATABASE tradeguard_test CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+CREATE USER 'tradeguard_test'@'localhost' IDENTIFIED BY 'REPLACE_WITH_A_UNIQUE_LOCAL_PASSWORD';
+GRANT ALL PRIVILEGES ON tradeguard_test.* TO 'tradeguard_test'@'localhost';
+```
+
+In PowerShell, run the complete backend suite against the MySQL-specific Flyway migrations. The script securely prompts for the test account password and clears the connection environment after the run:
+
+```powershell
+cd backend-java
+.\test-mysql.ps1
+```
+
+The test script defaults to `localhost:3306`, database/user `tradeguard_test`. Use `-Database`, `-Username`, `-HostName`, and `-Port` to override those settings. For running the application directly instead of the integration tests, activate `mysql,local` and set `MYSQL_URL`, `MYSQL_USERNAME`, and `MYSQL_PASSWORD`. The MySQL profile uses independent migrations under `db/migration-mysql`; the default profile and migrations continue to target PostgreSQL. MySQL tests exercise the relational schema, Flyway migrations, transactions, and locking, while Redis-backed auth is mocked by the integration tests.
+
+The surveillance volume/price rule needs a 20-day daily-bar source before implementation; database-level write-protection for event and audit tables and Redis idempotency acceleration remain future hardening work. The frontend has an initial market/read-only vertical slice; authenticated trading, surveillance, case review, and audit workflows plus production deployment remain incomplete.

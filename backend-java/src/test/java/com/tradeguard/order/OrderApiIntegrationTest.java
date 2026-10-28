@@ -63,6 +63,10 @@ class OrderApiIntegrationTest {
 
     @BeforeEach
     void resetDatabase() {
+        jdbcTemplate.execute("DELETE FROM audit_entries");
+        jdbcTemplate.execute("UPDATE audit_chain_state SET last_hash = REPEAT('0', 64) WHERE id = 1");
+        jdbcTemplate.execute("DELETE FROM eod_reports");
+        jdbcTemplate.execute("DELETE FROM eod_runs");
         jdbcTemplate.execute("DELETE FROM surveillance_cases");
         jdbcTemplate.execute("DELETE FROM surveillance_alerts");
         jdbcTemplate.execute("DELETE FROM order_events");
