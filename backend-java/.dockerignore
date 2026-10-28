@@ -1,0 +1,6 @@
+.git
+.mvn/wrapper/maven-wrapper.jar.sha256
+target
+*.log
+.env
+.env.*

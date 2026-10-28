@@ -8,9 +8,11 @@ export const dynamic = "force-dynamic";
 export default async function DailyReportPage() {
   let xml: string;
   try {
-    const cookieHeader = (await cookies()).getAll()
-      .map(({ name, value }) => `${name}=${value}`)
-      .join("; ");
+    const cookieName = process.env.JWT_COOKIE_NAME ?? "tradeguard_session";
+    const sessionCookie = (await cookies()).get(cookieName);
+    const cookieHeader = sessionCookie
+      ? `${cookieName}=${sessionCookie.value}`
+      : "";
     xml = await getDailyReport(cookieHeader);
   } catch (error) {
     const message = error instanceof ApiError && error.status === 401
@@ -31,7 +33,7 @@ export default async function DailyReportPage() {
   return (
     <>
       <section className="hero">
-        <p className="eyebrow">END-OF-DAY · ISR</p>
+        <p className="eyebrow">END-OF-DAY · SECURE REPORT</p>
         <h1>日終成交報表</h1>
         <p>報表資料由後端依登入權限提供，不會進入跨使用者共用快取。</p>
       </section>

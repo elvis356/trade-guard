@@ -16,9 +16,9 @@ TradeGuard is an educational securities trading simulator. It uses fictitious da
 
 Prerequisites: JDK 21, Docker Desktop, and network access on the first Maven Wrapper run.
 
-1. Copy `.env.example` to `.env`. Change the database password if this environment is shared.
-2. Start the local data services with `docker compose up -d postgres redis`.
-3. Before the first backend start, configure a one-time bootstrap administrator and a signing key in PowerShell. Use unique secrets and do not commit them:
+1. Copy `.env.example` to `.env`. Set a unique `JWT_SECRET` of at least 32 bytes and change the database password if this environment is shared. Set one-time bootstrap administrator credentials as well. Keep real secrets out of Git.
+2. Set one-time bootstrap administrator credentials in `.env`, then start the complete local stack with `docker compose up --build -d`. The backend is available at `http://localhost:8080`.
+3. After the first successful startup, remove `BOOTSTRAP_ADMIN_USERNAME` and `BOOTSTRAP_ADMIN_PASSWORD` from `.env`. For a non-container backend start, configure the local profile and required settings in PowerShell:
 
    ```powershell
    $env:SPRING_PROFILES_ACTIVE = "local"
@@ -29,7 +29,7 @@ Prerequisites: JDK 21, Docker Desktop, and network access on the first Maven Wra
    .\mvnw.cmd spring-boot:run
    ```
 
-   After the first admin account is created, remove `BOOTSTRAP_ADMIN_USERNAME` and `BOOTSTRAP_ADMIN_PASSWORD` from the process environment. The local profile has a development-only signing-key fallback; deployments must set a unique `JWT_SECRET` (at least 32 bytes) and `COOKIE_SECURE=true`.
+   After the first admin account is created, remove `BOOTSTRAP_ADMIN_USERNAME` and `BOOTSTRAP_ADMIN_PASSWORD` from the process environment. Deployments must set a unique `JWT_SECRET` (at least 32 bytes) and `COOKIE_SECURE=true`.
 
    If you changed `DB_PASSWORD` in `.env`, set the same value in the backend process (`$env:DB_PASSWORD`) before starting Spring Boot; Docker Compose reads `.env`, but PowerShell does not load it automatically.
 
@@ -57,6 +57,14 @@ npm run dev
 ```
 
 Set `REVALIDATE_SECRET` to a high-entropy secret before exposing the frontend. `POST /api/revalidate` requires the same value in `X-Revalidate-Secret`. The daily report contains role-protected data and is deliberately fetched per request without a shared ISR cache; shared caching must not bypass backend authorization.
+
+## CI, security checks, and deployment
+
+GitHub Actions runs backend `clean verify`, frontend lint/build, and the npm dependency audit on pushes and pull requests. Dependency Review blocks pull requests that introduce high-severity dependency advisories. CodeQL scans Java and TypeScript on pushes, pull requests, and its weekly schedule. The dependency lockfile is committed so CI uses reproducible frontend versions.
+
+The Render Blueprint in `render.yaml` defines private Redis, PostgreSQL, the Dockerized API, and a weekday EOD Cron job. Review the selected Render plans and region before applying it. Set `CORS_ALLOWED_ORIGINS` to the exact deployed Vercel origin. On initial provisioning, supply `BOOTSTRAP_ADMIN_USERNAME` and a unique `BOOTSTRAP_ADMIN_PASSWORD`; remove both values after the admin is created. Render generates `JWT_SECRET` and `EOD_TOKEN`.
+
+Deploy the frontend separately by importing the repository in Vercel and setting its root directory to `frontend-next`. Configure the server-only `BACKEND_URL` with the deployed Render API URL. Set the same high-entropy `REVALIDATE_SECRET` on Vercel and in any backend integration that will call the frontend revalidation route. No credentials or external deployment are committed or performed by CI.
 
 Run backend integration tests without Docker:
 
