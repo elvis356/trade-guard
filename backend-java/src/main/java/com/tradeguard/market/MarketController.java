@@ -18,15 +18,28 @@ public class MarketController {
 
     private final InstrumentService instrumentService;
     private final OrderService orderService;
+    private final MarketQueryService marketQueryService;
 
-    public MarketController(InstrumentService instrumentService, OrderService orderService) {
+    public MarketController(InstrumentService instrumentService, OrderService orderService,
+                            MarketQueryService marketQueryService) {
         this.instrumentService = instrumentService;
         this.orderService = orderService;
+        this.marketQueryService = marketQueryService;
     }
 
     @GetMapping("/{symbol}/info")
     public ResponseEntity<InstrumentResponse> getInstrumentInfo(@PathVariable String symbol) {
         return ResponseEntity.ok(instrumentService.findBySymbol(symbol));
+    }
+
+    @GetMapping("/quotes")
+    public ResponseEntity<java.util.List<MarketQuote>> getQuotes() {
+        return ResponseEntity.ok(marketQueryService.getQuotes());
+    }
+
+    @GetMapping("/{symbol}/book")
+    public ResponseEntity<BookSnapshot> getOrderBook(@PathVariable String symbol) {
+        return ResponseEntity.ok(marketQueryService.getOrderBook(symbol));
     }
 
     @GetMapping("/{symbol}/trades")

@@ -16,6 +16,8 @@ public interface InstrumentRepository extends JpaRepository<Instrument, Long> {
 
     boolean existsBySymbolAndIdNot(String symbol, Long id);
 
+    java.util.List<Instrument> findByActiveTrueOrderBySymbolAsc();
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select i from Instrument i where i.symbol = :symbol and i.active = true")
     Optional<Instrument> findActiveBySymbolForUpdate(@Param("symbol") String symbol);

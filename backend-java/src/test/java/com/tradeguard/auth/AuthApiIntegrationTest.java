@@ -57,6 +57,9 @@ class AuthApiIntegrationTest {
 
     @BeforeEach
     void resetState() {
+        jdbcTemplate.execute("DELETE FROM surveillance_cases");
+        jdbcTemplate.execute("DELETE FROM surveillance_alerts");
+        jdbcTemplate.execute("DELETE FROM order_events");
         jdbcTemplate.execute("DELETE FROM trades");
         jdbcTemplate.execute("DELETE FROM orders");
         jdbcTemplate.execute("DELETE FROM instruments");
@@ -71,7 +74,8 @@ class AuthApiIntegrationTest {
     @Test
     void publicMarketReadsRemainAvailableAndProtectedRoutesUseJson401() throws Exception {
         mockMvc.perform(get("/api/market/quotes"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray());
 
         mockMvc.perform(get("/api/auth/me"))
                 .andExpect(status().isUnauthorized())

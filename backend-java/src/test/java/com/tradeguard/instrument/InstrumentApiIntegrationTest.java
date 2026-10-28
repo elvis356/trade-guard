@@ -35,6 +35,9 @@ class InstrumentApiIntegrationTest {
 
     @BeforeEach
     void cleanDatabase() {
+        jdbcTemplate.execute("DELETE FROM surveillance_cases");
+        jdbcTemplate.execute("DELETE FROM surveillance_alerts");
+        jdbcTemplate.execute("DELETE FROM order_events");
         jdbcTemplate.execute("DELETE FROM trades");
         jdbcTemplate.execute("DELETE FROM orders");
         jdbcTemplate.execute("DELETE FROM instruments");

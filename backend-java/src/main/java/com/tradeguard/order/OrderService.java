@@ -8,11 +8,13 @@ import com.tradeguard.instrument.InstrumentRepository;
 import com.tradeguard.order.dto.CreateOrderRequest;
 import com.tradeguard.order.dto.OrderResponse;
 import com.tradeguard.order.dto.TradeResponse;
+import com.tradeguard.surveillance.TradeCommittedEvent;
 import com.tradeguard.user.AppUser;
 import com.tradeguard.user.AppUserRepository;
 import com.tradeguard.user.Role;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,17 +33,19 @@ public class OrderService {
     private final OrderEventRepository orderEvents;
     private final AppUserRepository users;
     private final OrderValidator validator;
+    private final ApplicationEventPublisher eventPublisher;
 
     public OrderService(InstrumentRepository instruments, OrderRepository orders,
                         TradeRepository trades, OrderEventRepository orderEvents,
                         AppUserRepository users,
-                        OrderValidator validator) {
+                        OrderValidator validator, ApplicationEventPublisher eventPublisher) {
         this.instruments = instruments;
         this.orders = orders;
         this.trades = trades;
         this.orderEvents = orderEvents;
         this.users = users;
         this.validator = validator;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -129,8 +133,9 @@ public class OrderService {
             resting.fill(fillQuantity);
             TradingOrder buyOrder = incoming.getSide() == OrderSide.BUY ? incoming : resting;
             TradingOrder sellOrder = incoming.getSide() == OrderSide.SELL ? incoming : resting;
-            trades.save(new Trade(incoming.getSymbol(), buyOrder.getId(), sellOrder.getId(),
-                    resting.getLimitPrice(), fillQuantity));
+            Trade trade = trades.save(new Trade(incoming.getSymbol(), buyOrder.getId(),
+                    sellOrder.getId(), resting.getLimitPrice(), fillQuantity));
+            eventPublisher.publishEvent(new TradeCommittedEvent(trade.getId()));
         }
         orders.flush();
         trades.flush();

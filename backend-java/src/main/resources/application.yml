@@ -34,6 +34,11 @@ market:
   zone: Asia/Taipei
   open: "09:00"
   close: "13:30"
+surveillance:
+  window: 5m
+  closing-price-deviation-pct: 5
+  closing-minimum-quantity: 5000
+  closing-window-minutes: 5
 tradeguard:
   auth:
     jwt-secret: ${JWT_SECRET:}

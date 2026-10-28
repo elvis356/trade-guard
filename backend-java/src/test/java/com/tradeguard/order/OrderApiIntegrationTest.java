@@ -63,6 +63,8 @@ class OrderApiIntegrationTest {
 
     @BeforeEach
     void resetDatabase() {
+        jdbcTemplate.execute("DELETE FROM surveillance_cases");
+        jdbcTemplate.execute("DELETE FROM surveillance_alerts");
         jdbcTemplate.execute("DELETE FROM order_events");
         jdbcTemplate.execute("DELETE FROM trades");
         jdbcTemplate.execute("DELETE FROM orders");
@@ -234,6 +236,22 @@ class OrderApiIntegrationTest {
 
         org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class,
                 eventReplayer::replay);
+    }
+
+    @Test
+    void servesQuotesAndAggregatedBookWithPostgresFallback() throws Exception {
+        createOrder("trader1", "TEST01", "B", "50.00", 2000, UUID.randomUUID());
+
+        mockMvc.perform(get("/api/market/quotes"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].symbol").value("TEST01"))
+                .andExpect(jsonPath("$[0].referencePrice").value(50.0));
+
+        mockMvc.perform(get("/api/market/TEST01/book"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.bids[0].price").value(50.0))
+                .andExpect(jsonPath("$.bids[0].quantity").value(2000))
+                .andExpect(jsonPath("$.asks").isEmpty());
     }
 
     private MvcResult createOrder(String username, String symbol, String side,

@@ -22,3 +22,5 @@ tradeguard:
       - http://localhost:3000
 market:
   enforce-trading-hours: false
+surveillance:
+  closing-window-minutes: 5
