@@ -57,6 +57,9 @@ class AuthApiIntegrationTest {
 
     @BeforeEach
     void resetState() {
+        jdbcTemplate.execute("DELETE FROM trades");
+        jdbcTemplate.execute("DELETE FROM orders");
+        jdbcTemplate.execute("DELETE FROM instruments");
         jdbcTemplate.execute("DELETE FROM app_users");
         reset(authStateStore);
         when(authStateStore.isLoginLocked(anyString(), anyInt())).thenReturn(false);

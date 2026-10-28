@@ -5,6 +5,7 @@ TradeGuard is an educational securities trading simulator. It uses fictitious da
 ## Current implementation
 
 - `backend-java/`: Java 21 / Spring Boot REST API, Flyway-managed PostgreSQL schema, instrument CRUD, JWT-cookie authentication, and role-based authorization.
+- Limit orders are validated against the configurable reference-price band, illustrative tick table, 1,000-share lot, and Taipei weekday trading session. Matching uses price/time priority, maker price, partial fills, and PostgreSQL transactions.
 - `docker-compose.yml`: local PostgreSQL 16 and Redis 7 services. Redis backs login lockout and JWT revocation.
 - `HANDOFF.md`: phase estimates, current delivery status, and the remaining implementation checklist.
 
@@ -33,7 +34,7 @@ Prerequisites: JDK 21, Docker Desktop, and network access on the first Maven Wra
 
 Log in at `POST /api/auth/login`; the API sets a short-lived HttpOnly, SameSite=Lax cookie. `POST /api/auth/logout` revokes the token in Redis and clears the cookie. Create role-specific accounts while signed in as the bootstrap admin with `POST /api/admin/users` (`TRADER`, `SURVEILLANCE`, `AUDITOR`, or `ADMIN`); admins can page through accounts with `GET /api/admin/users` or fetch one with `GET /api/admin/users/{id}`.
 
-Instrument CRUD is at `http://localhost:8080/api/market/instruments`; market info is at `GET /api/market/{symbol}/info`. Market reads and health checks are public; instrument writes and user administration require `ADMIN`. List responses are paginated (`page`, `size`, `sort`; maximum size 100). Creates return `201 Created` with a `Location` header. Protected trading, surveillance, and audit routes enforce the role mappings in `SecurityConfiguration`. Unsafe `/api` requests with an `Origin` header are accepted only from `CORS_ALLOWED_ORIGINS`. Errors use the common JSON shape with `timestamp`, `status`, `error`, `message`, `path`, and optional `details`.
+Instrument CRUD is at `http://localhost:8080/api/market/instruments`; market info and recent trades are at `GET /api/market/{symbol}/info` and `GET /api/market/{symbol}/trades`. Place and cancel limit orders at `POST /api/orders` and `DELETE /api/orders/{id}`; `GET /api/orders/mine` returns the authenticated trader's paginated order history. Order requests include a UUID `client_order_id`, symbol, side (`B`/`S`), limit price, and quantity. Repeating an identical client order ID for the same trader returns its original order; reusing it for different order content returns `409`. Market reads and health checks are public; instrument writes and user administration require `ADMIN`. Order lists are paginated (`page`, `size`, `sort`; maximum size 100). Creates return `201 Created` with a `Location` header. Protected trading, surveillance, and audit routes enforce the role mappings in `SecurityConfiguration`. Unsafe `/api` requests with an `Origin` header are accepted only from `CORS_ALLOWED_ORIGINS`. Errors use the common JSON shape with `timestamp`, `status`, `error`, `message`, `path`, and optional `details`.
 
 Run backend integration tests without Docker:
 
@@ -42,4 +43,4 @@ cd backend-java
 .\mvnw.cmd test
 ```
 
-Tests use H2 in PostgreSQL compatibility mode and mock Redis-backed authentication state; local development uses PostgreSQL, Redis, and Flyway migrations. The PostgreSQL/Redis runtime integration has not yet been verified on this machine. Trading, surveillance, audit, and production deployment features remain incomplete.
+Tests use H2 in PostgreSQL compatibility mode and mock Redis-backed authentication state; local development uses PostgreSQL, Redis, and Flyway migrations. The PostgreSQL/Redis runtime integration has not yet been verified on this machine. Write-ahead order events/recovery, surveillance, audit, the frontend, and production deployment remain incomplete.

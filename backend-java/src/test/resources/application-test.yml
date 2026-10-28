@@ -20,3 +20,5 @@ tradeguard:
     cookie-secure: false
     allowed-origins:
       - http://localhost:3000
+market:
+  enforce-trading-hours: false

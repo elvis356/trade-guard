@@ -9,6 +9,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 @Entity
@@ -28,6 +29,9 @@ public class Instrument {
     @Column(nullable = false)
     private boolean active;
 
+    @Column(name = "reference_price", nullable = false, precision = 12, scale = 4)
+    private BigDecimal referencePrice;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -38,9 +42,14 @@ public class Instrument {
     }
 
     public Instrument(String symbol, String name, boolean active) {
+        this(symbol, name, active, new BigDecimal("100.00"));
+    }
+
+    public Instrument(String symbol, String name, boolean active, BigDecimal referencePrice) {
         this.symbol = symbol;
         this.name = name;
         this.active = active;
+        this.referencePrice = referencePrice;
     }
 
     @PrePersist
@@ -81,6 +90,14 @@ public class Instrument {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public BigDecimal getReferencePrice() {
+        return referencePrice;
+    }
+
+    public void setReferencePrice(BigDecimal referencePrice) {
+        this.referencePrice = referencePrice;
     }
 
     public Instant getCreatedAt() {

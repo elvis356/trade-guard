@@ -23,7 +23,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
 @Configuration
-@EnableConfigurationProperties(AuthProperties.class)
+@EnableConfigurationProperties({AuthProperties.class, MarketProperties.class})
 public class SecurityConfiguration {
 
     @Bean
@@ -95,7 +95,8 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.GET, "/api/market/instruments",
                                 "/api/market/instruments/**", "/api/market/*/info",
                                 "/api/market/quotes", "/api/market/*/book",
-                                "/api/market/*/trades").permitAll()
+                                "/api/market/*/trades", "/api/market/*/trades/**")
+                                .permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/market/instruments/**")
                                 .hasRole("ADMIN")
@@ -109,7 +110,8 @@ public class SecurityConfiguration {
                                 .hasRole("TRADER")
                         .requestMatchers(HttpMethod.DELETE, "/api/orders/*")
                                 .hasRole("TRADER")
-                        .requestMatchers(HttpMethod.GET, "/api/orders/mine")
+                        .requestMatchers(HttpMethod.GET, "/api/orders/mine",
+                                "/api/orders/mine/**")
                                 .hasRole("TRADER")
                         .requestMatchers(HttpMethod.GET, "/api/alerts/**")
                                 .hasAnyRole("SURVEILLANCE", "AUDITOR", "ADMIN")

@@ -11,6 +11,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+
 @Service
 public class InstrumentService {
 
@@ -25,7 +27,10 @@ public class InstrumentService {
         if (repository.existsBySymbol(request.symbol())) {
             throw new DuplicateResourceException("商品代碼已存在: " + request.symbol());
         }
-        Instrument instrument = new Instrument(request.symbol(), request.name(), request.active());
+        BigDecimal referencePrice = request.referencePrice() == null
+                ? new BigDecimal("100.00") : request.referencePrice();
+        Instrument instrument = new Instrument(request.symbol(), request.name(), request.active(),
+                referencePrice);
         return InstrumentResponse.from(repository.saveAndFlush(instrument));
     }
 
@@ -49,6 +54,8 @@ public class InstrumentService {
         existing.setSymbol(request.symbol());
         existing.setName(request.name());
         existing.setActive(request.active());
+        existing.setReferencePrice(request.referencePrice() == null
+                ? new BigDecimal("100.00") : request.referencePrice());
         return InstrumentResponse.from(repository.saveAndFlush(existing));
     }
 
@@ -63,6 +70,9 @@ public class InstrumentService {
         }
         if (request.active() != null) {
             existing.setActive(request.active());
+        }
+        if (request.referencePrice() != null) {
+            existing.setReferencePrice(request.referencePrice());
         }
         return InstrumentResponse.from(repository.saveAndFlush(existing));
     }
