@@ -8,6 +8,7 @@ TradeGuard is an educational securities trading simulator. It uses fictitious da
 - Limit orders are validated against the configurable reference-price band, illustrative tick table, 1,000-share lot, and Taipei weekday trading session. Matching uses price/time priority, maker price, partial fills, and PostgreSQL transactions.
 - Order acceptance, cancellation, and fills are recorded in the append-only application event log in the same transaction. Startup replays events to rebuild open-order state and fails closed if replayed orders or per-symbol sequence counters disagree with PostgreSQL.
 - Public quote and order-book snapshots use short-lived Redis caches and fall back to PostgreSQL when Redis is unavailable. Surveillance persists same-account wash-trade and configurable closing-window price/volume alerts; case proposal and review require different surveillance users.
+- Key order, trade, and case actions are written to a SHA-256 chained audit log in the same PostgreSQL transaction. Auditor/admin APIs verify the chain and reconcile order, trade, and event ledgers; a protected cron endpoint runs end-of-day reconciliation, and daily trades are available as XML.
 - `docker-compose.yml`: local PostgreSQL 16 and Redis 7 services. Redis backs login lockout and JWT revocation.
 - `HANDOFF.md`: phase estimates, current delivery status, and the remaining implementation checklist.
 
@@ -40,6 +41,8 @@ Instrument CRUD is at `http://localhost:8080/api/market/instruments`; market inf
 
 Market quote and book snapshots are available at `GET /api/market/quotes` and `GET /api/market/{symbol}/book`. Surveillance users can review paginated alerts at `GET /api/alerts`, propose a case with `POST /api/alerts/{id}/case`, list cases at `GET /api/cases`, and submit an approve/reject decision with a note to `POST /api/cases/{id}/review`. The proposer cannot review their own case; alerts are rule-based leads for human review, not findings of misconduct.
 
+Auditors and admins can call `GET /api/audit/verify` to validate the audit hash chain, `GET /api/audit/reconcile` to compare orders, trades, and order events, and `GET /api/reports/daily.xml?date=YYYY-MM-DD` for a Taipei-timezone daily trade report. A scheduled external Cron Job can call `POST /internal/eod?date=YYYY-MM-DD` with `X-EOD-Token`; configure a strong random `EOD_TOKEN` of at least 32 bytes in the backend environment. When the ledgers reconcile, the job stores the XML report in PostgreSQL and returns its SHA-256 checksum; unsuccessful reconciliation does not publish a report.
+
 Run backend integration tests without Docker:
 
 ```powershell
@@ -47,4 +50,4 @@ cd backend-java
 .\mvnw.cmd test
 ```
 
-Tests use H2 in PostgreSQL compatibility mode and mock Redis-backed authentication state; market and surveillance Redis outages are exercised through the PostgreSQL fallback. Local development uses PostgreSQL, Redis, and Flyway migrations. PostgreSQL/Redis runtime integration has not yet been verified on this machine. The surveillance volume/price rule needs a 20-day daily-bar source before implementation; database-level write-protection for the event table and Redis idempotency acceleration remain future hardening work. Audit, the frontend, and production deployment are also incomplete.
+Tests use H2 in PostgreSQL compatibility mode and mock Redis-backed authentication state; market and surveillance Redis outages are exercised through the PostgreSQL fallback. Local development uses PostgreSQL, Redis, and Flyway migrations. PostgreSQL/Redis runtime integration has not yet been verified on this machine. The surveillance volume/price rule needs a 20-day daily-bar source before implementation; database-level write-protection for event and audit tables and Redis idempotency acceleration remain future hardening work. The frontend and production deployment are also incomplete.

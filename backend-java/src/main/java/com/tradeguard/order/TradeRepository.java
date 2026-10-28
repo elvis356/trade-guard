@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.time.Instant;
 
 public interface TradeRepository extends JpaRepository<Trade, Long> {
 
@@ -14,4 +15,7 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
     Optional<Trade> findFirstBySymbolOrderByIdDesc(String symbol);
 
     List<Trade> findAllByOrderByIdAsc();
+
+    List<Trade> findAllByCreatedAtGreaterThanEqualAndCreatedAtLessThanOrderByIdAsc(
+            Instant start, Instant end);
 }

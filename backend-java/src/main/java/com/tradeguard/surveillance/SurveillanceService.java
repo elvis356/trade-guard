@@ -1,5 +1,6 @@
 package com.tradeguard.surveillance;
 
+import com.tradeguard.audit.AuditService;
 import com.tradeguard.common.DuplicateResourceException;
 import com.tradeguard.common.InvalidRequestException;
 import com.tradeguard.common.ResourceNotFoundException;
@@ -33,11 +34,13 @@ public class SurveillanceService {
     private final TradeWindowStore windowStore;
     private final SurveillanceProperties surveillance;
     private final MarketProperties market;
+    private final AuditService auditService;
 
     public SurveillanceService(AlertRepository alerts, CaseRepository cases,
                                TradeRepository trades, OrderRepository orders,
                                InstrumentRepository instruments, TradeWindowStore windowStore,
-                               SurveillanceProperties surveillance, MarketProperties market) {
+                               SurveillanceProperties surveillance, MarketProperties market,
+                               AuditService auditService) {
         this.alerts = alerts;
         this.cases = cases;
         this.trades = trades;
@@ -46,6 +49,7 @@ public class SurveillanceService {
         this.windowStore = windowStore;
         this.surveillance = surveillance;
         this.market = market;
+        this.auditService = auditService;
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -87,7 +91,11 @@ public class SurveillanceService {
         if (cases.existsByAlertId(alertId)) {
             throw new DuplicateResourceException("此警示已建立案件。");
         }
-        return CaseResponse.from(cases.saveAndFlush(new SurveillanceCase(alertId, username)));
+        SurveillanceCase surveillanceCase =
+                cases.saveAndFlush(new SurveillanceCase(alertId, username));
+        auditService.record(null, username, "SURVEILLANCE_CASE_PROPOSED",
+                "case_id=" + surveillanceCase.getId() + ",alert_id=" + alertId);
+        return CaseResponse.from(surveillanceCase);
     }
 
     @Transactional(readOnly = true)
@@ -108,6 +116,9 @@ public class SurveillanceService {
         }
         surveillanceCase.review(reviewer, request.approve(), request.note());
         cases.flush();
+        auditService.record(null, reviewer, "SURVEILLANCE_CASE_REVIEWED",
+                "case_id=" + caseId + ",decision="
+                        + (request.approve() ? "APPROVED" : "REJECTED"));
         return CaseResponse.from(surveillanceCase);
     }
 
@@ -141,8 +152,11 @@ public class SurveillanceService {
                              String description) {
         String key = ruleCode + ":" + trade.getId();
         if (!alerts.existsByAlertKey(key)) {
-            alerts.save(new Alert(key, ruleCode, trade.getSymbol(), severity,
-                    trade.getId(), description, trade.getCreatedAt()));
+            Alert alert = alerts.saveAndFlush(new Alert(key, ruleCode, trade.getSymbol(),
+                    severity, trade.getId(), description, trade.getCreatedAt()));
+            auditService.record(null, "system:surveillance", "SURVEILLANCE_ALERT_CREATED",
+                    "alert_id=" + alert.getId() + ",rule=" + ruleCode
+                            + ",trade_id=" + trade.getId());
         }
     }
 }

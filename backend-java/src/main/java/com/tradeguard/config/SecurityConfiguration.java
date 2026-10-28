@@ -93,7 +93,9 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/login", "/api/auth/logout",
-                                "/api/health", "/error").permitAll()
+                                "/api/health", "/internal/eod", "/error").permitAll()
+                        .requestMatchers("/api/reports/**")
+                                .hasAnyRole("AUDITOR", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/market/instruments",
                                 "/api/market/instruments/**", "/api/market/*/info",
                                 "/api/market/quotes", "/api/market/*/book",

@@ -1,5 +1,6 @@
 package com.tradeguard.order;
 
+import com.tradeguard.audit.AuditService;
 import com.tradeguard.common.DuplicateResourceException;
 import com.tradeguard.common.InvalidRequestException;
 import com.tradeguard.common.ResourceNotFoundException;
@@ -34,11 +35,13 @@ public class OrderService {
     private final AppUserRepository users;
     private final OrderValidator validator;
     private final ApplicationEventPublisher eventPublisher;
+    private final AuditService auditService;
 
     public OrderService(InstrumentRepository instruments, OrderRepository orders,
                         TradeRepository trades, OrderEventRepository orderEvents,
                         AppUserRepository users,
-                        OrderValidator validator, ApplicationEventPublisher eventPublisher) {
+                        OrderValidator validator, ApplicationEventPublisher eventPublisher,
+                        AuditService auditService) {
         this.instruments = instruments;
         this.orders = orders;
         this.trades = trades;
@@ -46,6 +49,7 @@ public class OrderService {
         this.users = users;
         this.validator = validator;
         this.eventPublisher = eventPublisher;
+        this.auditService = auditService;
     }
 
     @Transactional
@@ -72,6 +76,9 @@ public class OrderService {
         TradingOrder incoming = orders.saveAndFlush(new TradingOrder(
                 request.clientOrderId(), seqNo, user.getId(), request.symbol(),
                 request.side(), request.price(), request.qty()));
+        auditService.record(user.getId(), username, "ORDER_ACCEPTED",
+                "symbol=" + request.symbol() + ",seq_no=" + seqNo
+                        + ",client_order_id=" + request.clientOrderId());
         match(incoming);
         return OrderResponse.from(incoming);
     }
@@ -102,6 +109,9 @@ public class OrderService {
         orderEvents.saveAndFlush(OrderEvent.canceled(order.getSymbol(), order.getSeqNo()));
         order.cancel();
         orders.flush();
+        auditService.record(user.getId(), username, "ORDER_CANCELED",
+                "order_id=" + orderId + ",symbol=" + order.getSymbol()
+                        + ",seq_no=" + order.getSeqNo());
         return OrderResponse.from(order);
     }
 
@@ -135,6 +145,9 @@ public class OrderService {
             TradingOrder sellOrder = incoming.getSide() == OrderSide.SELL ? incoming : resting;
             Trade trade = trades.save(new Trade(incoming.getSymbol(), buyOrder.getId(),
                     sellOrder.getId(), resting.getLimitPrice(), fillQuantity));
+            auditService.record(null, "system:matching", "TRADE_EXECUTED",
+                    "trade_id=" + trade.getId() + ",symbol=" + incoming.getSymbol()
+                            + ",quantity=" + fillQuantity);
             eventPublisher.publishEvent(new TradeCommittedEvent(trade.getId()));
         }
         orders.flush();

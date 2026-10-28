@@ -40,6 +40,8 @@ surveillance:
   closing-minimum-quantity: 5000
   closing-window-minutes: 5
 tradeguard:
+  eod:
+    token: ${EOD_TOKEN:}
   auth:
     jwt-secret: ${JWT_SECRET:}
     token-lifetime: ${JWT_TTL:15m}
