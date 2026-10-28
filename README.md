@@ -43,6 +43,21 @@ Market quote and book snapshots are available at `GET /api/market/quotes` and `G
 
 Auditors and admins can call `GET /api/audit/verify` to validate the audit hash chain, `GET /api/audit/reconcile` to compare orders, trades, and order events, and `GET /api/reports/daily.xml?date=YYYY-MM-DD` for a Taipei-timezone daily trade report. A scheduled external Cron Job can call `POST /internal/eod?date=YYYY-MM-DD` with `X-EOD-Token`; configure a strong random `EOD_TOKEN` of at least 32 bytes in the backend environment. When the ledgers reconcile, the job stores the XML report in PostgreSQL and returns its SHA-256 checksum; unsuccessful reconciliation does not publish a report.
 
+## Next.js frontend
+
+The `frontend-next/` App Router project provides an SSR market overview with five-second quote polling, streaming symbol pages with a two-second order-book refresh, a static matching-rules guide, a role-protected daily XML report view, and an authenticated on-demand revalidation hook. The browser uses same-origin `/api/*` rewrites; server-side backend access uses the server-only `BACKEND_URL`.
+
+With Node.js 20.9 or later and the backend running, start the frontend from PowerShell:
+
+```powershell
+cd frontend-next
+Copy-Item .env.example .env.local
+npm install
+npm run dev
+```
+
+Set `REVALIDATE_SECRET` to a high-entropy secret before exposing the frontend. `POST /api/revalidate` requires the same value in `X-Revalidate-Secret`. The daily report contains role-protected data and is deliberately fetched per request without a shared ISR cache; shared caching must not bypass backend authorization.
+
 Run backend integration tests without Docker:
 
 ```powershell
@@ -50,4 +65,4 @@ cd backend-java
 .\mvnw.cmd test
 ```
 
-Tests use H2 in PostgreSQL compatibility mode and mock Redis-backed authentication state; market and surveillance Redis outages are exercised through the PostgreSQL fallback. Local development uses PostgreSQL, Redis, and Flyway migrations. PostgreSQL/Redis runtime integration has not yet been verified on this machine. The surveillance volume/price rule needs a 20-day daily-bar source before implementation; database-level write-protection for event and audit tables and Redis idempotency acceleration remain future hardening work. The frontend and production deployment are also incomplete.
+Tests use H2 in PostgreSQL compatibility mode and mock Redis-backed authentication state; market and surveillance Redis outages are exercised through the PostgreSQL fallback. Local development uses PostgreSQL, Redis, and Flyway migrations. PostgreSQL/Redis runtime integration has not yet been verified on this machine. The surveillance volume/price rule needs a 20-day daily-bar source before implementation; database-level write-protection for event and audit tables and Redis idempotency acceleration remain future hardening work. The frontend has an initial market/read-only vertical slice; authenticated trading, surveillance, case review, and audit workflows plus production deployment remain incomplete.
