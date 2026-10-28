@@ -28,15 +28,18 @@ public class OrderService {
     private final InstrumentRepository instruments;
     private final OrderRepository orders;
     private final TradeRepository trades;
+    private final OrderEventRepository orderEvents;
     private final AppUserRepository users;
     private final OrderValidator validator;
 
     public OrderService(InstrumentRepository instruments, OrderRepository orders,
-                        TradeRepository trades, AppUserRepository users,
+                        TradeRepository trades, OrderEventRepository orderEvents,
+                        AppUserRepository users,
                         OrderValidator validator) {
         this.instruments = instruments;
         this.orders = orders;
         this.trades = trades;
+        this.orderEvents = orderEvents;
         this.users = users;
         this.validator = validator;
     }
@@ -60,8 +63,8 @@ public class OrderService {
                         "找不到啟用中的商品代碼: " + request.symbol()));
         validator.validate(request, instrument);
 
-        Long latestSeqNo = orders.findMaxSeqNoBySymbol(request.symbol());
-        long seqNo = latestSeqNo == null ? 1 : Math.addExact(latestSeqNo, 1);
+        long seqNo = instrument.allocateSeqNo();
+        orderEvents.saveAndFlush(OrderEvent.accepted(request, user.getId(), seqNo));
         TradingOrder incoming = orders.saveAndFlush(new TradingOrder(
                 request.clientOrderId(), seqNo, user.getId(), request.symbol(),
                 request.side(), request.price(), request.qty()));
@@ -92,6 +95,7 @@ public class OrderService {
         if (!OPEN_STATUSES.contains(order.getStatus()) || order.getRemainingQuantity() == 0) {
             throw new InvalidRequestException("委託已完成或已取消，無可取消數量。");
         }
+        orderEvents.saveAndFlush(OrderEvent.canceled(order.getSymbol(), order.getSeqNo()));
         order.cancel();
         orders.flush();
         return OrderResponse.from(order);
@@ -119,6 +123,8 @@ public class OrderService {
             }
             long fillQuantity = Math.min(incoming.getRemainingQuantity(),
                     resting.getRemainingQuantity());
+            orderEvents.saveAndFlush(OrderEvent.tradeExecuted(incoming.getSymbol(),
+                    incoming.getSeqNo(), resting.getSeqNo(), fillQuantity));
             incoming.fill(fillQuantity);
             resting.fill(fillQuantity);
             TradingOrder buyOrder = incoming.getSide() == OrderSide.BUY ? incoming : resting;

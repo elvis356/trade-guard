@@ -32,6 +32,9 @@ public class Instrument {
     @Column(name = "reference_price", nullable = false, precision = 12, scale = 4)
     private BigDecimal referencePrice;
 
+    @Column(name = "last_seq_no", nullable = false)
+    private long lastSeqNo;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -94,6 +97,15 @@ public class Instrument {
 
     public BigDecimal getReferencePrice() {
         return referencePrice;
+    }
+
+    public long allocateSeqNo() {
+        lastSeqNo = Math.addExact(lastSeqNo, 1);
+        return lastSeqNo;
+    }
+
+    public long getLastSeqNo() {
+        return lastSeqNo;
     }
 
     public void setReferencePrice(BigDecimal referencePrice) {

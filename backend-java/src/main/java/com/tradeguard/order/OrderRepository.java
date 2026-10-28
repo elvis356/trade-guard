@@ -23,7 +23,4 @@ public interface OrderRepository extends JpaRepository<TradingOrder, Long> {
     List<TradingOrder> findBySymbolAndSideAndStatusInAndRemainingQuantityGreaterThanOrderByLimitPriceDescSeqNoAsc(
             String symbol, OrderSide side, Collection<OrderStatus> statuses, long remainingQuantity);
 
-    @org.springframework.data.jpa.repository.Query(
-            "select max(o.seqNo) from TradingOrder o where o.symbol = :symbol")
-    Long findMaxSeqNoBySymbol(@org.springframework.data.repository.query.Param("symbol") String symbol);
 }

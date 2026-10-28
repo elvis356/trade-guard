@@ -55,11 +55,15 @@ class OrderApiIntegrationTest {
     @Autowired
     private InstrumentRepository instruments;
 
+    @Autowired
+    private OrderEventReplayer eventReplayer;
+
     @MockitoBean
     private AuthStateStore authStateStore;
 
     @BeforeEach
     void resetDatabase() {
+        jdbcTemplate.execute("DELETE FROM order_events");
         jdbcTemplate.execute("DELETE FROM trades");
         jdbcTemplate.execute("DELETE FROM orders");
         jdbcTemplate.execute("DELETE FROM instruments");
@@ -170,7 +174,10 @@ class OrderApiIntegrationTest {
         mockMvc.perform(createRequest("trader1", "TEST01", "B", "55.00", 1000,
                         UUID.randomUUID()))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.status").value("NEW"));
+                .andExpect(jsonPath("$.status").value("NEW"))
+                .andExpect(jsonPath("$.seq_no").value(1));
+        org.junit.jupiter.api.Assertions.assertEquals(1,
+                jdbcTemplate.queryForObject("SELECT COUNT(*) FROM order_events", Long.class));
     }
 
     @Test
@@ -192,6 +199,41 @@ class OrderApiIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalElements").value(1))
                 .andExpect(jsonPath("$.content[0].order_id").value(orderId));
+    }
+
+    @Test
+    void replaysAppendOnlyEventsIntoOpenOrderBookAndChecksDatabaseProjection()
+            throws Exception {
+        createOrder("trader2", "TEST01", "S", "50.00", 2000, UUID.randomUUID());
+        createOrder("trader1", "TEST01", "B", "50.00", 1000, UUID.randomUUID());
+        long canceledId = orderId(createOrder("trader1", "TEST01", "S", "51.00",
+                1000, UUID.randomUUID()));
+        mockMvc.perform(delete("/api/orders/{id}", canceledId)
+                        .with(user("trader1").roles("TRADER")))
+                .andExpect(status().isOk());
+
+        org.junit.jupiter.api.Assertions.assertEquals(5,
+                jdbcTemplate.queryForObject("SELECT COUNT(*) FROM order_events", Long.class));
+        var recovered = eventReplayer.replay();
+        org.junit.jupiter.api.Assertions.assertEquals(1, recovered.get("TEST01").size());
+        var openOrder = recovered.get("TEST01").get(0);
+        org.junit.jupiter.api.Assertions.assertEquals(1, openOrder.seqNo());
+        org.junit.jupiter.api.Assertions.assertEquals(1000, openOrder.remainingQuantity());
+        org.junit.jupiter.api.Assertions.assertEquals(OrderStatus.PARTIALLY_FILLED,
+                openOrder.status());
+        org.junit.jupiter.api.Assertions.assertEquals(3,
+                jdbcTemplate.queryForObject(
+                        "SELECT last_seq_no FROM instruments WHERE symbol = 'TEST01'",
+                        Long.class));
+    }
+
+    @Test
+    void replayFailsClosedWhenAnAcceptedOrderEventIsMissing() throws Exception {
+        createOrder("trader1", "TEST01", "B", "50.00", 1000, UUID.randomUUID());
+        jdbcTemplate.update("DELETE FROM order_events WHERE event_type = 'ORDER_ACCEPTED'");
+
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class,
+                eventReplayer::replay);
     }
 
     private MvcResult createOrder(String username, String symbol, String side,

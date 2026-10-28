@@ -6,6 +6,7 @@ TradeGuard is an educational securities trading simulator. It uses fictitious da
 
 - `backend-java/`: Java 21 / Spring Boot REST API, Flyway-managed PostgreSQL schema, instrument CRUD, JWT-cookie authentication, and role-based authorization.
 - Limit orders are validated against the configurable reference-price band, illustrative tick table, 1,000-share lot, and Taipei weekday trading session. Matching uses price/time priority, maker price, partial fills, and PostgreSQL transactions.
+- Order acceptance, cancellation, and fills are recorded in the append-only application event log in the same transaction. Startup replays events to rebuild open-order state and fails closed if replayed orders or per-symbol sequence counters disagree with PostgreSQL.
 - `docker-compose.yml`: local PostgreSQL 16 and Redis 7 services. Redis backs login lockout and JWT revocation.
 - `HANDOFF.md`: phase estimates, current delivery status, and the remaining implementation checklist.
 
@@ -43,4 +44,4 @@ cd backend-java
 .\mvnw.cmd test
 ```
 
-Tests use H2 in PostgreSQL compatibility mode and mock Redis-backed authentication state; local development uses PostgreSQL, Redis, and Flyway migrations. The PostgreSQL/Redis runtime integration has not yet been verified on this machine. Write-ahead order events/recovery, surveillance, audit, the frontend, and production deployment remain incomplete.
+Tests use H2 in PostgreSQL compatibility mode and mock Redis-backed authentication state; local development uses PostgreSQL, Redis, and Flyway migrations. PostgreSQL/Redis runtime integration has not yet been verified on this machine. The event log and startup replay are implemented, but database-level write-protection for the event table and Redis idempotency acceleration remain future hardening work; surveillance, audit, the frontend, and production deployment are also incomplete.
