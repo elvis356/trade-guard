@@ -114,7 +114,7 @@ Render Blueprint 不會建立 Render PostgreSQL；它會提示設定 `DB_HOST`�
 
 GitHub Actions 的 `Daily EOD` workflow 會在平日 06:00 UTC（台灣時間 14:00）呼叫 `POST /internal/eod`，也可從 Actions 頁面手動執行並指定日期。請在 GitHub 儲存庫 **Settings → Secrets and variables → Actions** 設定：
 
-- Repository variable `EOD_API_URL`：後端 Render base URL，例如 `https://tradeguard-api.onrender.com`。
+- Repository variable `EOD_API_URL`：後端 Render base URL，目前為 `https://tradeguard-api-e32l.onrender.com`。
 - Repository secret `EOD_TOKEN`：從 Render 後端服務環境變數安全複製的同一個 token。
 
 帳本核對成功時，工作會將 XML 報告存入 PostgreSQL 並回傳其 SHA-256 校驗和；核對失敗時不會發布報告，workflow 也會顯示失敗。若之前已在 Render 建立付費 EOD Cron Job，確認 GitHub Actions 執行成功後，請在 Render 刪除該 Cron Job，避免繼續計費。
@@ -155,11 +155,11 @@ GitHub Actions 會在推送及 Pull Request 上執行後端 `clean verify`、前
 
 ### Render
 
-Render Blueprint（`render.yaml`）將 Redis 和 Docker 化 API 設為免費方案；PostgreSQL 使用外部 Neon 資料庫，日終排程由 GitHub Actions 執行，不建立 Render Cron Job。Render 免費方案有重要限制：免費 Redis 重啟時資料會清空，免費 Web Service 閒置 15 分鐘後會休眠且下次請求可能需要約一分鐘喚醒；不適合正式環境。Neon 免費額度與暫停規則依 Neon 方案為準。請將 `CORS_ALLOWED_ORIGINS` 設為 Vercel 部署來源的精確網址。初次佈建時，請提供 `BOOTSTRAP_ADMIN_USERNAME` 及唯一的 `BOOTSTRAP_ADMIN_PASSWORD`；管理員建立後請移除這兩項設定。Render 會產生 `JWT_SECRET` 和 `EOD_TOKEN`；依上方說明將 `EOD_TOKEN` 安全地複製到 GitHub Actions secret。
+Render Blueprint（`render.yaml`）將 Redis 和 Docker 化 API 設為免費方案；PostgreSQL 使用外部 Neon 資料庫，日終排程由 GitHub Actions 執行，不建立 Render Cron Job。已部署的 API 網址為 [`https://tradeguard-api-e32l.onrender.com`](https://tradeguard-api-e32l.onrender.com)，健康檢查為 [`/api/health`](https://tradeguard-api-e32l.onrender.com/api/health)。Render 免費方案有重要限制：免費 Redis 重啟時資料會清空，免費 Web Service 閒置 15 分鐘後會休眠且下次請求可能需要約一分鐘喚醒；不適合正式環境。Neon 免費額度與暫停規則依 Neon 方案為準。請將 `CORS_ALLOWED_ORIGINS` 設為 Vercel 部署來源的精確網址。初次佈建時，請提供 `BOOTSTRAP_ADMIN_USERNAME` 及唯一的 `BOOTSTRAP_ADMIN_PASSWORD`；管理員建立後請移除這兩項設定。Render 會產生 `JWT_SECRET` 和 `EOD_TOKEN`；依上方說明將 `EOD_TOKEN` 安全地複製到 GitHub Actions secret。
 
 ### Vercel
 
-請在 Vercel 匯入此儲存庫並將根目錄設為 `frontend-next`，以單獨部署前端。將僅供伺服器端使用的 `BACKEND_URL` 設為已部署的 Render API 網址。目前沒有後端服務呼叫前端重新驗證路由，因此不需要設定 `REVALIDATE_SECRET`；未來新增受信任呼叫端時，再於 Vercel 與呼叫端設定相同的高熵密鑰。CI 不會提交任何憑證，也不會執行外部部署。
+Vercel 專案名稱為 `trade-guard-frontend-next`，Root Directory 設為 `frontend-next`，Framework 為 Next.js。Production 環境變數 `BACKEND_URL` 設為 `https://tradeguard-api-e32l.onrender.com`，由 Next.js rewrite 將瀏覽器的同源 `/api/*` 請求轉送至後端。部署完成後，請將 Render `CORS_ALLOWED_ORIGINS` 設為 Vercel 專案的正式來源網址（只含 scheme 與 host，不含路徑或結尾斜線）；Vercel 正式網址請以 Vercel 專案的 Domains 頁面為準。目前沒有後端服務呼叫前端重新驗證路由，因此不需要設定 `REVALIDATE_SECRET`；未來新增受信任呼叫端時，再於 Vercel 與呼叫端設定相同的高熵密鑰。CI 不會提交任何憑證，也不會執行外部部署。
 
 ## 目前限制與後續工作
 
