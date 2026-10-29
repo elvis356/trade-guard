@@ -54,22 +54,26 @@ cd backend-java
 .\mvnw.cmd spring-boot:run
 ```
 
-建立第一個管理員帳號後，請從處理程序環境變數移除 `BOOTSTRAP_ADMIN_USERNAME` 和 `BOOTSTRAP_ADMIN_PASSWORD`。若你變更了 `.env` 中的 `DB_PASSWORD`，啟動 Spring Boot 前也要在後端處理程序中設定相同的值（`$env:DB_PASSWORD`）；Docker Compose 會讀取 `.env`，但 PowerShell 不會自動載入該檔案。部署時必須設定唯一的 `JWT_SECRET`（至少 32 位元組）及 `COOKIE_SECURE=true`。
+建立第一個管理員帳號後，請從處理程序環境變數移除 `BOOTSTRAP_ADMIN_USERNAME` 和 `BOOTSTRAP_ADMIN_PASSWORD`。Docker Compose 會讀取 `.env`，但 PowerShell 不會自動載入該檔案；若直接啟動 Spring Boot，請在後端處理程序中設定所需的環境變數。部署時必須設定唯一的 `JWT_SECRET`（至少 32 位元組）及 `COOKIE_SECURE=true`。
 
 ### 後端環境變數說明
 
-根目錄的 `.env.example` 列出本機 Docker Compose 使用的後端設定：
+根目錄的 `.env.example` 列出本機 Docker Compose 使用的後端設定。PostgreSQL 連線變數也與 Render 資料庫欄位一一對應；後端會用它們組成 JDBC 連線網址：
 
 | 變數 | 用途 |
 |---|---|
-| `DB_URL` | PostgreSQL JDBC 連線網址，包含主機、埠號及資料庫名稱。 |
-| `DB_USERNAME`、`DB_PASSWORD` | PostgreSQL 登入帳號與密碼；範例值僅供本機開發。 |
+| `DB_HOST` | PostgreSQL Hostname；Compose 容器內使用服務名稱 `postgres`，本機直連預設為 `localhost`。 |
+| `DB_PORT` | PostgreSQL port，預設為 `5432`。 |
+| `DB_NAME` | PostgreSQL Database，預設為 `tradeguard`。 |
+| `DB_USERNAME`、`DB_PASSWORD` | 對應 PostgreSQL Username、Password；範例值僅供本機開發。 |
 | `REDIS_HOST`、`REDIS_PORT`、`REDIS_PASSWORD` | Redis 主機、埠號與密碼；本機未啟用密碼時可留空。 |
 | `JWT_SECRET` | 簽署及驗證登入 JWT 的密鑰。部署時設定唯一的高熵值，至少 32 位元組。 |
 | `COOKIE_SECURE` | 設為 `true` 時，登入 Cookie 僅透過 HTTPS 傳送；本機純 HTTP 開發可設為 `false`。 |
 | `CORS_ALLOWED_ORIGINS` | 允許呼叫 API 的前端來源網址，需包含協定，例如 `https://example.com`。 |
 | `EOD_TOKEN` | 日終作業 API 的共享憑證；呼叫 `/internal/eod` 時放在 `X-EOD-Token` 標頭。 |
 | `BOOTSTRAP_ADMIN_USERNAME`、`BOOTSTRAP_ADMIN_PASSWORD` | 首次啟動時建立初始 `ADMIN` 帳號；兩者都要設定，帳號建立後移除。 |
+
+Render Blueprint 會從 PostgreSQL 服務自動填入 `DB_HOST`、`DB_PORT`、`DB_NAME`、`DB_USERNAME`、`DB_PASSWORD`，其值分別對應服務頁面的 Hostname、port、Database、Username、Password。應用程式使用內部網路連線，因此不需要設定 External Database URL，也不需要把 Internal Database URL 改寫成 `DB_URL`。
 
 ## API 功能
 

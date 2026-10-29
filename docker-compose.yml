@@ -31,8 +31,10 @@ services:
       context: ./backend-java
       dockerfile: Dockerfile
     environment:
-      DB_URL: jdbc:postgresql://postgres:5432/tradeguard
-      DB_USERNAME: tradeguard
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: tradeguard
+      DB_USERNAME: ${DB_USERNAME:-tradeguard}
       DB_PASSWORD: ${DB_PASSWORD:-tradeguard_local_only}
       REDIS_HOST: redis
       REDIS_PORT: 6379
