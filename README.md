@@ -159,7 +159,7 @@ Render Blueprint（`render.yaml`）將 Redis 和 Docker 化 API 設為免費方�
 
 ### Vercel
 
-Vercel 專案名稱為 `trade-guard-frontend-next`，Root Directory 設為 `frontend-next`，Framework 為 Next.js。Production 環境變數 `BACKEND_URL` 設為 `https://tradeguard-api-e32l.onrender.com`，由 Next.js rewrite 將瀏覽器的同源 `/api/*` 請求轉送至後端。部署完成後，請將 Render `CORS_ALLOWED_ORIGINS` 設為 Vercel 專案的正式來源網址（只含 scheme 與 host，不含路徑或結尾斜線）；Vercel 正式網址請以 Vercel 專案的 Domains 頁面為準。目前沒有後端服務呼叫前端重新驗證路由，因此不需要設定 `REVALIDATE_SECRET`；未來新增受信任呼叫端時，再於 Vercel 與呼叫端設定相同的高熵密鑰。CI 不會提交任何憑證，也不會執行外部部署。
+Vercel 專案名稱為 `trade-guard-frontend-next`，Root Directory 設為 `frontend-next`，Framework 為 Next.js。Production 網址為 [`https://trade-guard-frontend-next.vercel.app`](https://trade-guard-frontend-next.vercel.app)。Production 環境變數 `BACKEND_URL` 設為 `https://tradeguard-api-e32l.onrender.com`，由 Next.js rewrite 將瀏覽器的同源 `/api/*` 請求轉送至後端。Render `CORS_ALLOWED_ORIGINS` 應設為 `https://trade-guard-frontend-next.vercel.app`（只含 scheme 與 host，不含路徑或結尾斜線）。目前沒有後端服務呼叫前端重新驗證路由，因此不需要設定 `REVALIDATE_SECRET`；未來新增受信任呼叫端時，再於 Vercel 與呼叫端設定相同的高熵密鑰。CI 不會提交任何憑證，也不會執行外部部署。
 
 ## 目前限制與後續工作
 
