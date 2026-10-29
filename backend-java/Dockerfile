@@ -11,7 +11,7 @@ FROM eclipse-temurin:21-jre-jammy
 
 WORKDIR /app
 RUN apt-get update \
-    && apt-get install --yes --no-install-recommends curl ca-certificates \
+    && apt-get install --yes --no-install-recommends ca-certificates \
     && rm -rf /var/lib/apt/lists/* \
     && groupadd --system spring \
     && useradd --system --gid spring --home-dir /app spring

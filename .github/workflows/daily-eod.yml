@@ -1,0 +1,44 @@
+name: Daily EOD
+
+on:
+  schedule:
+    - cron: "0 6 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      business_date:
+        description: "Optional business date (YYYY-MM-DD); defaults to Taipei today"
+        required: false
+        type: string
+
+permissions: {}
+
+concurrency:
+  group: daily-eod
+  cancel-in-progress: false
+
+jobs:
+  run-eod:
+    name: Run end-of-day reconciliation
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Call backend EOD endpoint
+        env:
+          EOD_API_URL: ${{ vars.EOD_API_URL }}
+          EOD_TOKEN: ${{ secrets.EOD_TOKEN }}
+          BUSINESS_DATE: ${{ inputs.business_date }}
+        run: |
+          set -eu
+          : "${EOD_API_URL:?Set the EOD_API_URL repository variable to the backend base URL}"
+          : "${EOD_TOKEN:?Set the EOD_TOKEN repository secret}"
+          endpoint="${EOD_API_URL%/}/internal/eod"
+          if [ -n "${BUSINESS_DATE:-}" ]; then
+            curl --fail --silent --show-error --request POST \
+              --header "X-EOD-Token: ${EOD_TOKEN}" \
+              --get --data-urlencode "date=${BUSINESS_DATE}" \
+              "$endpoint"
+          else
+            curl --fail --silent --show-error --request POST \
+              --header "X-EOD-Token: ${EOD_TOKEN}" \
+              "$endpoint"
+          fi

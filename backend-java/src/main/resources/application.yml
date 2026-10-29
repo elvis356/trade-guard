@@ -2,7 +2,7 @@ spring:
   application:
     name: tradeguard-backend
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:tradeguard}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:tradeguard}?sslmode=${DB_SSLMODE:disable}
     username: ${DB_USERNAME:tradeguard}
     password: ${DB_PASSWORD:tradeguard_local_only}
   jpa:

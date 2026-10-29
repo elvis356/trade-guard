@@ -1,7 +1,7 @@
 services:
   - type: keyvalue
     name: tradeguard-redis
-    plan: starter
+    plan: free
     maxmemoryPolicy: noeviction
     ipAllowList: []
 
@@ -10,29 +10,21 @@ services:
     runtime: docker
     rootDir: backend-java
     dockerfilePath: ./Dockerfile
-    plan: starter
+    plan: free
     healthCheckPath: /api/health
     envVars:
       - key: DB_HOST
-        fromDatabase:
-          name: tradeguard-db
-          property: host
+        sync: false
       - key: DB_PORT
-        fromDatabase:
-          name: tradeguard-db
-          property: port
+        sync: false
       - key: DB_NAME
-        fromDatabase:
-          name: tradeguard-db
-          property: database
+        sync: false
       - key: DB_USERNAME
-        fromDatabase:
-          name: tradeguard-db
-          property: user
+        sync: false
       - key: DB_PASSWORD
-        fromDatabase:
-          name: tradeguard-db
-          property: password
+        sync: false
+      - key: DB_SSLMODE
+        value: require
       - key: REDIS_HOST
         fromService:
           type: keyvalue
@@ -55,29 +47,3 @@ services:
         sync: false
       - key: BOOTSTRAP_ADMIN_PASSWORD
         sync: false
-
-  - type: cron
-    name: tradeguard-eod
-    runtime: docker
-    rootDir: backend-java
-    dockerfilePath: ./Dockerfile
-    plan: starter
-    schedule: "0 6 * * 1-5"
-    dockerCommand: eod
-    envVars:
-      - key: API_HOST
-        fromService:
-          type: web
-          name: tradeguard-api
-          property: host
-      - key: EOD_TOKEN
-        fromService:
-          type: web
-          name: tradeguard-api
-          envVarKey: EOD_TOKEN
-
-databases:
-  - name: tradeguard-db
-    plan: basic-256mb
-    databaseName: tradeguard
-    user: tradeguard

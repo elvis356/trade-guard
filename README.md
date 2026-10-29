@@ -62,10 +62,11 @@ cd backend-java
 
 | 變數 | 用途 |
 |---|---|
-| `DB_HOST` | PostgreSQL Hostname；Compose 容器內使用服務名稱 `postgres`，本機直連預設為 `localhost`。 |
+| `DB_HOST` | PostgreSQL Hostname；Compose 容器內使用服務名稱 `postgres`，本機直連預設為 `localhost`。使用 Neon 時填 Neon 提供的 Host。 |
 | `DB_PORT` | PostgreSQL port，預設為 `5432`。 |
-| `DB_NAME` | PostgreSQL Database，預設為 `tradeguard`。 |
-| `DB_USERNAME`、`DB_PASSWORD` | 對應 PostgreSQL Username、Password；範例值僅供本機開發。 |
+| `DB_NAME` | PostgreSQL Database，預設為 `tradeguard`；使用 Neon 時填 Neon 提供的 Database。 |
+| `DB_USERNAME`、`DB_PASSWORD` | PostgreSQL Username、Password；使用 Neon 時填 Neon 提供的 Role 與密碼。 |
+| `DB_SSLMODE` | PostgreSQL TLS 模式；本機 Docker 預設 `disable`，Neon 必須設為 `require`。 |
 | `REDIS_HOST`、`REDIS_PORT`、`REDIS_PASSWORD` | Redis 主機、埠號與密碼；本機未啟用密碼時可留空。 |
 | `JWT_SECRET` | 簽署及驗證登入 JWT 的密鑰。部署時設定唯一的高熵值，至少 32 位元組。 |
 | `COOKIE_SECURE` | 設為 `true` 時，登入 Cookie 僅透過 HTTPS 傳送；本機純 HTTP 開發可設為 `false`。 |
@@ -73,7 +74,11 @@ cd backend-java
 | `EOD_TOKEN` | 日終作業 API 的共享憑證；呼叫 `/internal/eod` 時放在 `X-EOD-Token` 標頭。 |
 | `BOOTSTRAP_ADMIN_USERNAME`、`BOOTSTRAP_ADMIN_PASSWORD` | 首次啟動時建立初始 `ADMIN` 帳號；兩者都要設定，帳號建立後移除。 |
 
-Render Blueprint 會從 PostgreSQL 服務自動填入 `DB_HOST`、`DB_PORT`、`DB_NAME`、`DB_USERNAME`、`DB_PASSWORD`，其值分別對應服務頁面的 Hostname、port、Database、Username、Password。應用程式使用內部網路連線，因此不需要設定 External Database URL，也不需要把 Internal Database URL 改寫成 `DB_URL`。
+### 使用 Neon PostgreSQL 部署
+
+Render Blueprint 不會建立 Render PostgreSQL；它會提示設定 `DB_HOST`、`DB_PORT`、`DB_NAME`、`DB_USERNAME`、`DB_PASSWORD`。在 Neon 專案的 **Connect** 視窗選擇資料庫與 role，將提供的 Host、Port、Database、Username、Password 分別填入這些變數。Render Blueprint 已將 `DB_SSLMODE` 設為 `require`，以符合 Neon 的 TLS 連線需求。請只在 Render 後端服務的環境變數中設定 Neon 密碼，不要提交到 Git 或放入前端變數。
+
+本機 Docker Compose 仍使用專案內的 PostgreSQL 容器，`DB_SSLMODE=disable`；若要從本機直接連 Neon，則在本機 `.env` 填入 Neon 的連線欄位並將 `DB_SSLMODE=require`。
 
 ## API 功能
 
@@ -107,7 +112,12 @@ Render Blueprint 會從 PostgreSQL 服務自動填入 `DB_HOST`、`DB_PORT`、`D
 - `GET /api/audit/reconcile`：核對委託、交易及委託事件。
 - `GET /api/reports/daily.xml?date=YYYY-MM-DD`：取得台北時區的每日交易報告。
 
-外部排程 Cron Job 可使用 `X-EOD-Token` 呼叫 `POST /internal/eod?date=YYYY-MM-DD`。請在後端環境中設定至少 32 位元組的強隨機 `EOD_TOKEN`。帳本核對成功時，工作會將 XML 報告存入 PostgreSQL 並回傳其 SHA-256 校驗和；核對失敗時不會發布報告。
+GitHub Actions 的 `Daily EOD` workflow 會在平日 06:00 UTC（台灣時間 14:00）呼叫 `POST /internal/eod`，也可從 Actions 頁面手動執行並指定日期。請在 GitHub 儲存庫 **Settings → Secrets and variables → Actions** 設定：
+
+- Repository variable `EOD_API_URL`：後端 Render base URL，例如 `https://tradeguard-api.onrender.com`。
+- Repository secret `EOD_TOKEN`：從 Render 後端服務環境變數安全複製的同一個 token。
+
+帳本核對成功時，工作會將 XML 報告存入 PostgreSQL 並回傳其 SHA-256 校驗和；核對失敗時不會發布報告，workflow 也會顯示失敗。若之前已在 Render 建立付費 EOD Cron Job，確認 GitHub Actions 執行成功後，請在 Render 刪除該 Cron Job，避免繼續計費。
 
 ## 前端開發
 
@@ -145,7 +155,7 @@ GitHub Actions 會在推送及 Pull Request 上執行後端 `clean verify`、前
 
 ### Render
 
-Render Blueprint（`render.yaml`）定義了私有 Redis、PostgreSQL、Docker 化 API 及平日收盤 Cron Job。套用前請確認所選 Render 方案與部署區域。請將 `CORS_ALLOWED_ORIGINS` 設為 Vercel 部署來源的精確網址。初次佈建時，請提供 `BOOTSTRAP_ADMIN_USERNAME` 及唯一的 `BOOTSTRAP_ADMIN_PASSWORD`；管理員建立後請移除這兩項設定。Render 會產生 `JWT_SECRET` 和 `EOD_TOKEN`。
+Render Blueprint（`render.yaml`）將 Redis 和 Docker 化 API 設為免費方案；PostgreSQL 使用外部 Neon 資料庫，日終排程由 GitHub Actions 執行，不建立 Render Cron Job。Render 免費方案有重要限制：免費 Redis 重啟時資料會清空，免費 Web Service 閒置 15 分鐘後會休眠且下次請求可能需要約一分鐘喚醒；不適合正式環境。Neon 免費額度與暫停規則依 Neon 方案為準。請將 `CORS_ALLOWED_ORIGINS` 設為 Vercel 部署來源的精確網址。初次佈建時，請提供 `BOOTSTRAP_ADMIN_USERNAME` 及唯一的 `BOOTSTRAP_ADMIN_PASSWORD`；管理員建立後請移除這兩項設定。Render 會產生 `JWT_SECRET` 和 `EOD_TOKEN`；依上方說明將 `EOD_TOKEN` 安全地複製到 GitHub Actions secret。
 
 ### Vercel
 
