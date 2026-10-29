@@ -149,7 +149,7 @@ cd backend-java
 
 ## CI 與安全檢查
 
-GitHub Actions 會在推送及 Pull Request 上執行後端 `clean verify`、前端 lint／build 及 npm 相依套件稽核。Dependency Review 會阻擋引入高嚴重性相依套件安全公告的 Pull Request。CodeQL 會在推送、Pull Request 及每週排程時掃描 Java 和 TypeScript。相依套件鎖定檔已提交，因此 CI 使用可重現的前端套件版本。
+GitHub Actions 會在推送及 Pull Request 上執行後端 `clean verify`、前端 lint／build 及 npm 相依套件稽核。Dependency Review 會阻擋引入高嚴重性相依套件安全公告的 Pull Request。相依套件鎖定檔已提交，因此 CI 使用可重現的前端套件版本。
 
 ## 部署
 
