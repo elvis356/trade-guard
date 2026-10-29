@@ -56,6 +56,21 @@ cd backend-java
 
 建立第一個管理員帳號後，請從處理程序環境變數移除 `BOOTSTRAP_ADMIN_USERNAME` 和 `BOOTSTRAP_ADMIN_PASSWORD`。若你變更了 `.env` 中的 `DB_PASSWORD`，啟動 Spring Boot 前也要在後端處理程序中設定相同的值（`$env:DB_PASSWORD`）；Docker Compose 會讀取 `.env`，但 PowerShell 不會自動載入該檔案。部署時必須設定唯一的 `JWT_SECRET`（至少 32 位元組）及 `COOKIE_SECURE=true`。
 
+### 後端環境變數說明
+
+根目錄的 `.env.example` 列出本機 Docker Compose 使用的後端設定：
+
+| 變數 | 用途 |
+|---|---|
+| `DB_URL` | PostgreSQL JDBC 連線網址，包含主機、埠號及資料庫名稱。 |
+| `DB_USERNAME`、`DB_PASSWORD` | PostgreSQL 登入帳號與密碼；範例值僅供本機開發。 |
+| `REDIS_HOST`、`REDIS_PORT`、`REDIS_PASSWORD` | Redis 主機、埠號與密碼；本機未啟用密碼時可留空。 |
+| `JWT_SECRET` | 簽署及驗證登入 JWT 的密鑰。部署時設定唯一的高熵值，至少 32 位元組。 |
+| `COOKIE_SECURE` | 設為 `true` 時，登入 Cookie 僅透過 HTTPS 傳送；本機純 HTTP 開發可設為 `false`。 |
+| `CORS_ALLOWED_ORIGINS` | 允許呼叫 API 的前端來源網址，需包含協定，例如 `https://example.com`。 |
+| `EOD_TOKEN` | 日終作業 API 的共享憑證；呼叫 `/internal/eod` 時放在 `X-EOD-Token` 標頭。 |
+| `BOOTSTRAP_ADMIN_USERNAME`、`BOOTSTRAP_ADMIN_PASSWORD` | 首次啟動時建立初始 `ADMIN` 帳號；兩者都要設定，帳號建立後移除。 |
+
 ## API 功能
 
 ### 驗證與使用者管理
@@ -103,7 +118,9 @@ npm install
 npm run dev
 ```
 
-對外開放前端前，請將 `REVALIDATE_SECRET` 設為高熵密鑰。`POST /api/revalidate` 必須在 `X-Revalidate-Secret` 中提供相同值。每日報告包含受角色保護的資料，因此刻意採用每次請求即時擷取，不使用共用 ISR 快取；共用快取不得繞過後端授權。
+`frontend-next/.env.example` 列出前端環境變數：`BACKEND_URL` 是 Next.js 伺服器端連線後端的網址，不應加上 `NEXT_PUBLIC_`；`REVALIDATE_SECRET` 是前端 `POST /api/revalidate` 路由用來驗證呼叫端的密鑰。目前後端沒有呼叫這個路由，因此現階段不需要在後端設定 `REVALIDATE_SECRET`，也不必為尚未使用的路由設定密鑰。未來若實作受信任的呼叫端（例如後端日終工作），才在前端與該呼叫端設定同一個高熵密鑰，並由呼叫端在 `X-Revalidate-Secret` 標頭傳送；不可將密鑰放進瀏覽器端程式碼。
+
+每日報告包含受角色保護的資料，因此刻意採用每次請求即時擷取，不使用共用 ISR 快取；共用快取不得繞過後端授權。
 
 ## 測試
 
@@ -128,7 +145,7 @@ Render Blueprint（`render.yaml`）定義了私有 Redis、PostgreSQL、Docker �
 
 ### Vercel
 
-請在 Vercel 匯入此儲存庫並將根目錄設為 `frontend-next`，以單獨部署前端。將僅供伺服器端使用的 `BACKEND_URL` 設為已部署的 Render API 網址。在 Vercel 以及任何會呼叫前端重新驗證路由的後端整合中，設定相同的高熵 `REVALIDATE_SECRET`。CI 不會提交任何憑證，也不會執行外部部署。
+請在 Vercel 匯入此儲存庫並將根目錄設為 `frontend-next`，以單獨部署前端。將僅供伺服器端使用的 `BACKEND_URL` 設為已部署的 Render API 網址。目前沒有後端服務呼叫前端重新驗證路由，因此不需要設定 `REVALIDATE_SECRET`；未來新增受信任呼叫端時，再於 Vercel 與呼叫端設定相同的高熵密鑰。CI 不會提交任何憑證，也不會執行外部部署。
 
 ## 目前限制與後續工作
 
