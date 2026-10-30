@@ -31,7 +31,12 @@ export function QuoteBoard({ initialQuotes }: { initialQuotes: MarketQuote[] }) 
     return <p className="notice">正在載入行情…</p>;
   }
   if (quotes.length === 0) {
-    return <p className="notice">目前沒有可顯示的商品行情。</p>;
+    return (
+      <div className="empty-market">
+        <p className="notice">目前沒有可顯示的商品行情。請管理員登入後，建立並啟用至少一項商品。</p>
+        <Link className="button-link" href="/admin">前往管理中心</Link>
+      </div>
+    );
   }
 
   return (

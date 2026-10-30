@@ -94,14 +94,3 @@ export function getRecentTrades(symbol: string): Promise<TradePage> {
     { cache: "no-store" },
   );
 }
-
-export async function getDailyReport(cookieHeader: string): Promise<string> {
-  const response = await fetch(backendUrl("/api/reports/daily.xml"), {
-    cache: "no-store",
-    headers: { Cookie: cookieHeader },
-  });
-  if (!response.ok) {
-    throw new ApiError(response.status);
-  }
-  return response.text();
-}
