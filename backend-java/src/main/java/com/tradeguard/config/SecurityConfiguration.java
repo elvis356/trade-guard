@@ -92,7 +92,8 @@ public class SecurityConfiguration {
                                         .STRICT_ORIGIN_WHEN_CROSS_ORIGIN)))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/auth/login", "/api/auth/logout",
+                        .requestMatchers("/api/auth/login", "/api/auth/register",
+                                "/api/auth/logout",
                                 "/api/health", "/internal/eod", "/error").permitAll()
                         .requestMatchers("/api/reports/**")
                                 .hasAnyRole("AUDITOR", "ADMIN")

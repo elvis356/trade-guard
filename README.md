@@ -84,7 +84,7 @@ Render Blueprint 不會建立 Render PostgreSQL；它會提示設定 `DB_HOST`�
 
 ### 驗證與使用者管理
 
-使用 `POST /api/auth/login` 登入；API 會設定短效 HttpOnly、SameSite=Lax Cookie。`POST /api/auth/logout` 會在 Redis 撤銷權杖並清除 Cookie。
+使用 `POST /api/auth/register` 公開建立交易員帳號，或由管理員建立其他角色；公開註冊固定建立 `TRADER`，不接受角色選擇。帳號需為 3 至 50 個英數字或 `._-`，密碼需為 12 至 72 個字元（UTF-8 編碼最多 72 bytes）。使用 `POST /api/auth/login` 登入；API 會設定短效 HttpOnly、SameSite=Lax Cookie。`POST /api/auth/logout` 會在 Redis 撤銷權杖並清除 Cookie。
 
 以初始管理員身分登入後，可透過 `POST /api/admin/users` 建立特定角色帳戶（`TRADER`、`SURVEILLANCE`、`AUDITOR` 或 `ADMIN`）。管理員可使用 `GET /api/admin/users` 分頁瀏覽帳戶，或以 `GET /api/admin/users/{id}` 取得單一帳戶。
 
@@ -125,7 +125,8 @@ GitHub Actions 的 `Daily EOD` workflow 會在平日 06:00 UTC（台灣時間 14
 
 | 前端路徑 | 可用角色 | 功能 |
 |---|---|---|
-| `/login` | 所有使用者 | 登入；帳號由管理員建立，沒有公開註冊。 |
+| `/login` | 所有使用者 | 登入；可前往公開註冊建立交易員帳號。 |
+| `/register` | 所有使用者 | 公開建立 `TRADER` 帳號；其他角色僅能由管理員建立。 |
 | `/admin` | `ADMIN` | 建立／編輯／啟用／停用／刪除商品，以及建立角色帳號。 |
 | `/trade` | `TRADER` | 建立限價委託、查看自己的委託與取消尚有未成交量的委託。 |
 | `/surveillance` | `SURVEILLANCE`、`AUDITOR`、`ADMIN` | 查看警示與案件；監控角色可提報案件、對他人提報的案件核准或駁回。稽核／管理角色唯讀。 |

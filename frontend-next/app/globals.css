@@ -125,7 +125,10 @@ h1 { font-family: Georgia, "Noto Serif TC", "PMingLiU", serif; font-size: clamp(
 .check-field input { accent-color: var(--green); height: 16px; width: 16px; }
 .button-submit { border: 0; cursor: pointer; font: inherit; min-height: 44px; }
 .form-hint { color: var(--muted); font-size: .77rem; line-height: 1.65; margin: 0; }
+.form-link { color: var(--green-dark); font-weight: 750; margin-left: 4px; text-decoration: underline; text-underline-offset: 3px; }
+.form-link:hover { color: var(--green); }
 .login-panel .form-hint { margin-top: 16px; }
+.register-login-link { margin-top: 18px; text-align: center; }
 .workspace-grid { align-items: start; display: grid; gap: 18px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .trade-layout { grid-template-columns: minmax(0, 1.4fr) minmax(240px, .6fr); }
 .market-note p:not(.eyebrow) { color: var(--muted); font-size: .9rem; line-height: 1.75; }

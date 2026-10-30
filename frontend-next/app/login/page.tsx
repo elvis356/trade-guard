@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
 import { api, errorMessage, type CurrentUser } from "@/lib/client-api";
@@ -58,7 +59,7 @@ export default function LoginPage() {
         <button className="button-link button-submit" disabled={busy} type="submit">
           {busy ? "登入中…" : "登入"}
         </button>
-        <p className="form-hint">尚未有帳號？請聯絡 TradeGuard 管理員建立角色帳號。</p>
+        <p className="form-hint">還沒有帳號？<Link className="form-link" href="/register">建立交易員帳號</Link></p>
       </form>
     </div>
   );

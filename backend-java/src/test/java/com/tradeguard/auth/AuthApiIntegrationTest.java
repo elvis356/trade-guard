@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.reset;
@@ -118,6 +119,50 @@ class AuthApiIntegrationTest {
                 .andExpect(jsonPath("$.username").value("trader1"))
                 .andExpect(jsonPath("$.role").value("TRADER"));
         verify(authStateStore).isTokenRevoked(tokenId);
+    }
+
+    @Test
+    void publicRegistrationCreatesOnlyTraderAccountsAndAllowsLogin() throws Exception {
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"username":"newtrader","password":"correct-horse-battery-12",
+                                 "role":"ADMIN"}
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(header().string("Cache-Control", "no-store"))
+                .andExpect(jsonPath("$.username").value("newtrader"))
+                .andExpect(jsonPath("$.role").value("TRADER"))
+                .andExpect(jsonPath("$.passwordHash").doesNotExist());
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"username":"newtrader","password":"correct-horse-battery-12"}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.user.role").value("TRADER"));
+    }
+
+    @Test
+    void publicRegistrationRejectsDuplicateAndInvalidAccounts() throws Exception {
+        createUser("taken", "correct-horse-battery-12", Role.TRADER);
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"username":"taken","password":"correct-horse-battery-12"}
+                                """))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value("帳號無法使用，請改用其他帳號。"));
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"username":"bad name","password":"short"}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400));
     }
 
     @Test
@@ -239,6 +284,15 @@ class AuthApiIntegrationTest {
                                 {"username":"trader1","password":"wrong-password"}
                                 """))
                 .andExpect(status().isForbidden());
+
+        mockMvc.perform(post("/api/auth/register")
+                                .header("Origin", "https://evil.example")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                        {"username":"eviltrader","password":"correct-horse-battery-12"}
+                                        """))
+                .andExpect(status().isForbidden());
+        assertFalse(users.existsByUsername("eviltrader"));
 
         when(authStateStore.isLoginLocked(anyString(), anyInt()))
                 .thenThrow(new AuthStateUnavailableException("Redis unavailable."));
