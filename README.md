@@ -20,6 +20,7 @@ TradeGuard 是一款證券交易模擬器，僅供教育用途。系統使用虛
 
 - `docker-compose.yml`：本機 PostgreSQL 16 與 Redis 7 服務；Redis 用於登入鎖定及 JWT 撤銷。
 - `HANDOFF.md`：階段估算、目前交付狀態及尚待完成的實作清單。
+- `docs/functional-requirements-specification.md`：依目前程式實作整理的功能需求、角色權限、業務規則與已知限制。
 
 ## 本機開發
 
