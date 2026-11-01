@@ -11,7 +11,7 @@ services:
     rootDir: backend-java
     dockerfilePath: ./Dockerfile
     plan: free
-    healthCheckPath: /api/health
+    healthCheckPath: /api/health/status
     envVars:
       - key: DB_HOST
         sync: false

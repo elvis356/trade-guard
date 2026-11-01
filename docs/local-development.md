@@ -38,7 +38,7 @@
    ```
 
    後端啟動後位於 `http://localhost:8080`。首次成功啟動並建立管理員後，請從 `.env` 移除 `BOOTSTRAP_ADMIN_USERNAME` 和 `BOOTSTRAP_ADMIN_PASSWORD`。
-4. 確認服務健康狀態：開啟 `http://localhost:8080/api/health`。
+4. 確認服務狀態：開啟 `http://localhost:8080/api/health` 查看品牌提示頁；Render 與自動化監控使用 `http://localhost:8080/api/health/status`（JSON）。
 
 ## 不使用容器啟動後端
 

@@ -19,7 +19,7 @@ Next.js（MUI、Vercel）＋ Java 21 Spring Boot（Render）｜PostgreSQL（Neon
 
 > Render 免費方案閒置 15 分鐘會休眠，首次請求約需 1 分鐘喚醒，請先做第 1 步。
 
-1. 開啟 [`/api/health`](https://tradeguard-api-e32l.onrender.com/api/health)，確認回應中的 `"status":"UP"`，代表後端已醒。
+1. 開啟[後端服務提示頁](https://tradeguard-api-e32l.onrender.com/api/health)，看到「API 正常回應」代表後端已醒。
 2. 開啟[前端](https://trade-guard-frontend-next.vercel.app)，到 `/register` 建立 `TRADER` 帳號（帳號 3–50 字元；密碼 12–72 字元）。
 3. 到 `/trade` 下限價單，回到市場總覽與標的頁查看報價、委託簿與成交。
 4. 若市場總覽沒有報價，需由 `ADMIN` 先到 `/admin` 建立並啟用商品。

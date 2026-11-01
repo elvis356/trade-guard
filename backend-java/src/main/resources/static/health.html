@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0b0b">
+  <meta name="description" content="TradeGuard 模擬交易與市場監視 API 服務狀態">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <title>TradeGuard API 狀態</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #0b0b0b;
+      --muted: #666;
+      --line: #e3e3e3;
+      --green: #1f7a4d;
+      --paper: #fff;
+      font-family: Lato, "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      background:
+        radial-gradient(ellipse at 86% 7%, #edf4ef 0, transparent 34rem),
+        linear-gradient(180deg, #fff 0%, #fafafa 100%);
+      color: var(--ink);
+      margin: 0;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      align-items: center;
+      background: var(--ink);
+      color: #fff;
+      display: flex;
+      justify-content: space-between;
+      min-height: 68px;
+      padding: 0 max(24px, calc((100vw - 1120px) / 2));
+    }
+
+    .brand { align-items: center; display: inline-flex; gap: 12px; font-size: 15px; font-weight: 700; letter-spacing: .04em; }
+    .brand-mark { align-items: center; border: 1px solid #fff; display: inline-flex; height: 34px; justify-content: center; width: 34px; }
+    .brand-mark svg { height: 21px; width: 21px; }
+    .top-label { color: #c9c9c9; font: 11px/1.4 Consolas, monospace; letter-spacing: .16em; }
+
+    main { margin: 0 auto; max-width: 1120px; padding: clamp(56px, 11vh, 112px) 24px 80px; }
+    .eyebrow { color: #555; font: 700 11px/1.5 Consolas, monospace; letter-spacing: .2em; margin: 0 0 18px; }
+    h1 { font-size: clamp(38px, 7vw, 72px); font-weight: 900; letter-spacing: .025em; line-height: 1.08; margin: 0; max-width: 760px; }
+    .intro { color: var(--muted); font-size: 16px; line-height: 1.9; margin: 20px 0 0; max-width: 660px; }
+
+    .status-card {
+      align-items: center;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      display: flex;
+      gap: 22px;
+      margin-top: 54px;
+      max-width: 700px;
+      padding: 26px 28px;
+    }
+
+    .status-mark { align-items: center; border: 1px solid #b7d8c5; color: var(--green); display: inline-flex; flex: 0 0 50px; height: 50px; justify-content: center; }
+    .status-mark svg { height: 25px; width: 25px; }
+    .status-copy { min-width: 0; }
+    .status-title { align-items: center; display: flex; flex-wrap: wrap; font-size: 18px; font-weight: 800; gap: 10px; }
+    .status-pill { align-items: center; background: #edf6f0; color: var(--green); display: inline-flex; font: 700 10px/1 Consolas, monospace; gap: 7px; letter-spacing: .12em; padding: 8px 10px; }
+    .status-pill::before { background: var(--green); border-radius: 50%; content: ""; height: 7px; width: 7px; }
+    .status-detail { color: var(--muted); font-size: 13px; line-height: 1.7; margin: 7px 0 0; }
+
+    .bottom-row { align-items: flex-end; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 24px; justify-content: space-between; margin-top: 76px; padding-top: 24px; }
+    .bottom-note { color: var(--muted); font-size: 12px; line-height: 1.8; margin: 0; max-width: 560px; }
+    .home-link { border: 1px solid var(--ink); color: var(--ink); display: inline-flex; font-size: 13px; font-weight: 700; justify-content: center; min-height: 44px; padding: 13px 18px; text-decoration: none; transition: background .18s, color .18s; }
+    .home-link:hover, .home-link:focus-visible { background: var(--ink); color: #fff; }
+    .home-link:focus-visible { outline: 3px solid #58c58a; outline-offset: 3px; }
+    footer { color: #777; font-size: 11px; letter-spacing: .04em; padding: 20px 24px; text-align: center; }
+
+    @media (max-width: 600px) {
+      .topbar { min-height: 60px; padding: 0 18px; }
+      .top-label { font-size: 9px; }
+      main { padding: 64px 20px 56px; }
+      .status-card { align-items: flex-start; gap: 15px; margin-top: 38px; padding: 20px 18px; }
+      .status-mark { flex-basis: 42px; height: 42px; }
+      .bottom-row { align-items: stretch; margin-top: 54px; }
+      .home-link { width: 100%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M3 18h18M4 15l5-5 4 3 7-8" stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+          <path d="M15 5h5v5" stroke="#58c58a" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+        </svg>
+      </span>
+      <span>TradeGuard</span>
+    </div>
+    <span class="top-label">SERVICE · API</span>
+  </header>
+
+  <main>
+    <p class="eyebrow">TRADEGUARD · SERVICE STATUS</p>
+    <h1>模擬市場，<br>服務就緒。</h1>
+    <p class="intro">TradeGuard 後端 API 正在回應請求。這是供使用者查看的服務提示頁；Render 的自動健康檢查會使用獨立的機器可讀端點。</p>
+
+    <section aria-label="服務狀態" class="status-card" role="status">
+      <span aria-hidden="true" class="status-mark">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="m5 12.5 4.5 4.5L19 7" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"/>
+        </svg>
+      </span>
+      <div class="status-copy">
+        <div class="status-title">API 正常回應 <span class="status-pill">ONLINE</span></div>
+        <p class="status-detail">後端服務已啟動。此狀態確認 API 網頁可用，不代表已逐項檢測資料庫或 Redis。</p>
+      </div>
+    </section>
+
+    <div class="bottom-row">
+      <p class="bottom-note">想體驗模擬行情、委託交易與市場監視？前往 TradeGuard 前端工作台。所有資料僅供教育用途，不涉及真實交易。</p>
+      <a class="home-link" href="https://trade-guard-frontend-next.vercel.app">前往 TradeGuard 工作台&nbsp; ↗</a>
+    </div>
+  </main>
+  <footer>教育用途 · 虛構市場資料 · 非真實交易系統或投資建議</footer>
+</body>
+</html>
