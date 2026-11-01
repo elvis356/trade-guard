@@ -23,9 +23,7 @@
     * { box-sizing: border-box; }
 
     body {
-      background:
-        radial-gradient(ellipse at 86% 7%, #edf4ef 0, transparent 34rem),
-        linear-gradient(180deg, #fff 0%, #fafafa 100%);
+      background: var(--paper);
       color: var(--ink);
       margin: 0;
       min-height: 100vh;
@@ -35,21 +33,52 @@
       align-items: center;
       background: var(--ink);
       color: #fff;
-      display: flex;
-      justify-content: space-between;
-      min-height: 68px;
-      padding: 0 max(24px, calc((100vw - 1120px) / 2));
+      border-bottom: 1px solid #222;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      min-height: 76px;
+      padding: 0 max(24px, calc((100vw - 1312px) / 2));
     }
 
-    .brand { align-items: center; display: inline-flex; gap: 12px; font-size: 15px; font-weight: 700; letter-spacing: .04em; }
-    .brand-mark { align-items: center; border: 1px solid #fff; display: inline-flex; height: 34px; justify-content: center; width: 34px; }
+    .brand { align-items: center; color: #fff; display: inline-flex; gap: 12px; grid-column: 2; font-size: 1.6rem; font-weight: 300; letter-spacing: .03em; text-decoration: none; }
+    .brand-mark { align-items: center; border: 1px solid #fff; border-radius: 50%; display: inline-flex; height: 34px; justify-content: center; width: 34px; }
     .brand-mark svg { height: 21px; width: 21px; }
-    .top-label { color: #c9c9c9; font: 11px/1.4 Consolas, monospace; letter-spacing: .16em; }
+    .top-label { color: #a3a3a3; font: 11px/1.4 Consolas, monospace; grid-column: 3; justify-self: end; letter-spacing: .16em; }
 
-    main { margin: 0 auto; max-width: 1120px; padding: clamp(56px, 11vh, 112px) 24px 80px; }
-    .eyebrow { color: #555; font: 700 11px/1.5 Consolas, monospace; letter-spacing: .2em; margin: 0 0 18px; }
-    h1 { font-size: clamp(38px, 7vw, 72px); font-weight: 900; letter-spacing: .025em; line-height: 1.08; margin: 0; max-width: 760px; }
-    .intro { color: var(--muted); font-size: 16px; line-height: 1.9; margin: 20px 0 0; max-width: 660px; }
+    .hero {
+      background: var(--ink);
+      color: #fff;
+      isolation: isolate;
+      margin: 0 0 0;
+      overflow: hidden;
+      padding: clamp(68px, 10vh, 104px) 24px 82px;
+      position: relative;
+      text-align: center;
+    }
+
+    .hero::before {
+      background: repeating-conic-gradient(#0b0b0b 0 25%, #1c1c1c 0 50%) 0 0 / 56px 56px;
+      content: "";
+      inset: 0;
+      mask-image: linear-gradient(180deg, #000, transparent 90%);
+      position: absolute;
+      z-index: -1;
+    }
+
+    .hero::after {
+      background: repeating-conic-gradient(#fff 0 25%, #0b0b0b 0 50%) 0 0 / 28px 28px;
+      bottom: 0;
+      content: "";
+      height: 14px;
+      left: 0;
+      position: absolute;
+      right: 0;
+    }
+
+    main { margin: 0 auto; max-width: 1120px; padding: clamp(42px, 7vh, 68px) 24px 78px; }
+    .eyebrow { color: #a8a8a8; font: 700 11px/1.5 Consolas, monospace; letter-spacing: .22em; margin: 0 0 18px; }
+    h1 { font-size: clamp(38px, 7vw, 72px); font-weight: 900; letter-spacing: .025em; line-height: 1.08; margin: 0 auto; max-width: 760px; }
+    .intro { color: #d0d0d0; font-size: 16px; line-height: 1.9; margin: 20px auto 0; max-width: 660px; }
 
     .status-card {
       align-items: center;
@@ -57,8 +86,8 @@
       border: 1px solid var(--line);
       display: flex;
       gap: 22px;
-      margin-top: 54px;
-      max-width: 700px;
+      margin: 0 auto;
+      max-width: 760px;
       padding: 26px 28px;
     }
 
@@ -70,20 +99,22 @@
     .status-pill::before { background: var(--green); border-radius: 50%; content: ""; height: 7px; width: 7px; }
     .status-detail { color: var(--muted); font-size: 13px; line-height: 1.7; margin: 7px 0 0; }
 
-    .bottom-row { align-items: flex-end; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 24px; justify-content: space-between; margin-top: 76px; padding-top: 24px; }
+    .bottom-row { align-items: flex-end; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 24px; justify-content: space-between; margin: 52px auto 0; max-width: 760px; padding-top: 24px; }
     .bottom-note { color: var(--muted); font-size: 12px; line-height: 1.8; margin: 0; max-width: 560px; }
-    .home-link { border: 1px solid var(--ink); color: var(--ink); display: inline-flex; font-size: 13px; font-weight: 700; justify-content: center; min-height: 44px; padding: 13px 18px; text-decoration: none; transition: background .18s, color .18s; }
+    .home-link { border: 1px solid var(--ink); color: var(--ink); display: inline-flex; font-size: 13px; font-weight: 700; justify-content: center; letter-spacing: .04em; min-height: 44px; padding: 13px 18px; text-decoration: none; transition: background .18s, color .18s; }
     .home-link:hover, .home-link:focus-visible { background: var(--ink); color: #fff; }
-    .home-link:focus-visible { outline: 3px solid #58c58a; outline-offset: 3px; }
-    footer { color: #777; font-size: 11px; letter-spacing: .04em; padding: 20px 24px; text-align: center; }
+    .home-link:focus-visible { outline: 3px solid #1f7a4d; outline-offset: 3px; }
+    footer { background: var(--ink); color: #a3a3a3; font-size: 11px; letter-spacing: .06em; padding: 36px 24px; text-align: center; }
 
     @media (max-width: 600px) {
-      .topbar { min-height: 60px; padding: 0 18px; }
+      .topbar { grid-template-columns: 1fr auto; min-height: 68px; padding: 0 18px; }
+      .brand { font-size: 1.35rem; grid-column: 1; }
       .top-label { font-size: 9px; }
-      main { padding: 64px 20px 56px; }
-      .status-card { align-items: flex-start; gap: 15px; margin-top: 38px; padding: 20px 18px; }
+      .hero { padding: 72px 20px 72px; }
+      main { padding: 34px 20px 56px; }
+      .status-card { align-items: flex-start; gap: 15px; padding: 20px 18px; }
       .status-mark { flex-basis: 42px; height: 42px; }
-      .bottom-row { align-items: stretch; margin-top: 54px; }
+      .bottom-row { align-items: stretch; margin-top: 38px; }
       .home-link { width: 100%; }
     }
 
@@ -94,23 +125,25 @@
 </head>
 <body>
   <header class="topbar">
-    <div class="brand">
+    <a aria-label="TradeGuard" class="brand" href="https://trade-guard-frontend-next.vercel.app">
       <span class="brand-mark" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none">
           <path d="M3 18h18M4 15l5-5 4 3 7-8" stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-          <path d="M15 5h5v5" stroke="#58c58a" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+          <path d="M15 5h5v5" stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
         </svg>
       </span>
       <span>TradeGuard</span>
-    </div>
+    </a>
     <span class="top-label">SERVICE · API</span>
   </header>
 
-  <main>
+  <section aria-labelledby="page-title" class="hero">
     <p class="eyebrow">TRADEGUARD · SERVICE STATUS</p>
-    <h1>後端服務已就緒</h1>
+    <h1 id="page-title">後端服務已就緒</h1>
     <p class="intro">TradeGuard 後端 API 正在回應請求。這是供使用者查看的服務提示頁；Render 的自動健康檢查會使用獨立的機器可讀端點。</p>
+  </section>
 
+  <main>
     <section aria-label="服務狀態" class="status-card" role="status">
       <span aria-hidden="true" class="status-mark">
         <svg viewBox="0 0 24 24" fill="none">

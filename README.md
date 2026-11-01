@@ -11,10 +11,12 @@ Next.js（MUI、Vercel）＋ Java 21 Spring Boot（Render）｜PostgreSQL（Neon
 | 功能需求規格 | [docs/functional-requirements-specification.md](docs/functional-requirements-specification.md) |
 | 系統架構與設計圖 | https://elvis356.github.io/trade-guard/uml-workbench.html |
 | 後端服務狀態頁（人工檢查） | https://tradeguard-api-e32l.onrender.com/api/health |
-| 後端依賴就緒檢查（API、PostgreSQL、Redis） | https://tradeguard-api-e32l.onrender.com/api/health/readiness |
+| 後端依賴就緒檢查頁（自動更新；API、PostgreSQL、Redis） | https://tradeguard-api-e32l.onrender.com/api/health/readiness |
 | 前端（部署於 Vercel） | https://trade-guard-frontend-next.vercel.app |
 
 > 提示：在 GitHub 上，按住 `Ctrl`（Mac 上按 `⌘`）再點連結，可在新分頁開啟。
+
+> 就緒檢查連結會顯示符合前端主題的狀態頁並每 3 秒更新；前端則以 `Accept: application/json` 取得相同端點的機器可讀狀態。
 
 ## ⚡ 1 分鐘線上體驗
 

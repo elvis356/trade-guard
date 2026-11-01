@@ -44,6 +44,18 @@ public class HealthController {
         return ResponseEntity.ok(Map.of("status", "UP"));
     }
 
+    @GetMapping(value = "/readiness", produces = MediaType.TEXT_HTML_VALUE)
+    public ResponseEntity<Resource> readinessPage() {
+        return ResponseEntity.ok()
+                .contentType(new MediaType("text", "html", java.nio.charset.StandardCharsets.UTF_8))
+                .cacheControl(CacheControl.noStore())
+                .header("Content-Security-Policy",
+                        "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; "
+                                + "img-src 'self'; connect-src 'self'; base-uri 'none'; "
+                                + "form-action 'none'; frame-ancestors 'none'")
+                .body(new ClassPathResource("static/readiness.html"));
+    }
+
     @GetMapping(value = "/readiness", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> readiness() {
         Map<String, String> checks = new LinkedHashMap<>();

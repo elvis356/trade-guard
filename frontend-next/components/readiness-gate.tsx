@@ -51,6 +51,7 @@ export function ReadinessGate({ children }: { children: ReactNode }) {
       let allReady = false;
       try {
         const response = await fetch("/api/health/readiness", {
+          headers: { Accept: "application/json" },
           cache: "no-store",
           signal: controller.signal,
         });
