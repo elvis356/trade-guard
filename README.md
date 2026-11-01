@@ -2,7 +2,7 @@
 
 證券交易模擬器：限價撮合、市場監控、防竄改稽核鏈。**僅供教育用途**，使用虛構資料，非真實交易系統，也不構成投資建議。
 
-`Next.js` `MUI` `Vercel` · `Java 21` `Spring Boot` `Render` · `PostgreSQL` `Neon` `Redis`
+[![Next.js](https://img.shields.io/badge/Next.js-15.5-black.svg)](https://nextjs.org/) [![MUI](https://img.shields.io/badge/MUI-9.5-blue.svg)](https://mui.com/) [![Vercel](https://img.shields.io/badge/Vercel-Deployment-black.svg)](https://vercel.com/) [![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://www.oracle.com/java/) [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-brightgreen.svg)](https://spring.io/projects/spring-boot) [![Render](https://img.shields.io/badge/Render-Hosting-46E3B7.svg)](https://render.com/) [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue.svg)](https://www.postgresql.org/) [![Neon](https://img.shields.io/badge/Neon-PostgreSQL-00E599.svg)](https://neon.tech/) [![Redis](https://img.shields.io/badge/Redis-7-red.svg)](https://redis.io/)
 
 ## 線上測試
 
