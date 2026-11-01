@@ -84,8 +84,6 @@ cd backend-java
 | [docs/limitations.md](docs/limitations.md) | 目前限制與後續工作 |
 | [docs/functional-requirements-specification.md](docs/functional-requirements-specification.md) | 功能需求、角色權限、業務規則 |
 | [docs/uml-workbench.html](docs/uml-workbench.html) | 互動式 UML 工作台（[線上檢視](https://elvis356.github.io/trade-guard/uml-workbench.html)） |
-| [HANDOFF.md](HANDOFF.md) | 階段估算、交付狀態與待辦清單 |
-
 ## 🧩 專案結構
 
 ```
