@@ -4,7 +4,7 @@
 
 Next.js（MUI、Vercel）＋ Java 21 Spring Boot（Render）｜PostgreSQL（Neon）｜Redis
 
-## 🔗 快速連結
+## 快速連結
 
 | 項目 | 連結 |
 |------|------|
@@ -18,7 +18,7 @@ Next.js（MUI、Vercel）＋ Java 21 Spring Boot（Render）｜PostgreSQL（Neon
 
 > 就緒檢查連結會顯示符合前端主題的狀態頁並每 3 秒更新；前端則以 `Accept: application/json` 取得相同端點的機器可讀狀態。
 
-## ⚡ 1 分鐘線上體驗
+## 線上測試
 
 > Render 免費方案閒置 15 分鐘會休眠，首次連線可能需要約 1 分鐘喚醒。
 
@@ -37,7 +37,7 @@ Next.js（MUI、Vercel）＋ Java 21 Spring Boot（Render）｜PostgreSQL（Neon
 
 完整頁面權限請見 [前端說明](docs/frontend.md)。
 
-## 🐳 本機 5 分鐘啟動
+## 本地端啟動
 
 需求：Docker Desktop、Node.js 20.9+（JDK 21 僅「不用容器」或跑測試時需要）。
 
@@ -63,7 +63,7 @@ npm run dev          # http://localhost:3000
 首次啟動成功、管理員建立後，請從 `.env` 移除 `BOOTSTRAP_ADMIN_USERNAME` 與 `BOOTSTRAP_ADMIN_PASSWORD`。
 Windows PowerShell、不使用 Docker 的啟動方式與全部環境變數，見 [本機開發](docs/local-development.md)。
 
-## ✅ 驗證
+## 驗證
 
 ```bash
 cd backend-java
@@ -72,7 +72,7 @@ cd backend-java
 
 測試使用 H2（PostgreSQL 相容模式），不需 Docker；也涵蓋 Redis 中斷時的 PostgreSQL 備援路徑。CI 內容見 [測試與 CI](docs/testing-and-ci.md)。
 
-## 📚 詳細文件
+## 詳細文件
 
 | 文件 | 內容 |
 |------|------|
@@ -84,7 +84,8 @@ cd backend-java
 | [docs/limitations.md](docs/limitations.md) | 目前限制與後續工作 |
 | [docs/functional-requirements-specification.md](docs/functional-requirements-specification.md) | 功能需求、角色權限、業務規則 |
 | [docs/uml-workbench.html](docs/uml-workbench.html) | 互動式 UML 工作台（[線上檢視](https://elvis356.github.io/trade-guard/uml-workbench.html)） |
-## 🧩 專案結構
+
+## 專案結構
 
 ```
 backend-java/     Spring Boot REST API、Flyway、撮合與稽核
@@ -94,7 +95,7 @@ render.yaml       Render Blueprint
 docker-compose.yml  本機 PostgreSQL 16 + Redis 7 + 後端
 ```
 
-## 功能亮點
+## 核心功能
 
 - **撮合**：價格／時間優先、部分成交、1,000 股整股單位、台北平日交易時段驗證。
 - **事件重播**：啟動時重建未結委託；序號與資料庫不一致時拒絕啟動。
@@ -104,4 +105,4 @@ docker-compose.yml  本機 PostgreSQL 16 + Redis 7 + 後端
 
 ## 授權
 
-[MIT](LICENSE)
+MIT
