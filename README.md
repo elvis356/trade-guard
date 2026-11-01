@@ -8,11 +8,10 @@ Next.js（Vercel）＋ Java 21 Spring Boot（Render）｜PostgreSQL（Neon）｜
 
 | 項目 | 連結 |
 |------|------|
-| 前端（Vercel） | https://trade-guard-frontend-next.vercel.app |
-| 後端 API（Render） | https://tradeguard-api-e32l.onrender.com |
-| API 健康檢查 | https://tradeguard-api-e32l.onrender.com/api/health |
-| **UML 工作台（線上互動；需先啟用 GitHub Pages）** | https://elvis356.github.io/trade-guard/uml-workbench.html |
 | 功能需求規格 | [docs/functional-requirements-specification.md](docs/functional-requirements-specification.md) |
+| 系統架構與設計圖 | https://elvis356.github.io/trade-guard/uml-workbench.html |
+| 後端服務檢查（首次請先開啟，喚醒約需 1 分鐘） | https://tradeguard-api-e32l.onrender.com/api/health |
+| 前端（Vercel） | https://trade-guard-frontend-next.vercel.app |
 
 ## ⚡ 1 分鐘線上體驗
 
