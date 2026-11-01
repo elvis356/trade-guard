@@ -3,6 +3,13 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Alert from "@mui/material/Alert";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Paper from "@mui/material/Paper";
+import Stack from "@mui/material/Stack";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
 import { useAuth } from "@/components/auth-provider";
 import { api, errorMessage, type CurrentUser } from "@/lib/client-api";
 
@@ -38,29 +45,25 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="login-layout">
-      <section className="login-intro">
-        <p className="eyebrow">TRADEGUARD · SECURE ACCESS</p>
-        <h1>市場工作台，<br />各司其職。</h1>
-        <p>以你的角色進入模擬交易、監控或稽核工作區。登入狀態由安全 Cookie 管理，不會暴露在瀏覽器程式碼中。</p>
-      </section>
-      <form className="panel login-panel" onSubmit={submit}>
-        <p className="eyebrow">ACCOUNT</p>
-        <h2>登入 TradeGuard</h2>
-        <label className="field">
-          <span>帳號</span>
-          <input autoComplete="username" onChange={(event) => setUsername(event.target.value)} required value={username} />
-        </label>
-        <label className="field">
-          <span>密碼</span>
-          <input autoComplete="current-password" onChange={(event) => setPassword(event.target.value)} required type="password" value={password} />
-        </label>
-        {error && <p className="notice error" role="alert">{error}</p>}
-        <button className="button-link button-submit" disabled={busy} type="submit">
+    <Box className="login-layout">
+      <Box className="login-intro" component="section">
+        <Typography className="eyebrow" component="p" variant="overline">TRADEGUARD · SECURE ACCESS</Typography>
+        <Typography component="h1" variant="h1">市場工作台，<br />各司其職。</Typography>
+        <Typography color="text.secondary" component="p" sx={{ mt: 2 }} variant="body1">以你的角色進入模擬交易、監控或稽核工作區。登入狀態由安全 Cookie 管理，不會暴露在瀏覽器程式碼中。</Typography>
+      </Box>
+      <Paper className="panel login-panel" component="form" elevation={0} onSubmit={submit}>
+        <Typography className="eyebrow" component="p" variant="overline">ACCOUNT</Typography>
+        <Typography component="h2" sx={{ mb: 3 }} variant="h5">登入 TradeGuard</Typography>
+        <Stack spacing={2}>
+          <TextField autoComplete="username" fullWidth label="帳號" onChange={(event) => setUsername(event.target.value)} required value={username} />
+          <TextField autoComplete="current-password" fullWidth label="密碼" onChange={(event) => setPassword(event.target.value)} required type="password" value={password} />
+        </Stack>
+        {error && <Alert role="alert" severity="error" sx={{ mt: 2 }}>{error}</Alert>}
+        <Button className="button-submit" disabled={busy} fullWidth sx={{ mt: 2 }} type="submit" variant="contained">
           {busy ? "登入中…" : "登入"}
-        </button>
-        <p className="form-hint">還沒有帳號？<Link className="form-link" href="/register">建立交易員帳號</Link></p>
-      </form>
-    </div>
+        </Button>
+        <Typography className="form-hint" component="p" sx={{ mt: 2 }} variant="body2">還沒有帳號？<Link className="form-link" href="/register">建立交易員帳號</Link></Typography>
+      </Paper>
+    </Box>
   );
 }

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import Alert from "@mui/material/Alert";
 import { DailyReportWorkspace } from "@/components/daily-report-workspace";
+import { PageHeading } from "@/components/page-heading";
 
 export const metadata: Metadata = { title: "日終報表" };
 export const dynamic = "force-dynamic";
@@ -15,8 +17,8 @@ export default async function DailyReportPage({
   if (requestedDate && !date) {
     return (
       <>
-        <section className="hero"><p className="eyebrow">END-OF-DAY</p><h1>日終成交報表</h1></section>
-        <p className="notice error" role="alert">日期格式無效，請使用 YYYY-MM-DD。</p>
+        <PageHeading eyebrow="END-OF-DAY" title="日終成交報表" />
+        <Alert role="alert" severity="error">日期格式無效，請使用 YYYY-MM-DD。</Alert>
       </>
     );
   }

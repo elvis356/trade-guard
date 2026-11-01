@@ -2,6 +2,14 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import AppBar from "@mui/material/AppBar";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Chip from "@mui/material/Chip";
+import Stack from "@mui/material/Stack";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
+import ShowChartRoundedIcon from "@mui/icons-material/ShowChartRounded";
 import { api, roleLabel } from "@/lib/client-api";
 import { useAuth } from "@/components/auth-provider";
 
@@ -37,35 +45,53 @@ export function SiteHeader() {
   }
 
   return (
-    <header className="site-header">
-      <Link aria-label="TradeGuard 首頁" className="brand" href="/">
-        <span className="brand-mark">TG</span>
-        <span>TradeGuard</span>
-      </Link>
-      <nav aria-label="主要導覽">
-        {links.map((link) => (
-          <Link aria-current={pathname === link.href ? "page" : undefined} href={link.href} key={link.href}>
-            {link.label}
-          </Link>
-        ))}
-        {user && ["AUDITOR", "ADMIN"].includes(user.role) && (
-          <Link aria-current={pathname === "/reports/daily" ? "page" : undefined} href="/reports/daily">
-            日終報表
-          </Link>
-        )}
-      </nav>
-      <div className="header-account">
-        <span className="market-badge"><span /> 模擬市場</span>
-        {loading ? <span className="account-loading">檢查登入中</span> : user ? (
-          <>
-            <span className="account-name">{user.username}<small>{roleLabel(user.role)}</small></span>
-            <button className="button-quiet" onClick={logout} type="button">登出</button>
-          </>
-        ) : (
-          <Link className="button-quiet" href="/login">登入</Link>
-        )}
-      </div>
-      {authError && <p className="header-error" role="alert">{authError}</p>}
-    </header>
+    <AppBar className="site-header" color="inherit" component="header" elevation={0} position="sticky">
+      <Toolbar className="site-toolbar" disableGutters>
+        <Link aria-label="TradeGuard 首頁" className="brand" href="/">
+          <span className="brand-mark"><ShowChartRoundedIcon fontSize="small" /></span>
+          <Typography component="span" variant="subtitle1">TradeGuard</Typography>
+        </Link>
+        <Box aria-label="主要導覽" component="nav" className="primary-nav">
+          {links.map((link) => (
+            <Button
+              aria-current={pathname === link.href ? "page" : undefined}
+              component={Link}
+              href={link.href}
+              key={link.href}
+              size="small"
+              variant={pathname === link.href ? "contained" : "text"}
+            >
+              {link.label}
+            </Button>
+          ))}
+          {user && ["AUDITOR", "ADMIN"].includes(user.role) && (
+            <Button
+              aria-current={pathname === "/reports/daily" ? "page" : undefined}
+              component={Link}
+              href="/reports/daily"
+              size="small"
+              variant={pathname === "/reports/daily" ? "contained" : "text"}
+            >
+              日終報表
+            </Button>
+          )}
+        </Box>
+        <Stack className="header-account" direction="row" spacing={1} sx={{ alignItems: "center" }}>
+          <Chip className="market-badge" color="success" label="模擬市場" size="small" variant="outlined" />
+          {loading ? <Typography color="text.secondary" variant="caption">檢查登入中</Typography> : user ? (
+            <>
+              <Box className="account-name">
+                <Typography component="span" variant="body2">{user.username}</Typography>
+                <Typography color="text.secondary" component="small" variant="caption">{roleLabel(user.role)}</Typography>
+              </Box>
+              <Button onClick={logout} size="small" variant="outlined">登出</Button>
+            </>
+          ) : (
+            <Button component={Link} href="/login" size="small" variant="outlined">登入</Button>
+          )}
+        </Stack>
+      </Toolbar>
+      {authError && <Box className="header-error" role="alert">{authError}</Box>}
+    </AppBar>
   );
 }

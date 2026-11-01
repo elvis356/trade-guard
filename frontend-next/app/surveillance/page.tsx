@@ -1,6 +1,21 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import MuiAlert from "@mui/material/Alert";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Chip from "@mui/material/Chip";
+import Paper from "@mui/material/Paper";
+import Stack from "@mui/material/Stack";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
+import { PageHeading, PanelHeading } from "@/components/page-heading";
 import { RoleGate } from "@/components/role-gate";
 import { useAuth } from "@/components/auth-provider";
 import { api, errorMessage, type Alert, type Page, type SurveillanceCase } from "@/lib/client-api";
@@ -74,35 +89,56 @@ function SurveillanceWorkspace() {
 
   return (
     <>
-      <section className="hero">
-        <p className="eyebrow">SURVEILLANCE · CASE REVIEW</p>
-        <h1>監控與案件</h1>
-        <p>檢視規則式警示、提報案件並完成獨立審核。警示僅供人工調查，不代表不當行為定論。</p>
-      </section>
-      {(error || notice) && <p className={`notice ${error ? "error" : "success"}`} role={error ? "alert" : "status"}>{error || notice}</p>}
-      <section className="panel list-panel">
-        <div className="panel-heading"><div><p className="eyebrow">RULE-BASED SIGNALS</p><h2>最新警示</h2></div><button className="button-quiet" onClick={() => void load()} type="button">重新整理</button></div>
-        {loading ? <p className="empty-row">載入警示…</p> : alerts.length === 0 ? <p className="empty-row">目前沒有警示。</p> : (
-          <div className="table-scroll"><table><thead><tr><th>時間</th><th>等級</th><th>規則</th><th>商品</th><th>成交編號</th><th>說明</th><th>操作</th></tr></thead><tbody>
-            {alerts.map((alert) => <tr key={alert.id}><td>{new Date(alert.occurredAt).toLocaleString("zh-TW")}</td><td><span className={`state-pill severity-${alert.severity.toLowerCase()}`}>{alert.severity}</span></td><td>{alert.ruleCode}</td><td className="symbol">{alert.symbol}</td><td>#{alert.tradeId}</td><td className="description-cell">{alert.description}</td><td>{canAct ? caseAlertIds.has(alert.id) ? <span className="state-pill state-muted">已提報</span> : <button className="button-quiet" disabled={busyId === alert.id} onClick={() => void proposeCase(alert)} type="button">提報案件</button> : "唯讀"}</td></tr>)}
-          </tbody></table></div>
+      <PageHeading
+        description="檢視規則式警示、提報案件並完成獨立審核。警示僅供人工調查，不代表不當行為定論。"
+        eyebrow="SURVEILLANCE · CASE REVIEW"
+        title="監控與案件"
+      />
+      {(error || notice) && <MuiAlert role={error ? "alert" : "status"} severity={error ? "error" : "success"} sx={{ mb: 2 }}>{error || notice}</MuiAlert>}
+      <Paper className="panel list-panel" component="section" elevation={0} variant="outlined">
+        <PanelHeading eyebrow="RULE-BASED SIGNALS" title="最新警示" trailing={<Button onClick={() => void load()} type="button" variant="outlined">重新整理</Button>} />
+        {loading ? <Typography className="empty-row" color="text.secondary" component="p">載入警示…</Typography> : alerts.length === 0 ? <Typography className="empty-row" color="text.secondary" component="p">目前沒有警示。</Typography> : (
+          <TableContainer className="table-scroll">
+            <Table aria-label="最新警示" size="small">
+              <TableHead><TableRow><TableCell>時間</TableCell><TableCell>等級</TableCell><TableCell>規則</TableCell><TableCell>商品</TableCell><TableCell>成交編號</TableCell><TableCell>說明</TableCell><TableCell>操作</TableCell></TableRow></TableHead>
+              <TableBody>{alerts.map((alert) => <TableRow key={alert.id}>
+                <TableCell>{new Date(alert.occurredAt).toLocaleString("zh-TW")}</TableCell>
+                <TableCell><Chip className={`severity-${alert.severity.toLowerCase()}`} color={alert.severity === "HIGH" || alert.severity === "CRITICAL" ? "error" : alert.severity === "MEDIUM" ? "warning" : "info"} label={alert.severity} size="small" variant="outlined" /></TableCell>
+                <TableCell>{alert.ruleCode}</TableCell><TableCell className="symbol">{alert.symbol}</TableCell><TableCell>#{alert.tradeId}</TableCell>
+                <TableCell className="description-cell">{alert.description}</TableCell>
+                <TableCell>{canAct ? caseAlertIds.has(alert.id) ? <Chip label="已提報" size="small" variant="outlined" /> : <Button disabled={busyId === alert.id} onClick={() => void proposeCase(alert)} size="small" type="button" variant="outlined">提報案件</Button> : <Typography color="text.secondary" variant="body2">唯讀</Typography>}</TableCell>
+              </TableRow>)}</TableBody>
+            </Table>
+          </TableContainer>
         )}
-      </section>
-      <section className="panel list-panel">
-        <div className="panel-heading"><div><p className="eyebrow">INVESTIGATION QUEUE</p><h2>案件清單</h2></div><span className="count-badge">{pending.length} 件待審</span></div>
-        {loading ? <p className="empty-row">載入案件…</p> : cases.length === 0 ? <p className="empty-row">尚無案件。</p> : (
-          <div className="case-list">{cases.map((item) => {
+      </Paper>
+      <Paper className="panel list-panel" component="section" elevation={0} variant="outlined">
+        <PanelHeading eyebrow="INVESTIGATION QUEUE" title="案件清單" trailing={<Chip color={pending.length ? "warning" : "default"} label={`${pending.length} 件待審`} size="small" variant="outlined" />} />
+        {loading ? <Typography className="empty-row" color="text.secondary" component="p">載入案件…</Typography> : cases.length === 0 ? <Typography className="empty-row" color="text.secondary" component="p">尚無案件。</Typography> : (
+          <Stack className="case-list" spacing={1.5}>{cases.map((item) => {
             const canReview = canAct && item.status === "PROPOSED" && item.proposedBy !== user?.username;
-            return <article className="case-card" key={item.id}>
-              <div className="case-heading"><div><span className="case-id">CASE / {String(item.id).padStart(5, "0")}</span><span className={`state-pill ${item.status === "APPROVED" ? "state-ok" : item.status === "REJECTED" ? "state-muted" : "state-pending"}`}>{item.status}</span></div><span className="muted-text">關聯警示 #{item.alertId} · {new Date(item.createdAt).toLocaleString("zh-TW")}</span></div>
-              <p>提報人：<strong>{item.proposedBy}</strong>{item.reviewedBy && <>　審核人：<strong>{item.reviewedBy}</strong></>}</p>
-              {item.reviewNote && <p className="review-note">審核備註：{item.reviewNote}</p>}
-              {canReview && <div className="review-controls"><label className="field"><span>審核備註（必填）</span><input maxLength={500} onChange={(event) => setNotes({ ...notes, [item.id]: event.target.value })} placeholder="說明調查結果與決定理由" value={notes[item.id] ?? ""} /></label><div className="button-row"><button className="button-link" disabled={busyId === item.id || !notes[item.id]?.trim()} onClick={() => void reviewCase(item, true)} type="button">核准</button><button className="button-quiet danger-action" disabled={busyId === item.id || !notes[item.id]?.trim()} onClick={() => void reviewCase(item, false)} type="button">駁回</button></div></div>}
-              {canAct && item.status === "PROPOSED" && item.proposedBy === user?.username && <p className="form-hint">案件提報者不得審核自己的案件。</p>}
-            </article>;
-          })}</div>
+            return <Paper className="case-card" component="article" elevation={0} key={item.id} variant="outlined">
+              <Stack className="case-heading" direction="row" sx={{ alignItems: "center", flexWrap: "wrap", justifyContent: "space-between", gap: 1 }}>
+                <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                  <Typography className="case-id" component="span" variant="overline">CASE / {String(item.id).padStart(5, "0")}</Typography>
+                  <Chip color={item.status === "APPROVED" ? "success" : item.status === "REJECTED" ? "default" : "warning"} label={item.status} size="small" variant="outlined" />
+                </Stack>
+                <Typography color="text.secondary" component="span" variant="caption">關聯警示 #{item.alertId} · {new Date(item.createdAt).toLocaleString("zh-TW")}</Typography>
+              </Stack>
+              <Typography component="p" sx={{ mt: 1.5 }} variant="body2">提報人：<strong>{item.proposedBy}</strong>{item.reviewedBy && <>　審核人：<strong>{item.reviewedBy}</strong></>}</Typography>
+              {item.reviewNote && <MuiAlert className="review-note" severity="info" sx={{ mt: 1 }}>審核備註：{item.reviewNote}</MuiAlert>}
+              {canReview && <Box className="review-controls">
+                <TextField label="審核備註（必填）" onChange={(event) => setNotes({ ...notes, [item.id]: event.target.value })} placeholder="說明調查結果與決定理由" slotProps={{ htmlInput: { maxLength: 500 } }} value={notes[item.id] ?? ""} />
+                <Stack className="button-row" direction="row">
+                  <Button disabled={busyId === item.id || !notes[item.id]?.trim()} onClick={() => void reviewCase(item, true)} type="button" variant="contained">核准</Button>
+                  <Button color="error" disabled={busyId === item.id || !notes[item.id]?.trim()} onClick={() => void reviewCase(item, false)} type="button" variant="outlined">駁回</Button>
+                </Stack>
+              </Box>}
+              {canAct && item.status === "PROPOSED" && item.proposedBy === user?.username && <Typography className="form-hint" color="text.secondary" component="p" sx={{ mt: 1 }} variant="body2">案件提報者不得審核自己的案件。</Typography>}
+            </Paper>;
+          })}</Stack>
         )}
-      </section>
+      </Paper>
     </>
   );
 }

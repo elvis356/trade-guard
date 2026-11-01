@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AuthProvider } from "@/components/auth-provider";
 import { SiteHeader } from "@/components/site-header";
+import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,13 +16,15 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="zh-Hant">
       <body>
-        <AuthProvider>
-          <SiteHeader />
-          <main className="page-shell">{children}</main>
-          <footer className="site-footer">
-            教學模擬平台，使用虛構資料；非真實交易系統，亦不構成投資建議。
-          </footer>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <SiteHeader />
+            <main className="page-shell">{children}</main>
+            <footer className="site-footer">
+              教學模擬平台，使用虛構資料；非真實交易系統，亦不構成投資建議。
+            </footer>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

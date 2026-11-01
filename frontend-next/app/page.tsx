@@ -1,4 +1,10 @@
 import Link from "next/link";
+import Alert from "@mui/material/Alert";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Paper from "@mui/material/Paper";
+import Typography from "@mui/material/Typography";
+import { PageHeading } from "@/components/page-heading";
 import { QuoteBoard } from "@/components/quote-board";
 import { getQuotes } from "@/lib/api";
 
@@ -15,26 +21,26 @@ export default async function HomePage() {
 
   return (
     <>
-      <section className="hero">
-        <p className="eyebrow">MARKET OVERVIEW · TAIPEI</p>
-        <h1>市場概覽</h1>
-        <p>檢視模擬市場商品行情，行情資料每五秒自動更新。</p>
-      </section>
+      <PageHeading
+        description="檢視模擬市場商品行情，行情資料每五秒自動更新。"
+        eyebrow="MARKET OVERVIEW · TAIPEI"
+        title="市場概覽"
+      />
       {unavailable ? (
-        <p className="notice error">
+        <Alert className="notice" severity="error">
           行情服務目前無法連線。請確認後端已啟動，且前端 `BACKEND_URL` 設定正確。
-        </p>
+        </Alert>
       ) : (
         <QuoteBoard initialQuotes={quotes ?? []} />
       )}
-      <section className="callout">
-        <div>
-          <p className="eyebrow">SIMULATED EXCHANGE</p>
-          <h2>僅供教學與作品集展示</h2>
-          <p>報價、委託與成交皆屬模擬資料，不可用於真實交易決策。</p>
-        </div>
-        <Link className="button-link" href="/rules/matching">了解撮合規則</Link>
-      </section>
+      <Paper className="callout" component="section" elevation={0} variant="outlined">
+        <Box>
+          <Typography className="eyebrow" component="p" variant="overline">SIMULATED EXCHANGE</Typography>
+          <Typography component="h2" variant="h5">僅供教學與作品集展示</Typography>
+          <Typography color="text.secondary" component="p" sx={{ mt: 1 }} variant="body2">報價、委託與成交皆屬模擬資料，不可用於真實交易決策。</Typography>
+        </Box>
+        <Button component={Link} href="/rules/matching" variant="contained">了解撮合規則</Button>
+      </Paper>
     </>
   );
 }

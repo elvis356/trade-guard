@@ -2,7 +2,7 @@
 
 證券交易模擬器：限價撮合、市場監控、防竄改稽核鏈。**僅供教育用途**，使用虛構資料，非真實交易系統，也不構成投資建議。
 
-Next.js（Vercel）＋ Java 21 Spring Boot（Render）｜PostgreSQL（Neon）｜Redis
+Next.js（MUI、Vercel）＋ Java 21 Spring Boot（Render）｜PostgreSQL（Neon）｜Redis
 
 ## 🔗 快速連結
 

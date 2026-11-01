@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Alert from "@mui/material/Alert";
+import Paper from "@mui/material/Paper";
 import { ReportDateForm } from "@/components/report-date-form";
 import { RoleGate } from "@/components/role-gate";
 import { ApiError, type Role } from "@/lib/client-api";
+import { PageHeading } from "@/components/page-heading";
 
 function DailyReportContent({ date }: { date: string }) {
   const [xml, setXml] = useState("");
@@ -59,17 +62,17 @@ function DailyReportContent({ date }: { date: string }) {
 
   return (
     <>
-      <section className="hero">
-        <p className="eyebrow">END-OF-DAY · SECURE REPORT</p>
-        <h1>日終成交報表</h1>
-        <p>報表日期：{date}。資料由後端依登入權限提供，不會進入跨使用者共用快取。</p>
-      </section>
-      <section className="panel">
+      <PageHeading
+        description={`報表日期：${date}。資料由後端依登入權限提供，不會進入跨使用者共用快取。`}
+        eyebrow="END-OF-DAY · SECURE REPORT"
+        title="日終成交報表"
+      />
+      <Paper className="panel" component="section" elevation={0} variant="outlined">
         <ReportDateForm initialDate={date} key={date} />
-        {loading ? <p className="notice" role="status">正在載入日終報表…</p>
-          : error ? <p className="notice error" role="alert">{error}</p>
-            : <pre className="xml-preview">{xml}</pre>}
-      </section>
+        {loading ? <Alert role="status" severity="info">正在載入日終報表…</Alert>
+          : error ? <Alert role="alert" severity="error">{error}</Alert>
+            : <Paper className="xml-preview" component="pre" elevation={0} variant="outlined">{xml}</Paper>}
+      </Paper>
     </>
   );
 }

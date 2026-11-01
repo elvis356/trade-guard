@@ -1,6 +1,23 @@
 "use client";
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
+import Alert from "@mui/material/Alert";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Checkbox from "@mui/material/Checkbox";
+import Chip from "@mui/material/Chip";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import MenuItem from "@mui/material/MenuItem";
+import Paper from "@mui/material/Paper";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
+import { PageHeading, PanelHeading } from "@/components/page-heading";
 import { RoleGate } from "@/components/role-gate";
 import { api, errorMessage, type Instrument, type Page, type Role } from "@/lib/client-api";
 
@@ -155,49 +172,63 @@ function AdminWorkspace() {
 
   return (
     <>
-      <section className="hero">
-        <p className="eyebrow">ADMINISTRATION · CONTROL PLANE</p>
-        <h1>管理中心</h1>
-        <p>管理模擬標的與角色帳號。所有寫入操作仍由後端 ADMIN 權限驗證。</p>
-      </section>
-      {(error || notice) && <p className={`notice ${error ? "error" : "success"}`} role={error ? "alert" : "status"}>{error || notice}</p>}
-      <div className="workspace-grid">
-        <section className="panel">
-          <div className="panel-heading"><div><p className="eyebrow">MARKET SETUP</p><h2>{editingSymbol ? `編輯商品 · ${editingSymbol}` : "建立商品"}</h2></div>{editingSymbol && <button className="button-quiet" onClick={cancelEdit} type="button">取消編輯</button>}</div>
-          <form className="form-grid" onSubmit={createInstrument}>
-            <label className="field"><span>商品代碼</span><input autoCapitalize="characters" maxLength={16} onChange={(event) => setInstrument({ ...instrument, symbol: event.target.value.toUpperCase() })} pattern="[A-Z0-9._-]+" placeholder="例如 TG01" readOnly={Boolean(editingSymbol)} required value={instrument.symbol} /></label>
-            <label className="field"><span>商品名稱</span><input maxLength={100} onChange={(event) => setInstrument({ ...instrument, name: event.target.value })} required value={instrument.name} /></label>
-            <label className="field"><span>參考價格</span><input min="0.01" onChange={(event) => setInstrument({ ...instrument, referencePrice: event.target.value })} required step="0.0001" type="number" value={instrument.referencePrice} /></label>
-            <label className="check-field"><input checked={instrument.active} onChange={(event) => setInstrument({ ...instrument, active: event.target.checked })} type="checkbox" /> 建立後立即啟用</label>
-            <button className="button-link button-submit" disabled={busy} type="submit">{busy ? "處理中…" : editingSymbol ? "儲存變更" : "新增商品"}</button>
-          </form>
-        </section>
-        <section className="panel">
-          <div className="panel-heading"><div><p className="eyebrow">IDENTITY & ACCESS</p><h2>建立角色帳號</h2></div></div>
-          <form className="form-grid" onSubmit={createUser}>
-            <label className="field"><span>帳號</span><input autoComplete="off" maxLength={50} minLength={3} onChange={(event) => setAccount({ ...account, username: event.target.value })} pattern="[a-zA-Z0-9._-]+" required value={account.username} /></label>
-            <label className="field"><span>初始密碼（12–72 字元）</span><input autoComplete="new-password" maxLength={72} minLength={12} onChange={(event) => setAccount({ ...account, password: event.target.value })} required type="password" value={account.password} /></label>
-            <label className="field"><span>角色</span><select onChange={(event) => setAccount({ ...account, role: event.target.value as Role })} value={account.role}>{userRoles.map((role) => <option key={role} value={role}>{role}</option>)}</select></label>
-            <button className="button-link button-submit" disabled={busy} type="submit">{busy ? "處理中…" : "建立帳號"}</button>
-          </form>
-        </section>
-      </div>
-      <section className="panel list-panel">
-        <div className="panel-heading"><div><p className="eyebrow">ACTIVE CATALOG</p><h2>商品清單</h2></div><button className="button-quiet" onClick={() => void load()} type="button">重新整理</button></div>
-        {loading ? <p className="empty-row">載入商品資料…</p> : instruments.length === 0 ? <p className="empty-row">尚無商品。新增並啟用後，商品行情才會出現在市場總覽。</p> : (
-          <div className="table-scroll"><table><thead><tr><th>代碼</th><th>名稱</th><th>參考價</th><th>狀態</th><th>操作</th></tr></thead><tbody>
-            {instruments.map((item) => <tr key={item.id}><td className="symbol">{item.symbol}</td><td>{item.name}</td><td>{Number(item.referencePrice).toLocaleString("zh-TW")}</td><td><span className={`state-pill ${item.active ? "state-ok" : "state-muted"}`}>{item.active ? "啟用" : "停用"}</span></td><td><div className="button-row compact-actions"><button className="button-quiet" disabled={busy} onClick={() => editInstrument(item)} type="button">編輯</button><button className="button-quiet" disabled={busy} onClick={() => void toggleInstrument(item)} type="button">{item.active ? "停用" : "啟用"}</button><button className="button-quiet danger-action" disabled={busy} onClick={() => void deleteInstrument(item)} type="button">刪除</button></div></td></tr>)}
-          </tbody></table></div>
+      <PageHeading
+        description="管理模擬標的與角色帳號。所有寫入操作仍由後端 ADMIN 權限驗證。"
+        eyebrow="ADMINISTRATION · CONTROL PLANE"
+        title="管理中心"
+      />
+      {(error || notice) && <Alert role={error ? "alert" : "status"} severity={error ? "error" : "success"} sx={{ mb: 2 }}>{error || notice}</Alert>}
+      <Box className="workspace-grid">
+        <Paper className="panel" component="section" elevation={0} variant="outlined">
+          <PanelHeading
+            eyebrow="MARKET SETUP"
+            title={editingSymbol ? `編輯商品 · ${editingSymbol}` : "建立商品"}
+            trailing={editingSymbol && <Button onClick={cancelEdit} type="button" variant="outlined">取消編輯</Button>}
+          />
+          <Box className="form-grid" component="form" onSubmit={createInstrument}>
+            <TextField label="商品代碼" onChange={(event) => setInstrument({ ...instrument, symbol: event.target.value.toUpperCase() })} placeholder="例如 TG01" required slotProps={{ htmlInput: { autoCapitalize: "characters", maxLength: 16, pattern: "[A-Z0-9._-]+", readOnly: Boolean(editingSymbol) } }} value={instrument.symbol} />
+            <TextField label="商品名稱" onChange={(event) => setInstrument({ ...instrument, name: event.target.value })} required slotProps={{ htmlInput: { maxLength: 100 } }} value={instrument.name} />
+            <TextField label="參考價格" onChange={(event) => setInstrument({ ...instrument, referencePrice: event.target.value })} required slotProps={{ htmlInput: { min: 0.01, step: 0.0001 } }} type="number" value={instrument.referencePrice} />
+            <FormControlLabel control={<Checkbox checked={instrument.active} onChange={(event) => setInstrument({ ...instrument, active: event.target.checked })} />} label="建立後立即啟用" />
+            <Button className="button-submit" disabled={busy} type="submit" variant="contained">{busy ? "處理中…" : editingSymbol ? "儲存變更" : "新增商品"}</Button>
+          </Box>
+        </Paper>
+        <Paper className="panel" component="section" elevation={0} variant="outlined">
+          <PanelHeading eyebrow="IDENTITY & ACCESS" title="建立角色帳號" />
+          <Box className="form-grid" component="form" onSubmit={createUser}>
+            <TextField autoComplete="off" label="帳號" onChange={(event) => setAccount({ ...account, username: event.target.value })} required slotProps={{ htmlInput: { maxLength: 50, minLength: 3, pattern: "[a-zA-Z0-9._-]+" } }} value={account.username} />
+            <TextField autoComplete="new-password" label="初始密碼（12–72 字元）" onChange={(event) => setAccount({ ...account, password: event.target.value })} required slotProps={{ htmlInput: { maxLength: 72, minLength: 12 } }} type="password" value={account.password} />
+            <TextField label="角色" onChange={(event) => setAccount({ ...account, role: event.target.value as Role })} select value={account.role}>{userRoles.map((role) => <MenuItem key={role} value={role}>{role}</MenuItem>)}</TextField>
+            <Button className="button-submit" disabled={busy} type="submit" variant="contained">{busy ? "處理中…" : "建立帳號"}</Button>
+          </Box>
+        </Paper>
+      </Box>
+      <Paper className="panel list-panel" component="section" elevation={0} variant="outlined">
+        <PanelHeading eyebrow="ACTIVE CATALOG" title="商品清單" trailing={<Button onClick={() => void load()} type="button" variant="outlined">重新整理</Button>} />
+        {loading ? <Typography className="empty-row" color="text.secondary" component="p">載入商品資料…</Typography> : instruments.length === 0 ? <Typography className="empty-row" color="text.secondary" component="p">尚無商品。新增並啟用後，商品行情才會出現在市場總覽。</Typography> : (
+          <TableContainer className="table-scroll">
+            <Table aria-label="商品清單" size="small">
+              <TableHead><TableRow><TableCell>代碼</TableCell><TableCell>名稱</TableCell><TableCell>參考價</TableCell><TableCell>狀態</TableCell><TableCell>操作</TableCell></TableRow></TableHead>
+              <TableBody>
+                {instruments.map((item) => <TableRow key={item.id}><TableCell className="symbol">{item.symbol}</TableCell><TableCell>{item.name}</TableCell><TableCell>{Number(item.referencePrice).toLocaleString("zh-TW")}</TableCell><TableCell><Chip color={item.active ? "success" : "default"} label={item.active ? "啟用" : "停用"} size="small" variant="outlined" /></TableCell><TableCell><Box className="button-row compact-actions"><Button disabled={busy} onClick={() => editInstrument(item)} size="small" type="button" variant="outlined">編輯</Button><Button disabled={busy} onClick={() => void toggleInstrument(item)} size="small" type="button" variant="outlined">{item.active ? "停用" : "啟用"}</Button><Button color="error" disabled={busy} onClick={() => void deleteInstrument(item)} size="small" type="button" variant="outlined">刪除</Button></Box></TableCell></TableRow>)}
+              </TableBody>
+            </Table>
+          </TableContainer>
         )}
-      </section>
-      <section className="panel list-panel">
-        <div className="panel-heading"><div><p className="eyebrow">TEAM DIRECTORY</p><h2>角色帳號</h2></div><span className="count-badge">{users.length} 位</span></div>
-        {loading ? <p className="empty-row">載入帳號資料…</p> : users.length === 0 ? <p className="empty-row">尚無帳號。</p> : (
-          <div className="table-scroll"><table><thead><tr><th>帳號</th><th>角色</th><th>狀態</th><th>建立時間</th></tr></thead><tbody>
-            {users.map((item) => <tr key={item.id}><td>{item.username}</td><td><span className="state-pill">{item.role}</span></td><td>{item.enabled ? "啟用" : "停用"}</td><td>{new Date(item.createdAt).toLocaleString("zh-TW")}</td></tr>)}
-          </tbody></table></div>
+      </Paper>
+      <Paper className="panel list-panel" component="section" elevation={0} variant="outlined">
+        <PanelHeading eyebrow="TEAM DIRECTORY" title="角色帳號" trailing={<Chip label={`${users.length} 位`} size="small" />} />
+        {loading ? <Typography className="empty-row" color="text.secondary" component="p">載入帳號資料…</Typography> : users.length === 0 ? <Typography className="empty-row" color="text.secondary" component="p">尚無帳號。</Typography> : (
+          <TableContainer className="table-scroll">
+            <Table aria-label="角色帳號" size="small">
+              <TableHead><TableRow><TableCell>帳號</TableCell><TableCell>角色</TableCell><TableCell>狀態</TableCell><TableCell>建立時間</TableCell></TableRow></TableHead>
+              <TableBody>
+                {users.map((item) => <TableRow key={item.id}><TableCell>{item.username}</TableCell><TableCell><Chip label={item.role} size="small" variant="outlined" /></TableCell><TableCell>{item.enabled ? "啟用" : "停用"}</TableCell><TableCell>{new Date(item.createdAt).toLocaleString("zh-TW")}</TableCell></TableRow>)}
+              </TableBody>
+            </Table>
+          </TableContainer>
         )}
-      </section>
+      </Paper>
     </>
   );
 }

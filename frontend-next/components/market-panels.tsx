@@ -1,6 +1,12 @@
 "use client";
 
 import useSWR from "swr";
+import Alert from "@mui/material/Alert";
+import Box from "@mui/material/Box";
+import Paper from "@mui/material/Paper";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import { PanelHeading } from "@/components/page-heading";
 import type { BookSnapshot, TradePage } from "@/lib/api";
 
 async function getJson<T>(path: string): Promise<T> {
@@ -24,32 +30,29 @@ export function OrderBookPanel({
   const book = data ?? initialBook;
 
   return (
-    <section className="panel">
-      <div className="panel-heading">
-        <h2>委託簿</h2>
-        {error && <span className="inline-error">更新失敗，顯示先前資料</span>}
-      </div>
-      <div className="book-columns">
-        <div>
-          <h3 className="buy-label">買進</h3>
-          {book.bids.length === 0 ? <p className="empty-row">目前無買單</p> : book.bids.map((level, index) => (
-            <div className="book-row bid-row" key={`${level.price}-${index}`}>
-              <span>{level.price.toLocaleString("zh-TW")}</span>
-              <span>{level.quantity.toLocaleString("zh-TW")}</span>
-            </div>
+    <Paper className="panel" component="section" elevation={0} variant="outlined">
+      <PanelHeading title="委託簿" trailing={error && <Alert severity="warning" sx={{ py: 0 }}>更新失敗，顯示先前資料</Alert>} />
+      <Box className="book-columns">
+        <Box>
+          <Typography className="buy-label" component="h3" variant="subtitle2">買進</Typography>
+          {book.bids.length === 0 ? <Typography className="empty-row" color="text.secondary" component="p">目前無買單</Typography> : book.bids.map((level, index) => (
+            <Stack className="book-row bid-row" direction="row" key={`${level.price}-${index}`} sx={{ justifyContent: "space-between" }}>
+              <Typography component="span" variant="body2">{level.price.toLocaleString("zh-TW")}</Typography>
+              <Typography component="span" variant="body2">{level.quantity.toLocaleString("zh-TW")}</Typography>
+            </Stack>
           ))}
-        </div>
-        <div>
-          <h3 className="sell-label">賣出</h3>
-          {book.asks.length === 0 ? <p className="empty-row">目前無賣單</p> : book.asks.map((level, index) => (
-            <div className="book-row ask-row" key={`${level.price}-${index}`}>
-              <span>{level.price.toLocaleString("zh-TW")}</span>
-              <span>{level.quantity.toLocaleString("zh-TW")}</span>
-            </div>
+        </Box>
+        <Box>
+          <Typography className="sell-label" component="h3" variant="subtitle2">賣出</Typography>
+          {book.asks.length === 0 ? <Typography className="empty-row" color="text.secondary" component="p">目前無賣單</Typography> : book.asks.map((level, index) => (
+            <Stack className="book-row ask-row" direction="row" key={`${level.price}-${index}`} sx={{ justifyContent: "space-between" }}>
+              <Typography component="span" variant="body2">{level.price.toLocaleString("zh-TW")}</Typography>
+              <Typography component="span" variant="body2">{level.quantity.toLocaleString("zh-TW")}</Typography>
+            </Stack>
           ))}
-        </div>
-      </div>
-    </section>
+        </Box>
+      </Box>
+    </Paper>
   );
 }
 
@@ -68,26 +71,23 @@ export function RecentTradesPanel({
   const trades = data ?? initialTrades;
 
   return (
-    <section className="panel">
-      <div className="panel-heading">
-        <h2>最近成交</h2>
-        {error && <span className="inline-error">更新失敗，顯示先前資料</span>}
-      </div>
+    <Paper className="panel" component="section" elevation={0} variant="outlined">
+      <PanelHeading title="最近成交" trailing={error && <Alert severity="warning" sx={{ py: 0 }}>更新失敗，顯示先前資料</Alert>} />
       {trades.content.length === 0 ? (
-        <p className="empty-row">尚無成交紀錄</p>
+        <Typography className="empty-row" color="text.secondary" component="p">尚無成交紀錄</Typography>
       ) : (
-        <div className="trade-list">
+        <Box className="trade-list">
           {trades.content.map((trade) => (
-            <div className="trade-row" key={trade.tradeId}>
-              <time dateTime={trade.createdAt}>
+            <Stack className="trade-row" direction="row" key={trade.tradeId} sx={{ justifyContent: "space-between" }}>
+              <Typography color="text.secondary" component="time" dateTime={trade.createdAt} variant="body2">
                 {new Date(trade.createdAt).toLocaleTimeString("zh-TW", { timeZone: "Asia/Taipei" })}
-              </time>
-              <strong>{trade.price.toLocaleString("zh-TW")}</strong>
-              <span>{trade.qty.toLocaleString("zh-TW")} 股</span>
-            </div>
+              </Typography>
+              <Typography component="strong" variant="subtitle2">{trade.price.toLocaleString("zh-TW")}</Typography>
+              <Typography color="text.secondary" component="span" variant="body2">{trade.qty.toLocaleString("zh-TW")} 股</Typography>
+            </Stack>
           ))}
-        </div>
+        </Box>
       )}
-    </section>
+    </Paper>
   );
 }
