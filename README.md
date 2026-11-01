@@ -2,13 +2,13 @@
 
 證券交易模擬器：限價撮合、市場監控、防竄改稽核鏈。**僅供教育用途**，使用虛構資料，非真實交易系統，也不構成投資建議。
 
-Next.js（MUI、Vercel）＋ Java 21 Spring Boot（Render）｜PostgreSQL（Neon）｜Redis
+`Next.js` `MUI` `Vercel` · `Java 21` `Spring Boot` `Render` · `PostgreSQL` `Neon` `Redis`
 
 ## 線上測試
 
 > Render 免費方案閒置 15 分鐘會休眠，首次連線可能需要約 1 分鐘喚醒。
 
-1. 開啟[前端](https://trade-guard-frontend-next.vercel.app)（按住 `Ctrl`（Mac 上按 `⌘`）再點連結，可在新分頁開啟）。首次載入會自動等待 API、PostgreSQL 與 Redis 就緒，不必先手動喚醒後端；服務準備期間會顯示檢查狀態並每 3 秒重試。
+1. 開啟[前端](https://trade-guard-frontend-next.vercel.app)（按住 Ctrl 或 Mac 上的 ⌘ 鍵再點連結，可在新分頁開啟）。首次載入會自動等待 API、PostgreSQL 與 Redis 就緒，不必先手動喚醒後端；服務準備期間會顯示檢查狀態並每 3 秒重試。
 2. 到 `/register` 建立 `TRADER` 帳號（帳號 3–50 字元；密碼 12–72 字元）。
 3. 到 `/trade` 下限價單，回到市場總覽與標的頁查看報價、委託簿與成交。
 4. 若市場總覽沒有報價，需由 `ADMIN` 先到 `/admin` 建立並啟用商品。
@@ -62,6 +62,11 @@ cd backend-java
 
 | 文件 | 內容 |
 |------|------|
+| [docs/functional-requirements-specification.md](https://github.com/elvis356/trade-guard/blob/main/docs/functional-requirements-specification.md) | 功能需求規格 |
+| [https://elvis356.github.io/trade-guard/uml-workbench.html](https://elvis356.github.io/trade-guard/uml-workbench.html) | 系統架構與設計圖 |
+| [https://trade-guard-frontend-next.vercel.app](https://trade-guard-frontend-next.vercel.app/) | 前端 |
+| [https://tradeguard-api-e32l.onrender.com/api/health](https://tradeguard-api-e32l.onrender.com/api/health) | 後端服務狀態頁（人工檢查） |
+| [https://tradeguard-api-e32l.onrender.com/api/health/readiness](https://tradeguard-api-e32l.onrender.com/api/health/readiness) | 後端依賴就緒檢查頁（人工檢查、自動更新；API、PostgreSQL、Redis） |
 | [docs/local-development.md](docs/local-development.md) | 本機啟動、不使用容器、環境變數表、Neon 設定 |
 | [docs/api.md](docs/api.md) | 驗證、市場／委託、監控案件、稽核與每日報告 API |
 | [docs/frontend.md](docs/frontend.md) | 前端頁面、角色權限、環境變數、報表快取策略 |
@@ -70,14 +75,6 @@ cd backend-java
 | [docs/limitations.md](docs/limitations.md) | 目前限制與後續工作 |
 | [docs/functional-requirements-specification.md](docs/functional-requirements-specification.md) | 功能需求、角色權限、業務規則 |
 | [docs/uml-workbench.html](docs/uml-workbench.html) | 互動式 UML 工作台（[線上檢視](https://elvis356.github.io/trade-guard/uml-workbench.html)） |
-
-| 項目 | 連結 |
-| --- | --- |
-| 前端 | [https://trade-guard-frontend-next.vercel.app](https://trade-guard-frontend-next.vercel.app/) |
-| 系統架構與設計圖 | [https://elvis356.github.io/trade-guard/uml-workbench.html](https://elvis356.github.io/trade-guard/uml-workbench.html) |
-| 後端服務狀態頁（人工檢查） | [https://tradeguard-api-e32l.onrender.com/api/health](https://tradeguard-api-e32l.onrender.com/api/health) |
-| 後端依賴就緒檢查頁（人工檢查、自動更新；API、PostgreSQL、Redis） | [https://tradeguard-api-e32l.onrender.com/api/health/readiness](https://tradeguard-api-e32l.onrender.com/api/health/readiness) |
-| 功能需求規格 | [docs/functional-requirements-specification.md](https://github.com/elvis356/trade-guard/blob/main/docs/functional-requirements-specification.md) |
 
 > 提示：在 GitHub 上，按住 `Ctrl`（Mac 上按 `⌘`）再點連結，可在新分頁開啟。就緒檢查連結會顯示符合前端主題的狀態頁並每 3 秒更新；前端則以 `Accept: application/json` 取得相同端點的機器可讀狀態。
 
@@ -98,27 +95,3 @@ docker-compose.yml  本機 PostgreSQL 16 + Redis 7 + 後端
 - **監控**：同帳戶洗售、價格／成交量警示；案件提報與審核須由不同人執行。
 - **稽核**：SHA-256 鏈式稽核紀錄，與業務寫入同一筆交易；可驗證鏈與三方帳本對帳。
 - **日終報告**：每日 XML 報表，由 GitHub Actions 排程產生。
-
-## 授權
-
-MIT License
-
-Copyright (c) 2026 Elvis Peng
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
