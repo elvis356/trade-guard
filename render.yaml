@@ -1,12 +1,14 @@
 services:
   - type: keyvalue
     name: tradeguard-redis
+    region: singapore
     plan: free
     maxmemoryPolicy: noeviction
     ipAllowList: []
 
   - type: web
     name: tradeguard-api
+    region: singapore
     runtime: docker
     rootDir: backend-java
     dockerfilePath: ./Dockerfile
