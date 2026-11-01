@@ -64,9 +64,9 @@ cd backend-java
 |------|------|
 | [docs/functional-requirements-specification.md](https://github.com/elvis356/trade-guard/blob/main/docs/functional-requirements-specification.md) | 功能需求規格 |
 | [https://elvis356.github.io/trade-guard/uml-workbench.html](https://elvis356.github.io/trade-guard/uml-workbench.html) | 系統架構與設計圖 |
-| [https://trade-guard-frontend-next.vercel.app](https://trade-guard-frontend-next.vercel.app/) | 前端 |
-| [https://tradeguard-api-e32l.onrender.com/api/health](https://tradeguard-api-e32l.onrender.com/api/health) | 後端服務狀態頁（人工檢查） |
-| [https://tradeguard-api-e32l.onrender.com/api/health/readiness](https://tradeguard-api-e32l.onrender.com/api/health/readiness) | 後端依賴就緒檢查頁（人工檢查、自動更新；API、PostgreSQL、Redis） |
+| [https://trade-guard-frontend-next.vercel.app](https://trade-guard-frontend-next.vercel.app/) | 前端（會先自動檢查後端 API、PostgreSQL、Redis 狀態） |
+| [https://tradeguard-api-e32l.onrender.com/api/health](https://tradeguard-api-e32l.onrender.com/api/health) | 後端服務狀態頁（用於手動檢查） |
+| [https://tradeguard-api-e32l.onrender.com/api/health/readiness](https://tradeguard-api-e32l.onrender.com/api/health/readiness) | 後端依賴就緒檢查頁（用於手動檢查；此頁面每 3 秒會自動更新，檢查後端 API、PostgreSQL、Redis 狀態） |
 | [docs/local-development.md](docs/local-development.md) | 本機啟動、不使用容器、環境變數表、Neon 設定 |
 | [docs/api.md](docs/api.md) | 驗證、市場／委託、監控案件、稽核與每日報告 API |
 | [docs/frontend.md](docs/frontend.md) | 前端頁面、角色權限、環境變數、報表快取策略 |
@@ -77,7 +77,6 @@ cd backend-java
 | [docs/uml-workbench.html](docs/uml-workbench.html) | 互動式 UML 工作台（[線上檢視](https://elvis356.github.io/trade-guard/uml-workbench.html)） |
 
 > 提示：在 GitHub 上，按住 `Ctrl`（Mac 上按 `⌘`）再點連結，可在新分頁開啟。
-> 就緒檢查連結會顯示符合前端主題的狀態頁並每 3 秒更新；前端則以 `Accept: application/json` 取得相同端點的機器可讀狀態。
 
 ## 專案結構
 
