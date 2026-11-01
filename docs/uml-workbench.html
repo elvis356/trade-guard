@@ -1,0 +1,1229 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <title>TradeGuard UML 跨圖關聯工作台</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f3f5f2;
+      --panel: #fbfcfa;
+      --panel-2: #eef2ed;
+      --line: #d3dbd1;
+      --ink: #1d2924;
+      --muted: #55645c;
+      --edge: #728078;
+      --green: #17684a;
+      --green-soft: #dcece1;
+      --orange: #bc6e21;
+      --orange-soft: #f5e8d7;
+      --blue: #336d8e;
+      --blue-soft: #deebf1;
+      --violet: #7353a5;
+      --violet-soft: #ece5f5;
+      --red: #a64447;
+      --red-soft: #f4e3e1;
+      --shadow: 0 14px 34px rgb(22 43 31 / 7%);
+      font-synthesis: none;
+    }
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #111916;
+      --panel: #19231f;
+      --panel-2: #202c26;
+      --line: #34443a;
+      --ink: #e4ece6;
+      --muted: #a3b2a8;
+      --edge: #8a9b90;
+      --green: #72c69a;
+      --green-soft: #263d30;
+      --orange: #e9ae68;
+      --orange-soft: #403326;
+      --blue: #85bedb;
+      --blue-soft: #263b47;
+      --violet: #b6a0df;
+      --violet-soft: #362d46;
+      --red: #e3928e;
+      --red-soft: #432d2d;
+      --shadow: 0 18px 40px rgb(0 0 0 / 22%);
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background:
+        radial-gradient(ellipse at 74% -18%, color-mix(in srgb, var(--green-soft) 64%, transparent), transparent 42rem),
+        var(--bg);
+      color: var(--ink);
+      font: 13px/1.5 "Aptos", "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    }
+    button, input { color: inherit; font: inherit; }
+    button {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      cursor: pointer;
+      padding: 7px 10px;
+      transition: border-color .16s, background .16s, transform .16s;
+    }
+    button:hover { border-color: var(--green); }
+    button:active { transform: translateY(1px); }
+    button:focus-visible, input:focus-visible { outline: 3px solid color-mix(in srgb, var(--green) 50%, transparent); outline-offset: 2px; }
+    header {
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      flex-wrap: wrap;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--line);
+      background: color-mix(in srgb, var(--panel) 92%, transparent);
+      backdrop-filter: blur(14px);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; min-width: 260px; flex: 1; }
+    .brand-mark {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border-radius: 10px 10px 10px 3px;
+      background: var(--green);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 850;
+      letter-spacing: -.06em;
+    }
+    h1 { margin: 0; font: 600 16px/1.2 Georgia, "Noto Serif TC", serif; letter-spacing: -.025em; }
+    .brand small { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+    .toolbar { display: flex; align-items: center; gap: 7px; }
+    .toolbar button { white-space: nowrap; }
+    .search {
+      width: min(250px, 42vw);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--bg);
+      padding: 8px 10px;
+    }
+    .search::placeholder { color: var(--muted); }
+    .search-wrap { position: relative; }
+    #results {
+      position: absolute;
+      z-index: 6;
+      top: calc(100% + 5px);
+      left: 0;
+      width: min(390px, 86vw);
+      max-height: 55vh;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--panel);
+      padding: 6px;
+      box-shadow: var(--shadow);
+    }
+    #results[hidden] { display: none; }
+    #results button { display: block; width: 100%; margin: 2px 0; border-color: transparent; text-align: left; }
+    #results button:hover { background: var(--panel-2); }
+    #results p { margin: 6px; color: var(--muted); }
+    #app { display: grid; grid-template-columns: 196px minmax(0, 1fr) 278px; min-height: 0; flex: 1; }
+    nav, aside { min-width: 0; overflow: auto; background: var(--panel); }
+    nav { padding: 14px 10px; border-right: 1px solid var(--line); }
+    aside { padding: 16px; border-left: 1px solid var(--line); }
+    .nav-label, .eyebrow {
+      margin: 3px 8px 10px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    nav button {
+      display: block;
+      width: 100%;
+      margin: 0 0 5px;
+      border-color: transparent;
+      background: transparent;
+      padding: 8px 9px;
+      text-align: left;
+    }
+    nav button:hover { background: var(--panel-2); }
+    nav button.on { border-color: color-mix(in srgb, var(--green) 22%, transparent); background: var(--green-soft); color: var(--green); }
+    nav button strong { display: block; font-size: 12px; }
+    nav button small { display: block; margin-top: 2px; color: var(--muted); font-size: 10px; }
+    .canvas-wrap { position: relative; display: flex; min-width: 0; min-height: 0; flex-direction: column; overflow: hidden; }
+    #cv {
+      display: block;
+      width: 100%;
+      height: auto;
+      min-height: 0;
+      flex: 1;
+      touch-action: none;
+      cursor: grab;
+      background-image: radial-gradient(color-mix(in srgb, var(--line) 78%, transparent) 1px, transparent 1px);
+      background-size: 22px 22px;
+    }
+    #cv.grabbing { cursor: grabbing; }
+    #trail {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      max-width: calc(100% - 28px);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--panel) 94%, transparent);
+      padding: 5px 11px;
+      color: var(--muted);
+      font-size: 11px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    #hint {
+      flex: none;
+      margin: 0 14px 7px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+    #caption {
+      flex: none;
+      max-height: 68px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--green);
+      border-radius: 7px;
+      margin: 0 14px 8px;
+      background: var(--panel);
+      padding: 7px 10px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+    .node { cursor: grab; transition: opacity .16s; }
+    #cv:focus, .node:focus { outline: none; }
+    .node:focus-visible { filter: drop-shadow(0 0 5px color-mix(in srgb, var(--green) 70%, transparent)); }
+    .boundary { fill: color-mix(in srgb, var(--panel-2) 45%, transparent); stroke: var(--edge); stroke-width: 1.6; pointer-events: none; }
+    .node.selected { filter: drop-shadow(0 0 7px color-mix(in srgb, var(--green) 55%, transparent)); }
+    .node.dim, .edge.dim { opacity: .14; }
+    .edge { transition: opacity .16s; }
+    .edge.highlight line, .edge.highlight path.message-line { stroke: var(--green); stroke-width: 2.8; }
+    .node-shape { fill: var(--panel); stroke-width: 2; }
+    .svg-title { fill: var(--ink); font-size: 13px; font-weight: 750; pointer-events: none; }
+    .svg-sub { fill: var(--muted); font-size: 10.5px; pointer-events: none; }
+    .svg-field { fill: var(--ink); font: 10.5px ui-monospace, Consolas, monospace; pointer-events: none; }
+    .svg-edge-label { fill: var(--muted); font-size: 10px; paint-order: stroke; stroke: var(--bg); stroke-width: 4px; stroke-linejoin: round; pointer-events: none; }
+    .lifeline { stroke: var(--edge); stroke-width: 1.2; stroke-dasharray: 6 6; opacity: .65; }
+    .activation { fill: var(--green-soft); stroke: var(--green); stroke-width: 1.4; }
+    .message-line { stroke: var(--edge); stroke-width: 1.7; marker-end: url(#arrow); }
+    .message-line.return { stroke-dasharray: 6 4; }
+    .diagram-caption { fill: var(--muted); font-size: 11px; }
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      background: var(--green-soft);
+      color: var(--green);
+      padding: 4px 8px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .03em;
+    }
+    .status.plan { background: var(--orange-soft); color: var(--orange); }
+    .status::before { width: 6px; height: 6px; border-radius: 50%; background: currentColor; content: ""; }
+    aside h2 { margin: 9px 0 6px; font: 600 20px/1.25 Georgia, "Noto Serif TC", serif; }
+    aside h3 { margin: 19px 0 7px; color: var(--muted); font-size: 10px; letter-spacing: .13em; text-transform: uppercase; }
+    aside p { color: var(--muted); line-height: 1.65; }
+    .kind {
+      display: inline-block;
+      border-radius: 5px;
+      background: var(--blue);
+      color: white;
+      padding: 3px 7px;
+      font-size: 10px;
+      font-weight: 750;
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: 5px; }
+    .chip { padding: 5px 8px; color: var(--green); font-size: 10px; }
+    .detail-list { margin: 0; padding-left: 17px; color: var(--muted); }
+    .detail-list li { margin: 5px 0; overflow-wrap: anywhere; }
+    .legend { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .legend span { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 10px; }
+    .swatch { width: 9px; height: 9px; border-radius: 3px; background: var(--swatch); }
+    .note {
+      margin-top: 17px;
+      border-left: 3px solid var(--orange);
+      background: var(--orange-soft);
+      padding: 9px 10px;
+      color: var(--ink);
+      font-size: 10px;
+      line-height: 1.6;
+    }
+    #matrix {
+      position: fixed;
+      z-index: 8;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgb(7 18 12 / 55%);
+      padding: 18px;
+    }
+    #matrix.open { display: flex; }
+    .matrix-card { display: flex; width: min(1120px, 100%); max-height: 88vh; flex-direction: column; overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); box-shadow: var(--shadow); }
+    .matrix-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+    .matrix-head h2 { margin: 0; font: 600 18px Georgia, serif; }
+    .matrix-scroll { overflow: auto; padding: 10px 14px 16px; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    th, td { min-width: 70px; border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: center; }
+    th { position: sticky; top: 0; background: var(--panel); color: var(--muted); }
+    th:first-child, td:first-child { position: sticky; left: 0; min-width: 160px; background: var(--panel); text-align: left; }
+    td button { min-width: 25px; padding: 2px 6px; border: 0; background: transparent; color: var(--green); font-weight: 800; }
+    .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    tbody th { position: sticky; left: 0; top: auto; min-width: 160px; background: var(--panel); color: var(--ink); font-weight: 600; text-align: left; }
+    aside h4 { margin: 11px 0 5px; color: var(--ink); font-size: 11px; }
+    .trace-table td { vertical-align: top; text-align: left; }
+    .trace-table .chips { gap: 3px; }
+    .trace-table .chip { padding: 2px 6px; border: 1px solid var(--line); font-size: 10px; }
+    footer { display: flex; justify-content: space-between; gap: 10px; padding: 7px 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; }
+    .toast { position: fixed; z-index: 10; right: 18px; bottom: 42px; display: none; border: 1px solid var(--line); border-radius: 9px; background: var(--panel); padding: 9px 12px; box-shadow: var(--shadow); color: var(--ink); }
+    .toast.show { display: block; }
+    @media (max-width: 980px) {
+      #app { grid-template-columns: 164px minmax(0, 1fr); grid-template-rows: minmax(480px, 1fr) auto; }
+      aside { grid-column: 1 / -1; max-height: 240px; border-top: 1px solid var(--line); border-left: 0; }
+      nav { grid-row: 1; }
+      .canvas-wrap { grid-row: 1; }
+    }
+    @media (max-width: 620px) {
+      body { overflow: auto; min-height: 100%; }
+      header { position: sticky; top: 0; }
+      .brand { min-width: 100%; }
+      .toolbar { width: 100%; flex-wrap: wrap; }
+      .search { flex: 1; }
+      #app { display: flex; flex-direction: column; }
+      nav { display: flex; gap: 5px; overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--line); padding: 8px; }
+      .nav-label { display: none; }
+      nav button { width: auto; min-width: max-content; margin: 0; }
+      .canvas-wrap { min-height: 520px; }
+      #caption { max-height: 90px; margin: 0 10px 8px; }
+      aside { max-height: none; border-top: 1px solid var(--line); }
+      footer { flex-wrap: wrap; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="brand-mark">TG</span>
+      <div><h1>TradeGuard UML 工作台</h1><small>Cross-diagram system map · 目前實作基準</small></div>
+    </div>
+    <div class="toolbar">
+      <div class="search-wrap">
+        <input id="search" class="search" type="search" role="combobox" aria-autocomplete="list" placeholder="跨圖搜尋元件、API、資料表…" aria-label="跨圖搜尋圖表元件" aria-controls="results" aria-expanded="false">
+        <div id="results" role="listbox" aria-label="搜尋結果" hidden></div>
+      </div>
+      <button id="back" type="button" title="回到上一張圖">← 返回</button>
+      <button id="matrixButton" type="button">跨圖關聯矩陣</button>
+      <button id="traceButton" type="button">追溯矩陣</button>
+      <button id="listButton" type="button">清單檢視</button>
+      <button id="fit" type="button">重設視角</button>
+      <button id="resetLayout" type="button" title="還原本圖被拖動的節點與連線">還原版面</button>
+      <button id="theme" type="button" aria-label="切換色彩主題">◐</button>
+    </div>
+  </header>
+  <div id="app">
+    <nav id="nav" aria-label="UML 圖表"></nav>
+    <main class="canvas-wrap">
+      <div id="trail" aria-live="polite"></div>
+      <svg id="cv" viewBox="0 0 1200 760" role="group" aria-label="互動式 UML 圖表；Tab 聚焦節點，Enter 選取，方向鍵移動">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 10 5 0 10z" fill="var(--edge)"/></marker>
+          <marker id="arrowOpen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M1 1 9 5 1 9" fill="none" stroke="var(--edge)" stroke-width="1.5"/></marker>
+          <marker id="diamond" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 6 6 1 11 6 6 11z" fill="var(--panel)" stroke="var(--edge)"/></marker>
+        </defs>
+        <g id="edges"></g><g id="nodes"></g>
+      </svg>
+      <div id="caption" class="diagram-caption" aria-live="polite"></div>
+      <div id="hint">點選節點查看跨圖追溯 · 拖曳平移 · 滾輪縮放 · 數字鍵 1–9、0 切換圖表</div>
+    </main>
+    <aside id="inspector"></aside>
+  </div>
+  <footer><span>依目前程式、資料庫 Migration 與 workflow 整理；圖示為概念／實作視圖，非自動反向工程輸出。</span><span>TradeGuard · docs/uml-workbench.html</span></footer>
+  <div id="matrix" role="dialog" aria-modal="true" aria-labelledby="matrixTitle" aria-describedby="matrixContent">
+    <section class="matrix-card">
+      <div class="matrix-head"><h2 id="matrixTitle">元件 × 圖表關聯矩陣</h2><button id="closeMatrix" type="button" aria-label="關閉關聯矩陣">關閉 ✕</button></div>
+      <div id="matrixContent" class="matrix-scroll"></div>
+    </section>
+  </div>
+  <div id="sr" class="sr" aria-live="polite"></div>
+  <div id="toast" class="toast" role="status"></div>
+
+  <script id="uml-data">
+/* TradeGuard UML 工作台資料：圖表、實體、欄位、追溯關係。
+   新增或修改圖表時只改這個 <script id="uml-data"> 區塊，
+   再執行：node docs/uml-workbench.check.js（腳本會直接讀本 HTML 的這個區塊）。 */
+(function (root) {
+  "use strict";
+  const DATA = (function () {
+    const TYPES = {
+      actor: ["角色", "var(--orange)"], service: ["服務／元件", "var(--blue)"],
+      usecase: ["使用案例", "var(--green)"], data: ["資料儲存", "var(--violet)"],
+      domain: ["領域模型", "var(--violet)"], step: ["流程節點", "var(--green)"],
+      external: ["外部系統", "var(--orange)"], state: ["狀態", "var(--blue)"]
+    };
+    const ENTITIES = {
+      browser: {name:"瀏覽器／使用者介面",type:"service",desc:"Next.js App Router 前端；瀏覽器以同源 /api 路徑呼叫後端並使用 HttpOnly Cookie。",meta:["frontend-next/","Vercel 部署設定依環境而異"]},
+      visitor: {name:"訪客",type:"actor",desc:"未登入使用者，可讀取公開市場資料並建立交易員帳號。",meta:["公開行情","公開註冊"]},
+      trader: {name:"交易員",type:"actor",desc:"可建立及取消本人限價委託，查看本人委託。",meta:["TRADER"]},
+      monitor: {name:"監控人員",type:"actor",desc:"可檢視警示／案件、提報案件並覆核其他監控人員提報的案件。",meta:["SURVEILLANCE","四眼原則"]},
+      auditor: {name:"稽核員",type:"actor",desc:"可讀取監控資料、驗證稽核鏈、對帳及讀取日終 XML。",meta:["AUDITOR","唯讀監控資料"]},
+      admin: {name:"管理員",type:"actor",desc:"可管理商品及角色帳號，並使用稽核及日終工作區。",meta:["ADMIN","Bootstrap 或管理員建立"]},
+      vercel: {name:"Vercel / Next.js",type:"service",desc:"前端代管；同源 /api rewrites 將瀏覽器 API 呼叫轉送到設定的後端 URL。",meta:["frontend-next/","BACKEND_URL 為伺服器端環境變數"]},
+      api: {name:"Spring Boot REST API",type:"service",desc:"Java 21 後端 API；執行驗證、角色授權及交易業務規則。",meta:["backend-java/","/api/*","Render Docker 服務"]},
+      auth: {name:"身分驗證",type:"service",desc:"登入、註冊、登出、JWT Cookie、登入失敗鎖定及 token 撤銷。",meta:["AuthController","AuthService","SecurityConfiguration"]},
+      userModule: {name:"使用者管理模組",type:"service",desc:"管理員建立及查詢應用程式帳號與角色。",meta:["user/UserService","AdminUserController","app_users"]},
+      instrumentModule: {name:"商品管理模組",type:"service",desc:"管理員建立、更新、啟用／停用及刪除商品主檔。",meta:["instrument/InstrumentService","InstrumentController","instruments"]},
+      health: {name:"健康檢查模組",type:"service",desc:"提供健康狀態端點供平台檢查服務存活。",meta:["health/HealthController","GET /api/health"]},
+      market: {name:"商品與市場查詢",type:"service",desc:"商品主檔 CRUD、行情、委託簿及近期成交查詢。",meta:["InstrumentController","MarketController"]},
+      matching: {name:"委託與撮合",type:"service",desc:"驗證限價委託、價格／時間優先撮合、部分成交及取消。",meta:["OrderController","OrderService","OrderValidator"]},
+      surveillance: {name:"市場監視",type:"service",desc:"成交後檢查 WASH_TRADE 與 CLOSING_MARKUP 規則並保存警示；警示僅為人工調查線索。",meta:["SurveillanceService","TradeSurveillanceListener"]},
+      audit: {name:"稽核與日終",type:"service",desc:"SHA-256 稽核鏈、帳本對帳、受保護 EOD 入口及每日 XML 報表。",meta:["AuditService","ReconciliationService","EodService"]},
+      pg: {name:"PostgreSQL",type:"data",desc:"持久化事實來源；Flyway V1–V8 建立 schema。",meta:["orders / trades / order_events","users / instruments","alerts / cases / audit / EOD"]},
+      redis: {name:"Redis / Key Value",type:"data",desc:"暫態登入狀態、token 撤銷、行情快取及監視短期視窗。不是交易帳本。",meta:["登入鎖定","JWT 撤銷","行情快取／監視視窗"]},
+      gh: {name:"GitHub Actions",type:"external",desc:"CI、Dependency Review 及排程／手動 EOD 呼叫；不負責 Render/Vercel 自動部署。",meta:["ci.yml","dependency-review.yml","daily-eod.yml"]},
+      render: {name:"Render",type:"external",desc:"Docker Web Service 託管後端。實際 region、Primary URL 及環境變數依 Render 專案設定。",meta:["Dockerfile","/api/health","Auto-Deploy 設定"]},
+      neon: {name:"外部 PostgreSQL 託管",type:"external",desc:"部署設定可連接外部 PostgreSQL（例如 Neon）；此圖不假設當前 Production DB 供應商。",meta:["DB_HOST / DB_PORT / DB_NAME","DB_USERNAME / DB_PASSWORD","DB_SSLMODE"]},
+      git: {name:"GitHub Repository",type:"external",desc:"版本來源；目前 Render 與 Vercel 平台連結 GitHub 後各自依平台設定部署。",meta:["main","push / Pull Request"]},
+      ci: {name:"CI 檢查",type:"service",desc:"GitHub Actions 執行後端 clean verify、前端 lint／audit／build。",meta:["Pull Request","push main"]},
+      deploy: {name:"平台自動部署",type:"service",desc:"Render 與 Vercel 由平台整合設定觸發部署；目前不是 CI 成功後由 Actions 發布。",meta:["Render Auto-Deploy","Vercel Git integration"]},
+      eodJob: {name:"Daily EOD workflow",type:"service",desc:"平日 06:00 UTC 排程或手動執行；呼叫 /internal/eod。",meta:["EOD_API_URL","EOD_TOKEN","X-EOD-Token"]},
+      user: {name:"AppUser",type:"domain",desc:"應用程式使用者；密碼只存 hash，角色為四種 Role 之一。",fields:["id: Long · PK","username: String (unique)","passwordHash: String","role: Role","enabled: boolean","createdAt: Instant"],meta:["app_users","Role: TRADER / SURVEILLANCE / AUDITOR / ADMIN"]},
+      instrument: {name:"Instrument",type:"domain",desc:"商品主檔與每商品遞增序號計數器。",fields:["id: Long · PK","symbol: String (unique)","name: String","active: boolean","referencePrice: Decimal","lastSeqNo: long"],meta:["instruments","last_seq_no 為序號事實來源"]},
+      order: {name:"TradingOrder",type:"domain",desc:"限價買賣委託；每筆委託保存用戶端冪等 ID 及系統序號。",fields:["id: Long · PK","userId: Long · FK","symbol: String · FK","clientOrderId: UUID","seqNo: long","side / limitPrice","original / remainingQuantity","status / createdAt"],meta:["orders","UNIQUE(user_id, client_order_id)","UNIQUE(symbol, seq_no)"]},
+      trade: {name:"Trade",type:"domain",desc:"撮合產生的成交，關聯買方及賣方委託。",fields:["id: Long · PK","symbol: String · FK","buyOrderId: Long · FK","sellOrderId: Long · FK","price: Decimal","quantity: long","createdAt: Instant"],meta:["trades","每次部分撮合可形成成交"]},
+      orderEvent: {name:"OrderEvent",type:"domain",desc:"委託接受、成交、取消事件；用於啟動重播與帳本核對。",fields:["id: Long · PK","eventType","symbol · FK","orderSeqNo","counterpartySeqNo?","userId? / clientOrderId?","side? / limitPrice? / quantity?","createdAt"],meta:["order_events","ORDER_ACCEPTED / TRADE_EXECUTED / ORDER_CANCELED"]},
+      alert: {name:"Alert",type:"domain",desc:"由監視規則產生、關聯成交的警示。",fields:["id: Long · PK","alertKey: String (unique)","ruleCode","symbol · FK","severity","tradeId · FK","description","occurredAt"],meta:["surveillance_alerts"]},
+      case: {name:"SurveillanceCase",type:"domain",desc:"關聯單一警示的提報／覆核案件。",fields:["id: Long · PK","alertId · FK (unique)","proposedBy","status","reviewedBy?","reviewNote?","createdAt / reviewedAt?"],meta:["surveillance_cases","提報者與覆核者不可相同"]},
+      auditEntry: {name:"AuditEntry",type:"domain",desc:"重要操作的 SHA-256 鏈式稽核列。",fields:["id: Long · PK","userId?","actor / action","detail","createdAt","previousHash","rowHash (unique)"],meta:["audit_entries","單例 audit_chain_state 保存鏈頭"]},
+      auditChainState: {name:"AuditChainState",type:"domain",desc:"單例稽核鏈頭狀態；V6 以 CHECK 約束 id 固定為 1，初始雜湊為 64 個 0。",fields:["id: Long · PK (CHECK id = 1)","lastHash: String(64)"],meta:["audit_chain_state","單例鏈頭狀態，與 audit_entries 無 FK"]},
+      eodReport: {name:"EodReport",type:"domain",desc:"已成功產生的每日成交 XML 及校驗和。",fields:["businessDate: LocalDate · PK","tradeCount","xmlContent","contentSha256","generatedAt"],meta:["eod_reports","每個 business_date 一筆"]},
+      eodRun: {name:"EodRun",type:"domain",desc:"每次 EOD 執行的對帳結果及差異；可能成功或失敗。",fields:["id: Long · PK","businessDate","completed: boolean","ordersChecked","tradesChecked","eventsChecked","issuesJson","reportSha256?","generatedAt"],meta:["eod_runs"]},
+      role: {name:"Role",type:"domain",stereo:"«enumeration»",desc:"使用者授權角色列舉。",fields:["TRADER","SURVEILLANCE","AUDITOR","ADMIN"],meta:["公開註冊只會建立 TRADER"]},
+      start: {name:"開始",type:"step",desc:"委託處理活動開始。"},
+      request: {name:"送出限價委託",type:"step",desc:"交易員送出 symbol、side、price、qty、client_order_id。"},
+      duplicate: {name:"冪等檢查",type:"step",desc:"查詢同一使用者及 client_order_id 是否已有委託。"},
+      duplicateDecision: {name:"已存在？",type:"step",desc:"同 payload 回原委託；不同 payload 回衝突；不存在才建立新委託。"},
+      validate: {name:"驗證商品與委託規則",type:"step",desc:"檢查啟用商品、交易時段、整股數量、漲跌幅及升降單位。"},
+      validDecision: {name:"驗證通過？",type:"step",desc:"不通過時 OrderValidator 拋出 InvalidRequestException，不建立委託；通過後進入接受流程。",meta:["OrderValidator.validate","未通過不產生 orders row"]},
+      persist: {name:"事件與委託落庫",type:"step",desc:"OrderService.create 分配 seq_no，於交易中寫 ORDER_ACCEPTED、orders 及 ORDER_ACCEPTED 稽核列；委託初始狀態為 NEW。",meta:["OrderService.create","OrderEvent.accepted","TradingOrder constructor"]},
+      matchStep: {name:"價格／時間優先撮合",type:"step",desc:"OrderService.match 依價格排序及 seq_no 時間優先選取對手委託；不跨價時停止。",meta:["OrderService.match","OrderService.crosses"]},
+      crossDecision: {name:"存在可成交對手？",type:"step",desc:"若無可成交對手，保留未成交量於委託簿。"},
+      fillStep: {name:"記錄成交與更新餘量",type:"step",desc:"每次撮合寫 TRADE_EXECUTED 事件及 Trade；TradingOrder.fill 將餘量歸零時設 FILLED，否則設 PARTIALLY_FILLED。",meta:["OrderService.match","TradingOrder.fill"]},
+      publish: {name:"提交後發布成交事件",type:"step",desc:"交易提交後通知監視處理器檢查成交。"},
+      alertDecision: {name:"命中監視規則？",type:"step",desc:"檢查同帳戶買賣及尾盤價格／數量條件。"},
+      recordAlert: {name:"保存警示",type:"step",desc:"保存唯一 alert_key 的警示及系統稽核紀錄。"},
+      rest: {name:"保留剩餘委託",type:"step",desc:"未成交餘量維持在委託簿，交易員可稍後取消。"},
+      finish: {name:"回傳委託結果",type:"step",desc:"回傳委託編號、狀態及成交結果。"},
+      conflict: {name:"回傳 409 衝突",type:"step",desc:"同一使用者重用 client_order_id 但委託內容不同；回傳 409，不建立委託。"},
+      endOk: {name:"結束（回傳結果）",type:"step",desc:"Activity Final：委託處理完成並回傳結果（含重送時回傳原委託）。"},
+      endConflict: {name:"結束（409）",type:"step",desc:"Activity Final：同一 client_order_id 但內容不同，回傳 409，不建立委託。"},
+      endRejected: {name:"結束（拒絕）",type:"step",desc:"Activity Final：驗證失敗，回傳錯誤，不建立委託。"},
+      stEndFilled: {name:"終止（FILLED）",type:"state",desc:"Final State：FILLED 為終態，不再轉移。"},
+      stEndCanceled: {name:"終止（CANCELED）",type:"state",desc:"Final State：CANCELED 為終態，不再轉移。"},
+      sNew: {name:"NEW",type:"state",desc:"新委託；仍有全部未成交量。"},
+      sPartial: {name:"PARTIALLY_FILLED",type:"state",desc:"部分成交；剩餘數量仍大於零。"},
+      sFilled: {name:"FILLED",type:"state",desc:"委託數量已全部成交。"},
+      sCanceled: {name:"CANCELED",type:"state",desc:"交易員取消未成交餘量；已成交部分保留。"},
+      sRejected: {name:"拒絕（非持久狀態）",type:"state",desc:"驗證失敗的請求回應錯誤；不建立委託狀態列。"},
+      stateStart: {name:"委託狀態初始點",type:"state",desc:"通過驗證並接受的新委託進入 NEW；這是狀態圖的 UML 初始偽狀態。"},
+      reqApi: {name:"建立限價委託",type:"usecase",desc:"POST /api/orders；僅 TRADER。"},
+      reqManage: {name:"商品與角色帳號管理",type:"usecase",desc:"ADMIN 管理商品並建立角色帳號。"},
+      reqAuth: {name:"註冊／登入／登出",type:"usecase",desc:"公開註冊交易員，或使用已建立帳號登入。"},
+      reqMarket: {name:"瀏覽市場資料",type:"usecase",desc:"公開瀏覽商品、報價、委託簿、成交。"},
+      reqCases: {name:"警示與案件處理",type:"usecase",desc:"監控人員提報案件並由另一人覆核。"},
+      reqAudit: {name:"稽核與日終報表",type:"usecase",desc:"AUDITOR / ADMIN 驗證、對帳及讀取 XML。"},
+      reqCancel: {name:"查詢／取消本人委託",type:"usecase",desc:"TRADER 查詢本人委託及取消仍可取消的委託。"},
+      reqAuthz: {name:"角色授權檢查",type:"usecase",desc:"受保護 API 由 Spring Security 依角色強制授權；所有需登入的使用案例都 «include» 此檢查。",meta:["SecurityConfiguration","角色對應規則"]},
+      seqController: {name:"OrderController",type:"service",desc:"解析請求並以 Authentication 取得登入者。"},
+      seqService: {name:"OrderService",type:"service",desc:"冪等檢查、商品鎖、規則驗證、事件寫入、撮合與稽核。"},
+      seqListener: {name:"Surveillance listener",type:"service",desc:"接收交易提交事件，分析已提交成交。"},
+      eStart: {name:"開發者",type:"actor",desc:"推送程式碼或建立 Pull Request。"},
+      eReview: {name:"Dependency Review",type:"service",desc:"Pull Request dependency review；high 以上 fail。"},
+    };
+    const COLUMNS = {
+      user:["id BIGINT · PK","username VARCHAR(50) · UQ","password_hash VARCHAR(100)","role VARCHAR(20)","enabled BOOLEAN","created_at TIMESTAMP WITH TIME ZONE"],
+      instrument:["id BIGINT · PK","symbol VARCHAR(16) · UQ","name VARCHAR(100)","active BOOLEAN","created_at TIMESTAMP WITH TIME ZONE","updated_at TIMESTAMP WITH TIME ZONE","reference_price NUMERIC(12, 4)","last_seq_no BIGINT"],
+      order:["id BIGINT · PK","client_order_id UUID","seq_no BIGINT","user_id BIGINT · FK","symbol VARCHAR(16) · FK","side VARCHAR(4)","limit_price NUMERIC(12, 4)","original_quantity BIGINT","remaining_quantity BIGINT","status VARCHAR(20)","created_at TIMESTAMP WITH TIME ZONE"],
+      trade:["id BIGINT · PK","symbol VARCHAR(16) · FK","buy_order_id BIGINT · FK","sell_order_id BIGINT · FK","price NUMERIC(12, 4)","quantity BIGINT","created_at TIMESTAMP WITH TIME ZONE"],
+      orderEvent:["id BIGINT · PK","event_type VARCHAR(24)","symbol VARCHAR(16) · FK","order_seq_no BIGINT","counterparty_seq_no BIGINT?","user_id BIGINT?","client_order_id UUID?","side VARCHAR(4)?","limit_price NUMERIC(12, 4)?","quantity BIGINT?","created_at TIMESTAMP WITH TIME ZONE"],
+      alert:["id BIGINT · PK","alert_key VARCHAR(120) · UQ","rule_code VARCHAR(32)","symbol VARCHAR(16) · FK","severity VARCHAR(8)","trade_id BIGINT · FK","description VARCHAR(500)","occurred_at TIMESTAMP WITH TIME ZONE"],
+      case:["id BIGINT · PK","alert_id BIGINT · FK, UQ","proposed_by VARCHAR(64)","status VARCHAR(16)","reviewed_by VARCHAR(64)?","review_note VARCHAR(500)?","created_at TIMESTAMP WITH TIME ZONE","reviewed_at TIMESTAMP WITH TIME ZONE?"],
+      auditChainState:["id BIGINT · PK, CHECK = 1","last_hash VARCHAR(64)"],
+      auditEntry:["id BIGINT · PK","user_id BIGINT?","actor VARCHAR(64)","action VARCHAR(64)","detail VARCHAR(2000)","created_at TIMESTAMP WITH TIME ZONE","prev_hash VARCHAR(64)","row_hash VARCHAR(64) · UQ"],
+      eodReport:["business_date DATE · PK","trade_count BIGINT","xml_content TEXT","content_sha256 VARCHAR(64)","generated_at TIMESTAMP WITH TIME ZONE"],
+      eodRun:["id BIGINT · PK","business_date DATE","completed BOOLEAN","orders_checked BIGINT","trades_checked BIGINT","events_checked BIGINT","issues_json TEXT","report_sha256 VARCHAR(64)?","generated_at TIMESTAMP WITH TIME ZONE"]
+    };
+    Object.entries(COLUMNS).forEach(([id,cols])=>{ENTITIES[id].columns=cols;});
+    const TRACE = [
+      ["reqAuth","realizedBy","auth"],["auth","persists","user"],
+      ["reqMarket","realizedBy","market"],["reqManage","realizedBy","userModule"],["reqManage","realizedBy","instrumentModule"],
+      ["userModule","persists","user"],["instrumentModule","persists","instrument"],
+      ["market","persists","instrument"],
+      ["reqApi","realizedBy","matching"],["reqCancel","realizedBy","matching"],
+      ["matching","persists","order"],["matching","persists","trade"],["matching","persists","orderEvent"],
+      ["reqCases","realizedBy","surveillance"],["surveillance","persists","alert"],["surveillance","persists","case"],
+      ["reqAudit","realizedBy","audit"],["audit","persists","auditEntry"],["audit","uses","auditChainState"],["audit","persists","eodRun"],["audit","persists","eodReport"],
+      ["request","realizedBy","matching"],["duplicate","realizedBy","matching"],["duplicateDecision","realizedBy","matching"],
+      ["validate","realizedBy","matching"],["validDecision","realizedBy","matching"],["persist","realizedBy","matching"],
+      ["matchStep","realizedBy","matching"],["crossDecision","realizedBy","matching"],["fillStep","realizedBy","matching"],
+      ["publish","realizedBy","matching"],["rest","realizedBy","matching"],["finish","realizedBy","matching"],
+      ["alertDecision","realizedBy","surveillance"],["recordAlert","realizedBy","surveillance"],
+      ["persist","produces","sNew"],["validDecision","produces","sRejected"],
+      ["fillStep","produces","sPartial"],["fillStep","produces","sFilled"],
+      ["matching","produces","sCanceled"],
+      ["seqController","realizedBy","matching"],["seqService","realizedBy","matching"],["seqListener","realizedBy","surveillance"],
+      ["conflict","realizedBy","matching"],
+      ["matching","persists","auditEntry"],["matching","persists","instrument"],["surveillance","persists","auditEntry"],
+      ["eodJob","triggers","audit"],["user","uses","role"],
+      ["visitor","initiates","reqMarket"],["visitor","initiates","reqAuth"],
+      ["trader","initiates","reqMarket",{via:[[250,125]]}],["trader","initiates","reqAuth"],["trader","initiates","reqApi"],["trader","initiates","reqCancel"],
+      ["monitor","initiates","reqCases"],["monitor","initiates","reqAuth",{via:[[1060,232],[540,232]]}],
+      ["auditor","initiates","reqCases",{label:"唯讀",via:[[1015,155]]}],["auditor","initiates","reqAudit"],
+      ["auditor","initiates","reqAuth",{via:[[1055,380],[1055,245],[540,245]]}],
+      ["admin","initiates","reqManage"],["admin","initiates","reqAudit"],["admin","initiates","reqCases",{label:"唯讀",via:[[1015,155]]}],
+      ["admin","initiates","reqAuth",{via:[[1050,595],[1050,258],[540,258]]}],
+      ["reqAuthz","realizedBy","auth"],
+      ["eStart","initiates","ci"]
+    ];
+    const REL = {realizedBy:"實現",persists:"儲存",produces:"產生",returns:"回傳",initiates:"發起",triggers:"觸發",uses:"使用"};
+    const LAYERS = {actor:"角色",usecase:"需求／使用案例",service:"模組／元件",domain:"資料實體",data:"資料儲存",step:"流程步驟",state:"狀態",external:"外部系統"};
+    const N = (id,x,y,w=170,h=62,shape="box")=>({id,x,y,w,h,shape});
+    const L = (a,b,label="",kind="solid",via=null,card=null)=>({a,b,label,kind,via,card});
+    const DIAGRAMS = [
+      {id:"architecture",name:"元件／架構圖",type:"Component",summary:"前端、API、持久層、暫態服務及 CI/CD 邊界。",nodes:[
+        N("browser",70,115,175,75),N("vercel",335,105,205,88),N("api",690,105,220,88),N("pg",1000,90,170,84),N("redis",1000,245,170,84),
+        N("gh",65,445,180,82),N("git",340,445,185,82),N("render",690,430,210,88),N("neon",1000,430,170,84),N("eodJob",340,610,185,78)
+      ],edges:[
+        L("browser","vercel","HTTPS"),L("vercel","api","/api/* rewrite"),L("api","pg","JDBC / SQL"),L("api","redis","Redis protocol"),
+        L("gh","git","workflow source"),L("git","render","platform Git deploy"),L("git","vercel","platform Git deploy"),L("render","api","Docker Web Service"),
+        L("neon","pg","external DB endpoint","dashed",[[960,472],[960,132]]),L("eodJob","gh","schedule / dispatch"),L("gh","api","POST /internal/eod","dashed")
+      ],caption:"圖示描述架構責任與整合方式；實際 Primary URL、region、資料庫供應商及部署觸發條件以雲端設定為準。"},
+      {id:"modules",name:"後端模組圖",type:"Component",summary:"Spring Boot API 內的功能模組，以及各模組使用的持久層與暫態服務。",nodes:[
+        N("api",490,45,240,88),N("auth",30,220,180,84),N("userModule",260,220,180,84),N("instrumentModule",490,220,180,84),N("market",720,220,180,84),N("matching",950,220,190,84),
+        N("surveillance",160,390,190,84),N("audit",500,390,170,84),N("health",830,390,180,84),
+        N("pg",330,520,220,88),N("redis",760,520,220,88)
+      ],edges:[
+        L("api","auth","","solid",[[610,165],[120,165]]),L("api","userModule","","solid",[[610,165],[350,165]]),
+        L("api","instrumentModule","","solid",[[610,165],[580,165]]),L("api","market","","solid",[[610,165],[810,165]]),
+        L("api","matching","","solid",[[610,165],[1045,165]]),
+        L("api","surveillance","","solid",[[610,165],[255,165],[255,350]]),
+        L("api","audit","","solid",[[610,165],[1160,165],[1160,350],[585,350]]),
+        L("api","health","","solid",[[610,165],[1160,165],[1160,350],[920,350]]),
+        L("auth","pg","app_users","solid",[[120,350],[440,350],[440,490]]),
+        L("userModule","pg","app_users","solid",[[350,350],[440,350],[440,490]]),
+        L("instrumentModule","pg","instruments","solid",[[460,350],[460,490],[440,490]]),
+        L("market","pg","instruments / trades","solid",[[1025,350],[1025,490],[440,490]]),
+        L("matching","pg","orders / trades / events","solid",[[1180,350],[1180,490],[440,490]]),
+        L("surveillance","pg","alerts / cases","solid",[[255,490],[440,490]]),
+        L("audit","pg","audit / EOD","solid",[[585,490],[440,490]]),
+        L("auth","redis","鎖定／撤銷","dashed",[[120,490],[870,490]]),
+        L("market","redis","行情快取","dashed",[[1025,350],[1025,490],[870,490]]),
+        L("surveillance","redis","短期視窗","dashed",[[140,490],[1120,490]])
+      ],caption:"模組依 Controller／Service package 對應；共用設定與 common 基礎設施未單獨展開。需求、流程、模組與資料實體的追溯鏈見右側面板。"},
+      {id:"usecases",name:"使用案例圖",type:"Use Case",summary:"依角色呈現公開與受權限保護的主要能力；系統邊界內為 TradeGuard 提供的使用案例。",boundary:{x:200,y:40,w:840,h:590,label:"TradeGuard 系統邊界"},nodes:[
+        N("visitor",50,170,80,120,"actor"),N("trader",50,400,80,120,"actor"),N("monitor",1080,110,80,120,"actor"),N("auditor",1080,320,80,120,"actor"),N("admin",1080,535,80,120,"actor"),
+        N("reqMarket",310,90,210,70,"ellipse"),N("reqAuth",310,205,210,70,"ellipse"),N("reqApi",310,335,210,70,"ellipse"),N("reqCancel",310,455,210,70,"ellipse"),
+        N("reqAuthz",565,350,170,70,"ellipse"),
+        N("reqCases",760,120,230,70,"ellipse"),N("reqAudit",760,300,230,70,"ellipse"),N("reqManage",760,500,230,70,"ellipse")
+      ],edges:[
+        L("reqApi","reqAuthz","«include»","dep"),L("reqCancel","reqAuthz","«include»","dep"),
+        L("reqCases","reqAuthz","«include»","dep"),L("reqAudit","reqAuthz","«include»","dep"),L("reqManage","reqAuthz","«include»","dep")
+      ],caption:"虛線 «include»：所有需登入的使用案例都包含角色授權檢查。前端角色閘門用於 UX；每個受保護 API 仍由 Spring Security 強制授權。"},
+      {id:"activity",name:"委託活動圖",type:"Activity",summary:"由 API 接收委託至冪等處理、驗證、撮合及成交後監視。",nodes:[
+        N("start",45,335,28,28,"start"),N("request",105,305,160,64,"round"),N("duplicate",320,305,160,64,"round"),N("duplicateDecision",530,280,150,90,"diamond"),
+        N("validate",750,305,190,64,"round"),N("validDecision",990,280,150,90,"diamond"),N("persist",990,445,175,64,"round"),
+        N("matchStep",750,445,190,64,"round"),N("crossDecision",530,430,150,90,"diamond"),N("fillStep",320,445,175,64,"round"),
+        N("publish",105,535,175,64,"round"),N("alertDecision",320,585,150,90,"diamond"),N("recordAlert",530,615,170,64,"round"),
+        N("rest",750,605,170,64,"round"),N("finish",990,605,165,64,"round"),N("sRejected",755,145,190,58,"round"),N("conflict",300,150,180,58,"round"),
+        N("endOk",1100,690,28,28,"final"),N("endConflict",376,62,28,28,"final"),N("endRejected",1010,159,28,28,"final")
+      ],edges:[
+        L("start","request"),L("request","duplicate"),L("duplicate","duplicateDecision"),
+        L("duplicateDecision","finish","已存在且相同","solid",[[605,235],[1190,235],[1190,637]]),L("duplicateDecision","validate","不存在"),L("duplicateDecision","conflict","內容不同"),
+        L("validDecision","sRejected","否"),L("validate","validDecision"),L("validDecision","persist","是"),L("persist","matchStep"),L("matchStep","crossDecision"),
+        L("crossDecision","fillStep","是"),L("crossDecision","rest","否"),L("fillStep","publish"),L("publish","alertDecision"),L("alertDecision","recordAlert","命中"),
+        L("alertDecision","finish","未命中","solid",[[395,715],[1072,715]]),
+        L("recordAlert","finish","","solid",[[615,695],[1030,695]]),L("rest","finish"),
+        L("finish","endOk"),L("conflict","endConflict"),L("sRejected","endRejected")
+      ],caption:"同一 client_order_id 但 payload 不同會回傳 409；規則驗證失敗時回傳錯誤且不建立委託。"},
+      {id:"sequence",name:"下單時序圖",type:"Sequence",summary:"呈現 API、交易服務、資料庫及交易提交後監視事件的主要訊息順序。",sequence:true,
+        nodes:["trader","browser","seqController","seqService","pg","seqListener","redis"].map((id,i)=>N(id,22+i*145,34,116,46)),
+        participants:["trader","browser","seqController","seqService","pg","seqListener","redis"],
+        messages:[
+          ["trader","browser","1. 填寫限價委託"],["browser","seqController","2. POST /api/orders + Cookie"],["seqController","seqService","3. create(username, request)"],
+          ["seqService","pg","4. 查冪等 key；鎖商品列"],["seqService","seqService","5. 驗證交易規則／分配 seq_no"],
+          ["seqService","pg","6. 寫 ORDER_ACCEPTED + orders + audit"],["seqService","pg","7. 寫 TRADE_EXECUTED + trades + audit"],
+          ["seqService","seqService","8. 更新雙方餘量／狀態"],["seqService","seqController","9. transaction commit","return"],
+          ["seqController","seqListener","10. after-commit TradeCommittedEvent"],["seqListener","redis","11. 更新短期成交視窗"],
+          ["seqListener","pg","12. 保存命中警示／監視 audit"],["seqController","browser","13. 201 + OrderResponse","return"],["browser","trader","14. 更新委託清單","return"]
+        ],
+        activations:[["seqService",2,8],["pg",3,6],["seqListener",9,11],["pg",11,11]],
+        caption:"無可成交對手時不會執行成交／監視訊息；交易資料庫交易與 after-commit 監視處理分開。"},
+      {id:"class",name:"領域類別圖",type:"Class",summary:"主要領域類別及概念關係；Repository、DTO 等基礎設施類別未全部列出。",nodes:[
+        N("user",40,90,230,178,"class"),N("role",40,330,230,112,"class"),N("instrument",350,90,245,178,"class"),N("order",665,90,280,200,"class"),
+        N("trade",1010,90,160,178,"class"),N("orderEvent",350,360,260,190,"class"),N("alert",665,390,220,155,"class"),N("case",965,390,205,178,"class"),
+        N("auditEntry",40,560,270,155,"class"),N("eodReport",390,600,230,128,"class"),N("eodRun",700,600,260,145,"class")
+      ],edges:[
+        L("user","order","建立者 userId","assoc",[[155,60],[805,60]],["1","0..*"]),
+        L("user","role","role","assoc",null,["0..*","1"]),
+        L("instrument","order","商品 symbol","assoc",null,["1","0..*"]),
+        L("instrument","orderEvent","商品 symbol","assoc",null,["1","0..*"]),
+        L("order","trade","買方委託 buyOrderId","assoc",[[975,125]],["1","0..*"]),L("order","trade","賣方委託 sellOrderId","assoc",[[975,240]],["1","0..*"]),
+        L("order","orderEvent","商品序號邏輯關聯","dep"),
+        L("trade","alert","tradeId","assoc",null,["1","0..*"]),
+        L("alert","case","alertId","assoc",null,["1","0..1"]),
+        L("user","auditEntry","userId nullable","dep",[[322,179],[322,637]]),
+        L("order","auditEntry","重要操作","dep",[[630,190],[630,584],[336,584]]),
+        L("case","auditEntry","提報／覆核","dep",[[1067,820],[175,820]]),
+        L("eodRun","eodReport","成功時 reportSha256","dep")
+      ],caption:"關係以實際欄位與資料庫外鍵為準；部分 ORM 關聯以 ID／symbol 欄位表示，並非物件導覽屬性。"},
+      {id:"erd",name:"資料庫 ERD",type:"Entity Relationship",summary:"根據 Flyway V1–V8 Migration 摘要核心資料表及外鍵。",nodes:[
+        N("user",40,75,240,190,"table"),N("instrument",350,75,245,185,"table"),N("order",665,75,285,205,"table"),N("trade",1010,75,165,180,"table"),
+        N("orderEvent",350,345,260,185,"table"),N("alert",665,350,230,165,"table"),N("case",970,350,205,175,"table"),
+        N("auditEntry",40,565,270,150,"table"),N("auditChainState",330,585,270,95,"table"),
+        N("eodReport",620,585,240,125,"table"),N("eodRun",900,575,270,150,"table")
+      ],edges:[
+        L("user","order","app_users.id → user_id","solid",[[160,50],[807,50]],["1","N"]),
+        L("instrument","order","symbol · FK","solid",null,["1","N"]),L("instrument","trade","symbol · FK","solid",[[472,18],[1092,18]],["1","N"]),
+        L("instrument","orderEvent","symbol · FK","solid",null,["1","N"]),L("order","trade","buy_order_id · FK","solid",[[975,110]],["1","N"]),L("order","trade","sell_order_id · FK","solid",[[975,225]],["1","N"]),
+        L("trade","alert","trade_id · FK","solid",[[1000,300]],["1","N"]),L("alert","case","alert_id UNIQUE","solid",null,["1","0..1"]),
+        L("order","orderEvent","symbol + seq_no（邏輯關聯，無 FK）","dashed"),L("user","auditEntry","user_id nullable（無 FK）","dashed"),
+        L("eodRun","eodReport","report SHA-256 / business_date (logical)","dashed"),
+        L("auditEntry","auditChainState","鏈頭狀態（無 FK）","dashed")
+      ],caption:"實線為 Migration 中可見的資料庫 FK；虛線表示應用層邏輯關聯或 checksum 關聯，不代表實體 FK。"},
+      {id:"state",name:"委託狀態圖",type:"State Machine",summary:"委託持久狀態與撮合／取消轉移；拒絕是請求結果，不是資料列狀態。",nodes:[
+        N("stateStart",55,340,26,26,"start"),N("sNew",155,320,180,70,"round"),N("sPartial",440,320,220,70,"round"),N("sFilled",830,185,180,70,"round"),
+        N("sCanceled",830,465,180,70,"round"),N("sRejected",155,105,210,70,"round"),
+        N("stEndFilled",1090,206,28,28,"final"),N("stEndCanceled",1090,486,28,28,"final")
+      ],edges:[
+        L("stateStart","sNew","接受"),L("sNew","sPartial","部分成交"),L("sNew","sFilled","全數成交"),L("sPartial","sFilled","剩餘量全數成交"),
+        L("sNew","sCanceled","取消"),L("sPartial","sCanceled","取消未成交餘量"),L("stateStart","sRejected","驗證失敗／拒絕"),
+        L("sFilled","stEndFilled"),L("sCanceled","stEndCanceled")
+      ],caption:"`REJECTED` 不在 orders.status CHECK 約束中；它表示 API 拒絕請求，委託未持久化。"},
+      {id:"deployment",name:"部署／執行拓樸圖",type:"Deployment",summary:"使用者請求路徑、執行環境節點（Render 內含 API 與 Redis）與外部資料服務；雲端連線與區域以環境設定為準。",nodes:[
+        N("visitor",30,125,75,112,"actor"),N("browser",140,135,150,78),N("vercel",345,125,170,100),
+        N("render",590,60,430,200,"container"),N("api",615,120,170,100),N("redis",850,120,150,100),
+        N("neon",835,350,170,90),N("git",60,380,175,90),N("gh",330,540,175,90),N("eodJob",60,540,175,90)
+      ],edges:[
+        L("visitor","browser","使用 HTTPS"),L("browser","vercel","Web UI"),L("vercel","api","same-origin /api rewrite"),
+        L("api","redis","Redis TCP"),L("api","neon","JDBC + TLS"),
+        L("git","vercel","Git integration"),L("git","render","Git integration"),L("gh","git","CI workflow source"),
+        L("eodJob","gh","schedule / manual"),L("gh","api","X-EOD-Token")
+      ],caption:"Render 是執行環境節點，內含 Docker 化的 API 與 Redis（Key Value）；PostgreSQL 在外部託管。Redis 與 API 必須使用可互通的 Render network/region 設定；圖不代表目前雲端 URL 或 Production 設定已驗證。"},
+      {id:"cicd",name:"CI／部署流程圖",type:"Workflow",summary:"區分 GitHub Actions 品質檢查、平台自動部署和 Daily EOD 工作。",nodes:[
+        N("eStart",45,140,75,112,"actor"),N("git",205,155,190,84),N("ci",510,85,210,100),N("eReview",510,255,210,90),
+        N("deploy",825,155,210,92),N("render",1070,80,150,88),N("vercel",1070,245,150,88),
+        N("eodJob",205,485,210,90),N("api",600,485,210,95),N("pg",940,485,190,88)
+      ],edges:[
+        L("eStart","git","push / PR"),L("git","ci","push main / PR"),L("git","eReview","Pull Request only"),
+        L("git","deploy","platform integration"),L("deploy","render","Render Auto-Deploy"),L("deploy","vercel","Vercel Git deployment"),
+        L("eodJob","api","weekday 06:00 UTC / manual"),L("api","pg","對帳、保存 EOD run／報表")
+      ],caption:"CI workflow 不負責部署，也未設成部署閘門；Render/Vercel 自動部署是否啟用由平台專案設定控制。"}
+    ];
+
+    const useCaseDiagram = DIAGRAMS.find(({id})=>id==="usecases");
+    useCaseDiagram.edges = [
+      ...TRACE.filter(([from,,to])=>ENTITIES[from]?.type==="actor"&&ENTITIES[to]?.type==="usecase")
+        .map(([from,,to,view])=>L(from,to,view?.label||"","solid",view?.via||null)),
+      ...useCaseDiagram.edges
+    ];
+    return { TYPES, ENTITIES, TRACE, REL, LAYERS, DIAGRAMS };
+  })();
+  if (typeof module !== "undefined" && module.exports) module.exports = DATA;
+  else root.UML_DATA = DATA;
+})(typeof globalThis !== "undefined" ? globalThis : this);
+  </script>
+  <script>
+    "use strict";
+    const { TYPES, ENTITIES, TRACE, REL, LAYERS, DIAGRAMS } = window.UML_DATA;
+    const $ = (s) => document.querySelector(s);
+    const NS = "http://www.w3.org/2000/svg";
+    const cv = $("#cv"), edgeLayer = $("#edges"), nodeLayer = $("#nodes"), nav = $("#nav"), inspector = $("#inspector");
+    let current = "architecture", selected = null, history = [], view = {x:0,y:0,w:1200,h:760}, drag = null;
+    const byId = (id) => DIAGRAMS.find(d => d.id === id);
+    const LAYOUT0 = new Map(DIAGRAMS.map(d => [d.id, d.nodes.map(n => ({x:n.x,y:n.y,h:n.h}))]));
+    let suppressClick = false;
+    const diagram = () => byId(current);
+    const has = (d,id) => d.nodes.some(n => n.id === id);
+    const nodeData = (id) => ENTITIES[id];
+    const pointFor = (d,id) => d.nodes.find(n => n.id === id);
+    const svg = (tag,attrs,parent) => {
+      const el = document.createElementNS(NS,tag);
+      Object.entries(attrs || {}).forEach(([k,v]) => el.setAttribute(k,String(v)));
+      if (parent) parent.appendChild(el);
+      return el;
+    };
+    const label = (parent,x,y,text,cls="svg-title",anchor="middle") => {
+      const t=svg("text",{x,y,class:cls,"text-anchor":anchor},parent);
+      t.textContent=text;
+      return t;
+    };
+    function safeText(value) { return String(value ?? ""); }
+    function palette(id) { return TYPES[nodeData(id)?.type]?.[1] || "var(--blue)"; }
+    function edgeAnchor(a,b) {
+      const acx=a.x+a.w/2, acy=a.y+a.h/2, bcx=b.x+b.w/2, bcy=b.y+b.h/2;
+      const dx=bcx-acx,dy=bcy-acy,scale=Math.min((a.w/2)/Math.max(Math.abs(dx),.001),(a.h/2)/Math.max(Math.abs(dy),.001));
+      const scaleB=Math.min((b.w/2)/Math.max(Math.abs(dx),.001),(b.h/2)/Math.max(Math.abs(dy),.001));
+      return [[acx+dx*scale,acy+dy*scale],[bcx-dx*scaleB,bcy-dy*scaleB]];
+    }
+    function anchorToward(n,x,y) {
+      const cx=n.x+n.w/2,cy=n.y+n.h/2,dx=x-cx,dy=y-cy;
+      const scale=Math.min((n.w/2)/Math.max(Math.abs(dx),.001),(n.h/2)/Math.max(Math.abs(dy),.001));
+      return [cx+dx*scale,cy+dy*scale];
+    }
+    function drawCardinality(group,p,q,text,atEnd) {
+      const from=atEnd?q:p,to=atEnd?p:q,dx=to[0]-from[0],dy=to[1]-from[1],length=Math.hypot(dx,dy)||1;
+      const distance=Math.min(24,length*.28),offset=12,sign=atEnd?-1:1;
+      label(group,from[0]+dx/length*distance-dy/length*offset*sign,
+        from[1]+dy/length*distance+dx/length*offset*sign,text,"svg-edge-label");
+    }
+    function drawBoundary(b) {
+      svg("rect",{x:b.x,y:b.y,width:b.w,height:b.h,rx:16,class:"boundary"},edgeLayer);
+      label(edgeLayer,b.x+16,b.y+24,b.label,"svg-title","start");
+    }
+    function redrawEdges() {
+      edgeLayer.replaceChildren();
+      const d=diagram();
+      if(d.boundary)drawBoundary(d.boundary);
+      (d.edges||[]).forEach(drawEdge);
+    }
+    function drawEdge(e) {
+      const d=diagram(),a=pointFor(d,e.a),b=pointFor(d,e.b);
+      if (!a || !b) return;
+      const group=svg("g",{class:"edge","data-a":e.a,"data-b":e.b},edgeLayer);
+      const points=e.via?.length
+        ? [anchorToward(a,...e.via[0]),...e.via,anchorToward(b,...e.via[e.via.length-1])]
+        : edgeAnchor(a,b);
+      const line=svg("path",{d:`M${points.map(p=>p.map(Math.round).join(" ")).join(" L")}`,fill:"none",class:"message-line",stroke:"var(--edge)","stroke-width":1.6,"stroke-linejoin":"round"},group);
+      if (e.kind==="dashed"||e.kind==="dep") line.setAttribute("stroke-dasharray","6 5");
+      if (e.kind==="open"||e.kind==="dep") line.style.markerEnd="url(#arrowOpen)";
+      if (e.kind==="composition") line.setAttribute("marker-start","url(#diamond)");
+      if (e.kind==="assoc"||e.card) line.style.markerEnd="none";
+      if (e.card) {
+        drawCardinality(group,points[0],points[1],e.card[0],false);
+        drawCardinality(group,points[points.length-1],points[points.length-2],e.card[1],false);
+      }
+      let longest=[points[0],points[1]],longestLength=0;
+      for(let i=1;i<points.length;i++){
+        const length=Math.hypot(points[i][0]-points[i-1][0],points[i][1]-points[i-1][1]);
+        if(length>longestLength){longestLength=length;longest=[points[i-1],points[i]];}
+      }
+      if(e.label&&!(e.card&&["class","erd"].includes(d.id)))
+        label(group,(longest[0][0]+longest[1][0])/2,(longest[0][1]+longest[1][1])/2-5,e.label,"svg-edge-label");
+    }
+    function drawActor(g,n,id) {
+      const cx=n.w/2,c=palette(id);
+      svg("circle",{cx,cy:20,r:13,fill:"var(--panel)",stroke:c,"stroke-width":2},g);
+      svg("path",{d:`M${cx} 33v35M${cx-22} 47h44M${cx} 68l-20 27M${cx} 68l20 27`,fill:"none",stroke:c,"stroke-width":2.4,"stroke-linecap":"round"},g);
+      label(g,cx,n.h+13,nodeData(id).name,"svg-title");
+    }
+    function drawClass(g,n,id) {
+      const d=nodeData(id),c=palette(id),header=31,row=18;
+      const h=Math.max(n.h,header+(d.fields?.length||0)*row+10);
+      n.h=h;
+      svg("rect",{x:0,y:0,width:n.w,height:h,rx:9,class:"node-shape",stroke:c},g);
+      svg("rect",{x:0,y:0,width:n.w,height:header,rx:9,fill:c,"fill-opacity":.18},g);
+      svg("path",{d:`M0 24v7h${n.w}v-7`,fill:c,"fill-opacity":.18},g);
+      if(d.stereo){label(g,n.w/2,11,d.stereo,"svg-sub");label(g,n.w/2,25,d.name,"svg-title");}
+      else label(g,n.w/2,20,d.name,"svg-title");
+      (d.fields||[]).forEach((f,i)=>label(g,11,header+17+i*row,f,"svg-field","start"));
+    }
+    function drawTable(g,n,id) {
+      const d=nodeData(id),c=palette(id),fields=d.columns||d.fields||[],header=31,row=18;
+      n.h=Math.max(n.h,header+fields.length*row+10);
+      svg("rect",{x:0,y:0,width:n.w,height:n.h,rx:8,class:"node-shape",stroke:c},g);
+      svg("rect",{x:0,y:0,width:n.w,height:header,rx:8,fill:c,"fill-opacity":.18},g);
+      svg("path",{d:`M0 24v7h${n.w}v-7`,fill:c,"fill-opacity":.18},g);
+      label(g,n.w/2,20,d.meta?.[0]||d.name,"svg-title");
+      fields.forEach((f,i)=>label(g,10,header+16+i*row,f,"svg-field","start"));
+    }
+    function drawNode(n) {
+      const d=nodeData(n.id),g=svg("g",{class:"node","data-id":n.id,transform:`translate(${n.x} ${n.y})`},nodeLayer);
+      const c=palette(n.id),shape=n.shape||"box";
+      if (shape==="actor") drawActor(g,n,n.id);
+      else if (shape==="class") drawClass(g,n,n.id);
+      else if (shape==="table") drawTable(g,n,n.id);
+      else if (shape==="ellipse") {
+        svg("ellipse",{cx:n.w/2,cy:n.h/2,rx:n.w/2,ry:n.h/2,class:"node-shape",stroke:c},g);
+        label(g,n.w/2,n.h/2+4,d.name,"svg-title");
+      } else if (shape==="diamond") {
+        svg("polygon",{points:`${n.w/2},0 ${n.w},${n.h/2} ${n.w/2},${n.h} 0,${n.h/2}`,class:"node-shape",stroke:c},g);
+        label(g,n.w/2,n.h/2+4,d.name,"svg-title");
+      } else if (shape==="final") {
+        svg("circle",{cx:n.w/2,cy:n.h/2,r:n.w/2-1,fill:"var(--panel)",stroke:c,"stroke-width":2},g);
+        svg("circle",{cx:n.w/2,cy:n.h/2,r:n.w/2-7,fill:c},g);
+      } else if (shape==="container") {
+        svg("rect",{x:0,y:0,width:n.w,height:n.h,rx:12,fill:"none",stroke:c,"stroke-width":2,"stroke-dasharray":"7 5",style:"pointer-events:stroke"},g);
+        svg("rect",{x:0,y:0,width:n.w,height:30,rx:12,fill:c,"fill-opacity":.14},g);
+        label(g,14,20,"«node» "+d.name,"svg-title","start");
+      } else if (shape==="start") {
+        svg("circle",{cx:n.w/2,cy:n.h/2,r:Math.min(n.w,n.h)/2,fill:c,stroke:c},g);
+      } else if (shape==="round") {
+        svg("rect",{x:0,y:0,width:n.w,height:n.h,rx:17,class:"node-shape",stroke:c},g);
+        label(g,n.w/2,n.h/2+4,d.name,"svg-title");
+      } else {
+        svg("rect",{x:0,y:0,width:n.w,height:n.h,rx:10,class:"node-shape",stroke:c},g);
+        svg("rect",{x:0,y:0,width:n.w,height:5,rx:3,fill:c},g);
+        label(g,n.w/2,27,d.name,"svg-title");
+        const sub=(d.meta||[])[0];
+        if (sub) label(g,n.w/2,n.h-12,sub,"svg-sub");
+      }
+      const linked=DIAGRAMS.filter(x=>x.id!==current&&has(x,n.id)).length;
+      if (linked) {
+        svg("circle",{cx:n.w-1,cy:2,r:11,fill:"var(--green)"},g);
+        const mark=label(g,n.w-1,6,String(linked),"svg-sub");
+        mark.setAttribute("fill","#fff"); mark.setAttribute("font-size","10"); mark.setAttribute("font-weight","800");
+        const title=svg("title",{},g); title.textContent=`也出現在其他 ${linked} 張圖`;
+      }
+      return g;
+    }
+    function drawSequence(d) {
+      const x0=80,gap=145,top=80,bottom=680,rowY=i=>125+i*37;
+      const positions=new Map();
+      d.participants.forEach((id,i)=>{
+        const x=x0+i*gap,def=nodeData(id),g=svg("g",{class:"node","data-id":id,transform:`translate(${x-58} 34)`},nodeLayer);
+        svg("rect",{x:0,y:0,width:116,height:46,rx:8,class:"node-shape",stroke:palette(id)},g);
+        label(g,58,27,def.name.length>17?def.name.slice(0,16)+"…":def.name,"svg-title");
+        svg("line",{x1:x,y1:top,x2:x,y2:bottom,class:"lifeline"},nodeLayer);
+        positions.set(id,x);
+      });
+      (d.activations||[]).forEach(([id,from,to])=>{
+        const x=positions.get(id),y1=rowY(from)-9,y2=rowY(to)+(from===to?9:12);
+        svg("rect",{x:x-5,y:y1,width:10,height:y2-y1,rx:3,class:"activation"},nodeLayer);
+      });
+      d.messages.forEach(([from,to,text,kind],i)=>{
+        const y=rowY(i),x1=positions.get(from),x2=positions.get(to);
+        const g=svg("g",{class:"edge","data-a":from,"data-b":to},edgeLayer);
+        const cls="message-line"+(kind==="return"?" return":"");
+        if (from===to) {
+          svg("path",{d:`M${x1+5} ${y}h35v19h-30`,fill:"none",class:cls},g);
+          label(g,x1+54,y+13,text,"svg-edge-label","start");
+          return;
+        }
+        const dir=x1<x2?1:-1;
+        svg("line",{x1:x1+dir*2,y1:y,x2:x2-dir*2,y2:y,class:cls},g);
+        label(g,(x1+x2)/2,y-5,text,"svg-edge-label",x1<x2?"start":"end");
+      });
+    }
+    function applySelection() {
+      const query=$("#search").value.trim().toLocaleLowerCase();
+      const neighbor=new Set();
+      if (selected) (diagram().edges||(diagram().messages||[]).map(m=>({a:m[0],b:m[1]}))).forEach(e=>{
+        if(e.a===selected) neighbor.add(e.b);
+        if(e.b===selected) neighbor.add(e.a);
+      });
+      nodeLayer.querySelectorAll(".node").forEach(g=>{
+        const id=g.dataset.id,d=nodeData(id);
+        const text=[d.name,d.desc,...(d.meta||[]),...(d.fields||[])].join(" ").toLocaleLowerCase();
+        const matches=!query||text.includes(query);
+        g.classList.toggle("selected",id===selected);
+        g.setAttribute("aria-pressed",String(id===selected));
+        g.classList.toggle("dim",(!matches)||Boolean(selected&&id!==selected&&!neighbor.has(id)));
+      });
+      edgeLayer.querySelectorAll(".edge").forEach(g=>{
+        const active=!selected||g.dataset.a===selected||g.dataset.b===selected;
+        g.classList.toggle("dim",!active);
+        g.classList.toggle("highlight",Boolean(selected&&active));
+      });
+    }
+    function drawNav() {
+      nav.innerHTML='<div class="nav-label">圖表目錄</div>';
+      DIAGRAMS.forEach((d,i)=>{
+        const b=document.createElement("button");
+        b.type="button";b.dataset.diagram=d.id;b.classList.toggle("on",d.id===current);
+        const strong=document.createElement("strong");strong.textContent=`${String(i+1).padStart(2,"0")} · ${d.name}`;
+        const small=document.createElement("small");small.textContent=`${d.type} · ${d.nodes.length} 個節點`;
+        b.append(strong,small);nav.appendChild(b);
+      });
+    }
+    function draw() {
+      edgeLayer.replaceChildren();nodeLayer.replaceChildren();
+      const d=diagram();
+      if(d.sequence) drawSequence(d);
+      else {
+        redrawEdges();
+        d.nodes.forEach(drawNode);
+      }
+      $("#trail").textContent=[...history.map(h=>byId(h.diagram)?.name).filter(Boolean),d.name].join("  ›  ");
+      $("#caption").textContent=d.caption||"";
+      $("#back").disabled=history.length===0;
+      nodeLayer.querySelectorAll(".node").forEach(g=>{
+        g.setAttribute("tabindex","0");g.setAttribute("role","button");g.setAttribute("aria-label",nodeData(g.dataset.id).name);
+      });
+      drawNav();applySelection();renderInspector();
+    }
+    const diagramFor=(id)=>{
+      const containing=DIAGRAMS.filter(d=>has(d,id));
+      return containing.find(d=>d.id===current)||containing[0];
+    };
+    function traceOf(id) {
+      const walk=(downstream)=>{
+        const found=new Map([[id,{depth:0}]]),queue=[id];
+        while(queue.length){
+          const cur=queue.shift(),depth=found.get(cur).depth;
+          TRACE.forEach(([from,rel,to])=>{
+            const next=downstream?(from===cur?to:null):(to===cur?from:null);
+            if(next&&!found.has(next)){found.set(next,{depth:depth+1,rel});queue.push(next);}
+          });
+        }
+        found.delete(id);
+        return [...found].map(([key,v])=>({id:key,depth:v.depth,rel:v.rel}));
+      };
+      return {down:walk(true),up:walk(false)};
+    }
+    function renderInspector() {
+      $("#sr").textContent=selected&&nodeData(selected)?`已選取 ${nodeData(selected).name}`:diagram().name;
+      if(!selected||!nodeData(selected)) {
+        inspector.innerHTML=`<span class="status">現況視圖</span><h2>${diagram().name}</h2><p>${diagram().summary}</p>
+          <h3>工作台操作</h3><ul class="detail-list"><li>選擇左側圖表切換 UML 視圖。</li><li>點節點查看直接關係及跨圖位置。</li><li>點右側跨圖按鈕可跳轉至同一元件。</li><li>搜尋結果會列出相關圖表，可直接跳轉。</li><li>使用「清單檢視」檢視節點及連線；可拖曳平移／節點、滾輪或觸控雙指縮放。</li></ul>
+          <h3>圖例</h3><div class="legend">${Object.entries(TYPES).map(([k,v])=>`<span><i class="swatch" style="--swatch:${v[1]}"></i>${v[0]}</span>`).join("")}</div>
+          <div class="note">綠色狀態代表目前程式已實作的範圍；橘色或說明文字會標出未實作、概念關聯或需雲端設定驗證的內容。</div>`;
+        return;
+      }
+      const d=nodeData(selected),type=TYPES[d.type]||["元件","var(--blue)"],diagramHas=DIAGRAMS.filter(x=>has(x,selected));
+      const related=(diagram().edges||[]).filter(e=>e.a===selected||e.b===selected);
+      inspector.replaceChildren();
+      const badge=document.createElement("span");badge.className="kind";badge.style.background=type[1];badge.textContent=type[0];inspector.appendChild(badge);
+      const h=document.createElement("h2");h.textContent=d.name;inspector.appendChild(h);
+      const p=document.createElement("p");p.textContent=d.desc;inspector.appendChild(p);
+      if(d.meta?.length){
+        const h3=document.createElement("h3");h3.textContent="程式／設定參照";inspector.appendChild(h3);
+        const ul=document.createElement("ul");ul.className="detail-list";
+        d.meta.forEach(item=>{const li=document.createElement("li");li.textContent=item;ul.appendChild(li)});inspector.appendChild(ul);
+      }
+      if(d.fields?.length){
+        const h3=document.createElement("h3");h3.textContent="欄位摘要";inspector.appendChild(h3);
+        const ul=document.createElement("ul");ul.className="detail-list";
+        d.fields.forEach(item=>{const li=document.createElement("li");li.textContent=item;ul.appendChild(li)});inspector.appendChild(ul);
+      }
+      const cross=document.createElement("h3");cross.textContent="跨圖追溯（點擊跳轉）";inspector.appendChild(cross);
+      const chips=document.createElement("div");chips.className="chips";
+      diagramHas.forEach(x=>{
+        const b=document.createElement("button");b.type="button";b.className="chip";b.dataset.go=x.id;
+        b.textContent=x.id===current?`${x.name} · 目前`:x.name;chips.appendChild(b);
+      });
+      inspector.appendChild(chips);
+      const relHead=document.createElement("h3");relHead.textContent="本圖直接關聯";inspector.appendChild(relHead);
+      const rels=document.createElement("div");rels.className="chips";
+      related.forEach(e=>{
+        const other=e.a===selected?e.b:e.a,b=document.createElement("button");
+        b.type="button";b.className="chip";b.dataset.select=other;
+        b.textContent=`${e.a===selected?"→":"←"} ${nodeData(other).name}${e.label?` · ${e.label}`:""}`;
+        rels.appendChild(b);
+      });
+      if(!related.length) rels.textContent="本圖沒有直接連線。";
+      inspector.appendChild(rels);
+      const trace=traceOf(selected);
+      [["追溯鏈 · 下游（實現／產生）",trace.down,"→"],["追溯鏈 · 上游（需求／來源）",trace.up,"←"]].forEach(([title,items,arrow])=>{
+        const visible=items.filter(t=>nodeData(t.id)&&diagramFor(t.id));
+        if(!visible.length)return;
+        const h3=document.createElement("h3");h3.textContent=title;inspector.appendChild(h3);
+        const groups=new Map();
+        visible.forEach(t=>{const k=LAYERS[nodeData(t.id).type]||"其他";if(!groups.has(k))groups.set(k,[]);groups.get(k).push(t);});
+        groups.forEach((list,k)=>{
+          const h4=document.createElement("h4");h4.textContent=`${k}（${list.length}）`;inspector.appendChild(h4);
+          const box=document.createElement("div");box.className="chips";
+          list.forEach(t=>{
+            const target=diagramFor(t.id),button=document.createElement("button");
+            button.type="button";button.className="chip";button.dataset.go=target.id;button.dataset.entity=t.id;
+            const hop=t.depth>1?` · ${t.depth} 層`:"";
+            button.textContent=`${arrow} [${REL[t.rel]||t.rel}] ${nodeData(t.id).name}${hop} · ${target.name}`;
+            button.title=`開啟${target.name}中的${nodeData(t.id).name}`;
+            box.appendChild(button);
+          });
+          inspector.appendChild(box);
+        });
+      });
+    }
+    function syncHash() {
+      try{window.history.replaceState(null,"",`#${current}${selected?"/"+selected:""}`);}catch{}
+    }
+    function readHash() {
+      let parts=[];
+      try{parts=decodeURIComponent(location.hash.slice(1)).split("/");}catch{}
+      return {d:byId(parts[0])?parts[0]:null,e:parts[1]};
+    }
+    function go(id,entity=selected,push=true) {
+      if(!byId(id))return;
+      if(push&&id!==current) history.push({diagram:current,selected});
+      current=id;
+      selected=has(diagram(),entity)?entity:null;
+      draw();
+      fitView();
+      syncHash();
+      if(selected) nodeLayer.querySelector(`[data-id="${selected}"]`)?.focus({preventScroll:true});
+    }
+    function pick(id) { selected=id;applySelection();renderInspector();syncHash(); }
+    function resetLayout() {
+      const d=diagram(),saved=LAYOUT0.get(d.id);
+      d.nodes.forEach((n,i)=>Object.assign(n,saved[i]));
+      (d.edges||[]).forEach(e=>{if(e.viaSaved){e.via=e.viaSaved;delete e.viaSaved;}});
+      draw();fitView();
+    }
+    function matrix() {
+      const content=$("#matrixContent");
+      const used=Object.keys(ENTITIES).filter(id=>DIAGRAMS.some(d=>has(d,id)));
+      const table=document.createElement("table");
+      const head=document.createElement("thead"),tr=document.createElement("tr"),first=document.createElement("th");
+      first.textContent="共用元件";tr.appendChild(first);
+      DIAGRAMS.forEach(d=>{const th=document.createElement("th");th.textContent=d.name;tr.appendChild(th)});
+      head.appendChild(tr);table.appendChild(head);
+      const body=document.createElement("tbody");
+      used.forEach(id=>{
+        const row=document.createElement("tr"),name=document.createElement("th");
+        name.scope="row";name.textContent=nodeData(id).name;row.appendChild(name);
+        DIAGRAMS.forEach(d=>{
+          const cell=document.createElement("td");
+          if(has(d,id)){const b=document.createElement("button");b.type="button";b.dataset.go=d.id;b.dataset.entity=id;b.textContent="●";b.setAttribute("aria-label",`開啟${d.name}中的${nodeData(id).name}`);b.title=`開啟${d.name}中的${nodeData(id).name}`;cell.appendChild(b)}
+          row.appendChild(cell);
+        });
+        body.appendChild(row);
+      });
+      table.appendChild(body);content.replaceChildren(table);
+    }
+    function traceMatrix() {
+      const cases=Object.keys(ENTITIES).filter(id=>ENTITIES[id].type==="usecase");
+      const table=document.createElement("table");table.className="trace-table";
+      const head=document.createElement("thead"),tr=document.createElement("tr");
+      ["使用案例","角色","實現模組","資料實體","流程步驟","結果狀態"].forEach(t=>{const th=document.createElement("th");th.textContent=t;tr.appendChild(th);});
+      head.appendChild(tr);table.appendChild(head);
+      const cell=(ids)=>{
+        const td=document.createElement("td"),box=document.createElement("div");box.className="chips";
+        [...new Set(ids)].filter(id=>nodeData(id)&&diagramFor(id)).forEach(id=>{
+          const target=diagramFor(id),b=document.createElement("button");
+          b.type="button";b.className="chip";b.dataset.go=target.id;b.dataset.entity=id;
+          b.textContent=nodeData(id).name;b.title=`開啟${target.name}`;box.appendChild(b);
+        });
+        if(!box.childElementCount)box.textContent="—";
+        td.appendChild(box);return td;
+      };
+      const body=document.createElement("tbody");
+      cases.forEach(id=>{
+        const t=traceOf(id),type=x=>nodeData(x)?.type;
+        const modules=t.down.filter(x=>type(x.id)==="service").map(x=>x.id);
+        const entities=t.down.filter(x=>type(x.id)==="domain").map(x=>x.id);
+        const actors=t.up.filter(x=>type(x.id)==="actor").map(x=>x.id);
+        const steps=TRACE.filter(([f,r,to])=>r==="realizedBy"&&modules.includes(to)&&type(f)==="step").map(x=>x[0]);
+        const states=TRACE.filter(([f,r])=>r==="produces"&&(steps.includes(f)||modules.includes(f))).map(x=>x[2]);
+        const row=document.createElement("tr"),th=document.createElement("th");
+        th.scope="row";th.textContent=nodeData(id).name;row.appendChild(th);
+        [actors,modules,entities,steps,states].forEach(ids=>row.appendChild(cell(ids)));
+        body.appendChild(row);
+      });
+      table.appendChild(body);$("#matrixContent").replaceChildren(table);
+    }
+    let lastOpener=null;
+    function openDialog() {
+      lastOpener=document.activeElement;
+      $("#matrix").classList.add("open");
+      $("#closeMatrix").focus();
+    }
+    function closeDialog() {
+      $("#matrix").classList.remove("open");
+      if(lastOpener?.isConnected)lastOpener.focus();
+      lastOpener=null;
+    }
+    function listView() {
+      const d=diagram(),list=document.createElement("ul");list.className="detail-list";
+      const links=d.edges||(d.messages||[]).map(([a,b,label])=>({a,b,label}));
+      d.nodes.forEach(n=>{
+        const related=links.filter(e=>e.a===n.id||e.b===n.id).map(e=>
+          `${e.a===n.id?"→":"←"} ${nodeData(e.a===n.id?e.b:e.a).name}${e.label?`（${e.label}）`:""}`);
+        const li=document.createElement("li");li.textContent=nodeData(n.id).name+(related.length?`：${related.join("；")}`:"");
+        list.appendChild(li);
+      });
+      $("#matrixTitle").textContent=`${d.name} · 清單檢視`;
+      $("#matrixContent").replaceChildren(list);
+      openDialog();
+    }
+    function searchResults(q) {
+      const box=$("#results");box.replaceChildren();
+      if(!q){box.hidden=true;$("#search").setAttribute("aria-expanded","false");return [];}
+      const matches=[];
+      Object.entries(ENTITIES).forEach(([id,entity])=>{
+        const text=[entity.name,entity.desc,...(entity.meta||[]),...(entity.fields||[])].join(" ").toLocaleLowerCase();
+        if(!text.includes(q))return;
+        DIAGRAMS.filter(d=>has(d,id)).forEach(d=>matches.push([id,d]));
+      });
+      matches.sort((a,b)=>Number(b[1].id===current)-Number(a[1].id===current));
+      matches.slice(0,12).forEach(([id,d])=>{
+        const button=document.createElement("button");button.type="button";button.role="option";
+        button.dataset.go=d.id;button.dataset.entity=id;button.dataset.clear="1";
+        button.textContent=`${nodeData(id).name} · ${d.name}${d.id===current?"（目前）":""}`;
+        box.appendChild(button);
+      });
+      if(!matches.length){const p=document.createElement("p");p.textContent="沒有符合的元件。";box.appendChild(p);}
+      else if(matches.length>12){const p=document.createElement("p");p.textContent=`另有 ${matches.length-12} 筆，請縮小關鍵字。`;box.appendChild(p);}
+      box.hidden=false;$("#search").setAttribute("aria-expanded","true");
+      return matches;
+    }
+    nav.addEventListener("click",ev=>{
+      const b=ev.target.closest("button[data-diagram]");
+      if(b)go(b.dataset.diagram,selected);
+    });
+    document.addEventListener("click",ev=>{
+      if(ev.target.id==="matrix"){closeDialog();return;}
+      if(!ev.target.closest("#results,.search-wrap")){
+        $("#results").hidden=true;$("#search").setAttribute("aria-expanded","false");
+      }
+      const b=ev.target.closest("button");if(!b)return;
+      if(b.dataset.go){
+        if($("#matrix").classList.contains("open"))closeDialog();
+        if(b.dataset.clear){$("#search").value="";$("#results").hidden=true;$("#search").setAttribute("aria-expanded","false");}
+        go(b.dataset.go,b.dataset.entity||selected);return;
+      }
+      if(b.dataset.select){pick(b.dataset.select);return}
+    });
+    nodeLayer.addEventListener("click",ev=>{
+      const g=ev.target.closest(".node");if(g&&!suppressClick)pick(g.dataset.id);
+    });
+    nodeLayer.addEventListener("keydown",ev=>{
+      const g=ev.target.closest?.(".node");if(!g)return;
+      if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();pick(g.dataset.id);return;}
+      const direction={ArrowRight:[1,0],ArrowLeft:[-1,0],ArrowDown:[0,1],ArrowUp:[0,-1]}[ev.key];
+      if(!direction)return;
+      ev.preventDefault();
+      const currentNode=pointFor(diagram(),g.dataset.id),center=n=>[n.x+n.w/2,n.y+n.h/2];
+      const [x,y]=center(currentNode);let best=null,bestScore=Infinity;
+      diagram().nodes.forEach(n=>{
+        if(n===currentNode)return;
+        const [nx,ny]=center(n),dx=nx-x,dy=ny-y;
+        if(dx*direction[0]+dy*direction[1]<=0)return;
+        const score=Math.hypot(dx,dy)+2*Math.abs(dx*direction[1]-dy*direction[0]);
+        if(score<bestScore){best=n;bestScore=score;}
+      });
+      if(best)nodeLayer.querySelector(`[data-id="${best.id}"]`)?.focus();
+    });
+    $("#search").addEventListener("input",()=>{
+      applySelection();searchResults($("#search").value.trim().toLocaleLowerCase());
+    });
+    $("#search").addEventListener("keydown",ev=>{
+      if(ev.key==="ArrowDown"){const first=$("#results button");if(first){ev.preventDefault();first.focus();}return;}
+      if(ev.key==="Escape"){$("#search").value="";$("#results").hidden=true;$("#search").setAttribute("aria-expanded","false");applySelection();}
+      if(ev.key==="Enter"){
+        const [id,d]=searchResults($("#search").value.trim().toLocaleLowerCase())[0]||[];
+        if(id&&d){$("#search").value="";$("#results").hidden=true;$("#search").setAttribute("aria-expanded","false");go(d.id,id);}
+      }
+    });
+    $("#results").addEventListener("keydown",ev=>{
+      const items=[...$("#results").querySelectorAll("button")],i=items.indexOf(document.activeElement);
+      if(ev.key==="ArrowDown"&&i<items.length-1){ev.preventDefault();items[i+1].focus();}
+      else if(ev.key==="ArrowUp"){ev.preventDefault();(i>0?items[i-1]:$("#search")).focus();}
+      else if(ev.key==="Escape"){$("#search").focus();}
+    });
+    $("#back").addEventListener("click",()=>{
+      const prev=history.pop();if(prev)go(prev.diagram,prev.selected,false);
+    });
+    function fitView() {
+      let width=1200,height=760;
+      diagram().nodes.forEach(n=>{
+        const ent=nodeData(n.id),fields=(n.shape==="table"?(ent.columns||ent.fields):ent.fields)?.length||0;
+        const actualHeight=["class","table"].includes(n.shape)?Math.max(n.h,41+fields*18):n.h;
+        width=Math.max(width,n.x+n.w+40);height=Math.max(height,n.y+actualHeight+60);
+      });
+      diagram().edges?.forEach(e=>(e.via||[]).forEach(p=>{width=Math.max(width,p[0]+35);height=Math.max(height,p[1]+35);}));
+      const bd=diagram().boundary;if(bd){width=Math.max(width,bd.x+bd.w+30);height=Math.max(height,bd.y+bd.h+30);}
+      view={x:0,y:0,w:width,h:height};cv.setAttribute("viewBox",`0 0 ${width} ${height}`);
+    }
+    $("#fit").addEventListener("click",fitView);
+    $("#matrixButton").addEventListener("click",()=>{matrix();$("#matrixTitle").textContent="元件 × 圖表關聯矩陣";openDialog();});
+    $("#listButton").addEventListener("click",listView);
+    $("#traceButton").addEventListener("click",()=>{traceMatrix();$("#matrixTitle").textContent="使用案例追溯矩陣（角色 → 模組 → 資料 → 流程）";openDialog();});
+    $("#resetLayout").addEventListener("click",resetLayout);
+    $("#closeMatrix").addEventListener("click",closeDialog);
+    $("#theme").addEventListener("click",()=>{
+      const root=document.documentElement,next=root.dataset.theme==="dark"?"light":"dark";
+      root.dataset.theme=next;localStorage.setItem("tradeguard-uml-theme",next);
+    });
+    try{const storedTheme=localStorage.getItem("tradeguard-uml-theme");if(storedTheme)document.documentElement.dataset.theme=storedTheme;}catch{}
+    document.addEventListener("keydown",ev=>{
+      if($("#matrix").classList.contains("open")){
+        if(ev.key==="Escape"){closeDialog();return;}
+        if(ev.key==="Tab"){
+          const focusable=[...$("#matrix").querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),[tabindex]:not([tabindex="-1"])')]
+            .filter(el=>el.getClientRects().length>0);
+          if(!focusable.length){ev.preventDefault();$("#closeMatrix").focus();return;}
+          const first=focusable[0],last=focusable[focusable.length-1];
+          if(ev.shiftKey&&(document.activeElement===first||!$("#matrix").contains(document.activeElement))){ev.preventDefault();last.focus();}
+          else if(!ev.shiftKey&&(document.activeElement===last||!$("#matrix").contains(document.activeElement))){ev.preventDefault();first.focus();}
+        }
+        return;
+      }
+      if(ev.target instanceof HTMLInputElement)return;
+      if(ev.ctrlKey||ev.metaKey||ev.altKey||!/^[0-9]$/.test(ev.key))return;
+      const index=ev.key==="0"?9:Number(ev.key)-1;
+      if(DIAGRAMS[index])go(DIAGRAMS[index].id,selected);
+    });
+    const pointers=new Map();let pinchDistance=0;
+    cv.addEventListener("pointerdown",ev=>{
+      pointers.set(ev.pointerId,[ev.clientX,ev.clientY]);
+      if(pointers.size===2){
+        const [a,b]=[...pointers.values()];pinchDistance=Math.hypot(a[0]-b[0],a[1]-b[1]);drag=null;return;
+      }
+      const g=ev.target.closest(".node");
+      drag={x:ev.clientX,y:ev.clientY,target:g,node:g&&!diagram().sequence?pointFor(diagram(),g.dataset.id):null,moved:false};
+      cv.setPointerCapture(ev.pointerId);
+      if(!g)cv.classList.add("grabbing");
+    });
+    cv.addEventListener("pointermove",ev=>{
+      if(pointers.has(ev.pointerId))pointers.set(ev.pointerId,[ev.clientX,ev.clientY]);
+      if(pointers.size===2){
+        const [a,b]=[...pointers.values()],distance=Math.hypot(a[0]-b[0],a[1]-b[1]);
+        if(pinchDistance&&distance)zoomAt((a[0]+b[0])/2,(a[1]+b[1])/2,pinchDistance/distance);
+        pinchDistance=distance;return;
+      }
+      if(!drag)return;
+      const dx=ev.clientX-drag.x,dy=ev.clientY-drag.y;
+      if(!drag.moved&&Math.abs(dx)+Math.abs(dy)<4)return;
+      drag.moved=true;
+      const scale=cv.getScreenCTM()?.a||cv.getBoundingClientRect().width/view.w;
+      if(drag.node){
+        drag.node.x+=dx/scale;drag.node.y+=dy/scale;
+        diagram().edges?.forEach(e=>{if((e.a===drag.node.id||e.b===drag.node.id)&&e.via){e.viaSaved=e.viaSaved||e.via;e.via=null;}});
+        drag.target.setAttribute("transform",`translate(${drag.node.x} ${drag.node.y})`);
+        redrawEdges();applySelection();
+      }else{
+        view.x-=dx/scale;view.y-=dy/scale;cv.setAttribute("viewBox",`${view.x} ${view.y} ${view.w} ${view.h}`);
+      }
+      drag.x=ev.clientX;drag.y=ev.clientY;
+    });
+    cv.addEventListener("pointerup",ev=>{
+      pointers.delete(ev.pointerId);if(pointers.size<2)pinchDistance=0;
+      if(drag&&!drag.moved&&drag.target)pick(drag.target.dataset.id);
+      if(drag?.moved&&drag.node){suppressClick=true;setTimeout(()=>{suppressClick=false;},0);}
+      drag=null;cv.classList.remove("grabbing");
+      try{cv.releasePointerCapture(ev.pointerId)}catch{}
+    });
+    cv.addEventListener("pointercancel",ev=>{pointers.delete(ev.pointerId);pinchDistance=0;drag=null;cv.classList.remove("grabbing")});
+    function zoomAt(clientX,clientY,factor) {
+      const width=view.w*factor;if(width<280||width>3400)return;
+      const matrix=cv.getScreenCTM();
+      if(!matrix)return;
+      const point=new DOMPoint(clientX,clientY).matrixTransform(matrix.inverse());
+      view.x=point.x-(point.x-view.x)*factor;view.y=point.y-(point.y-view.y)*factor;
+      view.w=width;view.h*=factor;cv.setAttribute("viewBox",`${view.x} ${view.y} ${view.w} ${view.h}`);
+    }
+    cv.addEventListener("wheel",ev=>{ev.preventDefault();zoomAt(ev.clientX,ev.clientY,ev.deltaY>0?1.12:.89);},{passive:false});
+    {const h=readHash();if(h.d){current=h.d;selected=has(diagram(),h.e)?h.e:null;}}
+    draw();fitView();
+    window.addEventListener("hashchange",()=>{
+      const h=readHash();
+      if(h.d&&(h.d!==current||(h.e||null)!==selected))go(h.d,h.e,false);
+    });
+  </script>
+</body>
+</html>
