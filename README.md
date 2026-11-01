@@ -1,10 +1,22 @@
 # TradeGuard
 
-證券交易模擬器：限價撮合、市場監控、防竄改稽核鏈。**僅供教育用途**，使用虛構資料，非真實交易系統，也不構成投資建議。
+[![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://www.oracle.com/java/) [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-brightgreen.svg)](https://spring.io/projects/spring-boot) [![Next.js](https://img.shields.io/badge/Next.js-15.5-black.svg)](https://nextjs.org/) [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue.svg)](https://www.postgresql.org/) [![Redis](https://img.shields.io/badge/Redis-7-red.svg)](https://redis.io/)
 
-[![Next.js](https://img.shields.io/badge/Next.js-15.5-black.svg)](https://nextjs.org/) [![MUI](https://img.shields.io/badge/MUI-9.5-blue.svg)](https://mui.com/) [![Vercel](https://img.shields.io/badge/Vercel-Deployment-black.svg)](https://vercel.com/) [![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://www.oracle.com/java/) [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-brightgreen.svg)](https://spring.io/projects/spring-boot) [![Render](https://img.shields.io/badge/Render-Hosting-46E3B7.svg)](https://render.com/) [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue.svg)](https://www.postgresql.org/) [![Neon](https://img.shields.io/badge/Neon-PostgreSQL-00E599.svg)](https://neon.tech/) [![Redis](https://img.shields.io/badge/Redis-7-red.svg)](https://redis.io/)
+證券交易模擬器：限價撮合、市場監控、防竄改稽核鏈。
+
+> ⚠️ 僅供教育與學習用途，非真實交易系統，不構成投資建議。
+
+## 核心功能
+
+- **撮合**：價格／時間優先、部分成交、1,000 股整股單位、台北平日交易時段驗證。
+- **事件重播**：啟動時重建未結委託；序號與資料庫不一致時拒絕啟動。
+- **監控**：同帳戶洗售、價格／成交量警示；案件提報與審核須由不同人執行。
+- **稽核**：SHA-256 鏈式稽核紀錄，與業務寫入同一筆交易；可驗證鏈與三方帳本對帳。
+- **日終報告**：每日 XML 報表，由 GitHub Actions 排程產生。
 
 ## 線上測試
+
+前端部署於 Vercel，後端部署於 Render，資料庫使用 Neon PostgreSQL。
 
 > Render 免費方案閒置 15 分鐘會休眠，首次連線可能需要約 1 分鐘喚醒。
 
@@ -22,6 +34,11 @@
 | `ADMIN` | `/admin` | 管理商品與帳號，並擁有稽核權限 |
 
 完整頁面權限請見 [前端說明](docs/frontend.md)。
+
+手動檢查後端狀態：
+
+- [後端服務狀態頁](https://tradeguard-api-e32l.onrender.com/api/health)
+- [後端依賴就緒檢查頁](https://tradeguard-api-e32l.onrender.com/api/health/readiness)：檢查後端 API、PostgreSQL、Redis 狀態，頁面每 3 秒自動更新。
 
 ## 本地端啟動
 
@@ -58,26 +75,6 @@ cd backend-java
 
 測試使用 H2（PostgreSQL 相容模式），不需 Docker；也涵蓋 Redis 中斷時的 PostgreSQL 備援路徑。CI 內容見 [測試與 CI](docs/testing-and-ci.md)。
 
-## 詳細文件
-
-| 文件 | 內容 |
-|------|------|
-| [docs/functional-requirements-specification.md](https://github.com/elvis356/trade-guard/blob/main/docs/functional-requirements-specification.md) | 功能需求規格 |
-| [https://elvis356.github.io/trade-guard/uml-workbench.html](https://elvis356.github.io/trade-guard/uml-workbench.html) | 系統架構與設計圖 |
-| [https://trade-guard-frontend-next.vercel.app](https://trade-guard-frontend-next.vercel.app/) | 前端（會先自動檢查後端 API、PostgreSQL、Redis 狀態） |
-| [https://tradeguard-api-e32l.onrender.com/api/health](https://tradeguard-api-e32l.onrender.com/api/health) | 後端服務狀態頁（用於手動檢查） |
-| [https://tradeguard-api-e32l.onrender.com/api/health/readiness](https://tradeguard-api-e32l.onrender.com/api/health/readiness) | 後端依賴就緒檢查頁（用於手動檢查；此頁面每 3 秒會自動更新，檢查後端 API、PostgreSQL、Redis 狀態） |
-| [docs/local-development.md](docs/local-development.md) | 本機啟動、不使用容器、環境變數表、Neon 設定 |
-| [docs/api.md](docs/api.md) | 驗證、市場／委託、監控案件、稽核與每日報告 API |
-| [docs/frontend.md](docs/frontend.md) | 前端頁面、角色權限、環境變數、報表快取策略 |
-| [docs/deployment.md](docs/deployment.md) | Render、Vercel、GitHub Actions 日終排程 |
-| [docs/testing-and-ci.md](docs/testing-and-ci.md) | 測試方式、CI 與安全檢查 |
-| [docs/limitations.md](docs/limitations.md) | 目前限制與後續工作 |
-| [docs/functional-requirements-specification.md](docs/functional-requirements-specification.md) | 功能需求、角色權限、業務規則 |
-| [docs/uml-workbench.html](docs/uml-workbench.html) | 互動式 UML 工作台（[線上檢視](https://elvis356.github.io/trade-guard/uml-workbench.html)） |
-
-> 提示：在 GitHub 上，按住 `Ctrl`（Mac 上按 `⌘`）再點連結，可在新分頁開啟。
-
 ## 專案結構
 
 ```
@@ -88,10 +85,15 @@ render.yaml       Render Blueprint
 docker-compose.yml  本機 PostgreSQL 16 + Redis 7 + 後端
 ```
 
-## 核心功能
+## 詳細文件
 
-- **撮合**：價格／時間優先、部分成交、1,000 股整股單位、台北平日交易時段驗證。
-- **事件重播**：啟動時重建未結委託；序號與資料庫不一致時拒絕啟動。
-- **監控**：同帳戶洗售、價格／成交量警示；案件提報與審核須由不同人執行。
-- **稽核**：SHA-256 鏈式稽核紀錄，與業務寫入同一筆交易；可驗證鏈與三方帳本對帳。
-- **日終報告**：每日 XML 報表，由 GitHub Actions 排程產生。
+| 文件 | 內容 |
+|------|------|
+| [docs/functional-requirements-specification.md](docs/functional-requirements-specification.md) | 功能需求、角色權限、業務規則 |
+| [docs/uml-workbench.html](docs/uml-workbench.html) | 互動式 UML 工作台，系統架構與設計圖（[線上檢視](https://elvis356.github.io/trade-guard/uml-workbench.html)） |
+| [docs/local-development.md](docs/local-development.md) | 本機啟動、不使用容器、環境變數表、Neon 設定 |
+| [docs/api.md](docs/api.md) | 驗證、市場／委託、監控案件、稽核與每日報告 API |
+| [docs/frontend.md](docs/frontend.md) | 前端頁面、角色權限、環境變數、報表快取策略 |
+| [docs/deployment.md](docs/deployment.md) | Render、Vercel、GitHub Actions 日終排程 |
+| [docs/testing-and-ci.md](docs/testing-and-ci.md) | 測試方式、CI 與安全檢查 |
+| [docs/limitations.md](docs/limitations.md) | 目前限制與後續工作 |
