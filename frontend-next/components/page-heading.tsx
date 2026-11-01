@@ -14,9 +14,11 @@ export function PageHeading({
 }) {
   return (
     <Box className="hero" component="section">
-      <Typography className="eyebrow" component="p" variant="overline">{eyebrow}</Typography>
-      <Typography component="h1" sx={{ fontSize: "clamp(2rem, 5vw, 3.1rem)", letterSpacing: "-.045em", mb: 1.5 }} variant="h1">{title}</Typography>
-      {description && <Typography color="text.secondary" component="p" variant="body1">{description}</Typography>}
+      <Box className="hero-inner">
+        <Typography className="eyebrow" component="p" variant="overline">{eyebrow}</Typography>
+        <Typography component="h1" variant="h1">{title}</Typography>
+        {description && <Typography component="p" variant="body1">{description}</Typography>}
+      </Box>
     </Box>
   );
 }

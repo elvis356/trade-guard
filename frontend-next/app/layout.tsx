@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
+import { Lato } from "next/font/google";
 import { AuthProvider } from "@/components/auth-provider";
 import { SiteHeader } from "@/components/site-header";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
+
+const lato = Lato({ display: "swap", subsets: ["latin"], variable: "--font-lato", weight: ["300", "400", "700", "900"] });
 
 export const metadata: Metadata = {
   title: {
@@ -15,7 +18,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="zh-Hant">
-      <body>
+      <body className={lato.variable}>
         <ThemeProvider>
           <AuthProvider>
             <SiteHeader />

@@ -59,7 +59,7 @@ export function SiteHeader() {
               href={link.href}
               key={link.href}
               size="small"
-              variant={pathname === link.href ? "contained" : "text"}
+              variant="text"
             >
               {link.label}
             </Button>
@@ -70,14 +70,14 @@ export function SiteHeader() {
               component={Link}
               href="/reports/daily"
               size="small"
-              variant={pathname === "/reports/daily" ? "contained" : "text"}
+              variant="text"
             >
               日終報表
             </Button>
           )}
         </Box>
         <Stack className="header-account" direction="row" spacing={1} sx={{ alignItems: "center" }}>
-          <Chip className="market-badge" color="success" label="模擬市場" size="small" variant="outlined" />
+          <Chip className="market-badge" color="default" label="模擬市場" size="small" variant="outlined" />
           {loading ? <Typography color="text.secondary" variant="caption">檢查登入中</Typography> : user ? (
             <>
               <Box className="account-name">

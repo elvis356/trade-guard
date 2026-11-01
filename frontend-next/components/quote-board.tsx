@@ -58,7 +58,7 @@ export function QuoteBoard({ initialQuotes }: { initialQuotes: MarketQuote[] }) 
               <CardContent>
                 <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between" }}>
                   <Typography className="symbol" component="span" variant="overline">{quote.symbol}</Typography>
-                  <Chip color="success" label="模擬行情" size="small" variant="outlined" />
+                  <Chip color="default" label="模擬行情" size="small" variant="outlined" />
                 </Stack>
                 <Typography component="h2" sx={{ mt: 2 }} variant="h6">{quote.name}</Typography>
                 <Typography className="quote-price" component="p" variant="h4">{price(quote.lastPrice)}</Typography>

@@ -95,7 +95,6 @@ a:focus-visible { outline: 3px solid #68ae8b; outline-offset: 3px; }
 .button-quiet:hover { background: #f4f8f5; border-color: #9abbaa; color: var(--green-dark); }
 .button-quiet:disabled, .button-link:disabled { cursor: not-allowed; opacity: .58; }
 .button-link:focus-visible, .button-quiet:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid #68ae8b; outline-offset: 2px; }
-.site-header nav a[aria-current="page"] { color: var(--green-dark); font-weight: 750; }
 .header-error { background: #fff4f3; border-radius: 5px; color: #85373c; font-size: .72rem; margin: 0; padding: 5px 8px; }
 .access-panel { background: #fff; border: 1px solid var(--line); border-radius: 16px; margin: 5vh auto; max-width: 560px; padding: 32px; }
 .access-panel p:not(.eyebrow) { color: var(--muted); line-height: 1.7; margin: 0 0 22px; }
@@ -208,4 +207,122 @@ select:focus-visible {
 .access-panel {
   background-color: rgba(255, 254, 250, .94);
   box-shadow: 0 10px 30px rgba(27, 55, 39, .055);
+}
+
+/* ===== Humism-inspired monochrome refresh ===== */
+:root { --ink: #0b0b0b; --muted: #666; --line: #e3e3e3; --paper: #fff; --green: #1f7a4d; --green-dark: #0b0b0b; --red: #b3261e; }
+html, body { overflow-x: clip; }
+body { background: #fff; font-family: var(--font-lato), "Noto Sans TC", "Microsoft JhengHei", sans-serif; }
+
+/* 黑色頂部導覽：左導覽／中品牌／右帳號 */
+.site-header { background: #0b0b0b !important; border: 0; border-bottom: 1px solid #222; color: #fff; }
+.site-toolbar { align-items: center; display: grid !important; gap: 16px; grid-template-areas: "nav brand acct"; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); max-width: 1360px; min-height: 76px; }
+.primary-nav { grid-area: nav; justify-self: start; max-width: 100%; }
+.brand { grid-area: brand; }
+.header-account { grid-area: acct; justify-self: end; }
+.brand .MuiTypography-root { color: #fff; font-size: 1.6rem; font-weight: 300; letter-spacing: .03em; }
+.brand-mark { background: transparent; border: 1px solid #fff; border-radius: 50%; color: #fff; height: 34px; width: 34px; }
+.primary-nav { gap: 2px; }
+.primary-nav .MuiButton-root { border-bottom: 2px solid transparent; border-radius: 0; color: rgba(255, 255, 255, .62); font-size: .8rem; font-weight: 700; letter-spacing: .1em; min-height: 40px; min-width: 0; padding: 6px 12px; }
+.primary-nav .MuiButton-root:hover { background: transparent; color: #fff; }
+.primary-nav .MuiButton-root[aria-current="page"] { background: rgba(255, 255, 255, .12); border-bottom-color: #fff; color: #fff; }
+.site-header .account-name { color: #fff; }
+.site-header .account-name small, .site-header .MuiTypography-caption { color: #a3a3a3; }
+.site-header .header-account .MuiButton-root { border-color: rgba(255, 255, 255, .5); color: #fff; }
+.site-header .header-account .MuiButton-root:hover { background: #fff; border-color: #fff; color: #0b0b0b; }
+.site-header .market-badge { border-color: rgba(255, 255, 255, .4); color: #d4d4d4; }
+.site-header :focus-visible { outline-color: #fff; }
+.header-error { background: #3a1412; color: #ffd9d6; }
+
+/* 頁面主視覺：全幅黑底＋棋盤紋理，置中大標題 */
+.page-shell { padding-top: 0; }
+.page-shell > :not(.hero):first-child { margin-top: 56px; }
+.hero { background: #0b0b0b; border: 0; color: #fff; isolation: isolate; margin: 0 0 56px calc(50% - 50vw); overflow: hidden; padding: 76px 24px 90px; position: relative; text-align: center; width: 100vw; }
+.hero::before { background: repeating-conic-gradient(#0b0b0b 0 25%, #1c1c1c 0 50%) 0 0 / 56px 56px; content: ""; inset: 0; mask-image: linear-gradient(180deg, #000, transparent 90%); position: absolute; z-index: -1; }
+.hero::after { background: repeating-conic-gradient(#fff 0 25%, #0b0b0b 0 50%) 0 0 / 28px 28px; bottom: 0; content: ""; height: 14px; left: 0; position: absolute; right: 0; }
+.hero-inner { margin: 0 auto; max-width: 760px; }
+.hero .eyebrow { color: #a8a8a8; justify-content: center; }
+.hero .MuiTypography-h1 { color: #fff; }
+.hero .MuiTypography-body1 { color: #d0d0d0; line-height: 1.8; margin: 0 auto; max-width: 620px; }
+.eyebrow { color: #666; display: flex; font-size: .68rem; letter-spacing: .22em; text-transform: uppercase; }
+.eyebrow::before { content: none; }
+
+/* 卡片：白底細線直角 */
+.panel, .quote-card, .callout, .access-panel, .case-card, .login-panel { background: #fff; border: 1px solid var(--line); border-radius: 2px; box-shadow: none; }
+.quote-card:hover { border-color: #0b0b0b; box-shadow: 0 14px 34px rgba(0, 0, 0, .1); }
+.login-panel { box-shadow: 0 18px 54px rgba(0, 0, 0, .08); }
+.symbol { color: #0b0b0b; letter-spacing: .12em; }
+.panel-heading { border-bottom: 1px solid var(--line); padding-bottom: 14px; }
+.login-intro .MuiTypography-h1 { font-weight: 900; }
+
+/* 反白區塊（類似 Humism SHOP NOW） */
+.callout { background: #0b0b0b; border-color: #0b0b0b; }
+.callout .MuiTypography-root { color: #fff; }
+.callout .eyebrow, .callout .MuiTypography-body2, .callout p:last-child { color: #bdbdbd; }
+.callout .MuiButton-contained { background: #fff; color: #0b0b0b; }
+.callout .MuiButton-contained:hover { background: #e6e6e6; }
+
+/* 按鈕／表單 */
+.button-link { background: #0b0b0b; border-radius: 2px; letter-spacing: .06em; }
+.button-link:hover { background: #333; }
+.button-quiet { border-radius: 2px; }
+.button-quiet:hover { background: #f5f5f5; border-color: #0b0b0b; color: #0b0b0b; }
+.field input, .field select { border-color: #cfcfcf; border-radius: 2px; }
+.field input:focus, .field select:focus { border-color: #0b0b0b; box-shadow: 0 0 0 3px rgba(11, 11, 11, .12); outline: 0; }
+.form-link, .case-id { color: #0b0b0b; }
+.check-field input { accent-color: #0b0b0b; }
+
+/* 狀態語意色（低飽和、淺底） */
+.quote-change, .state-ok { background: #eaf5ee; color: #1f7a4d; }
+.state-pending, .severity-medium, .count-badge { background: #fdf3d8; color: #8a6100; }
+.state-muted { background: #efefef; color: #666; }
+.severity-high, .severity-critical { background: #fdeceb; color: #b3261e; }
+.severity-low { background: #e9f0f8; color: #2c5d8f; }
+.state-pill, .count-badge, .quote-change { border-radius: 2px; letter-spacing: .06em; }
+.buy-label, .bid-row span:first-child { color: #1f7a4d; }
+.sell-label, .ask-row span:first-child { color: #b3261e; }
+.success { background: #eaf5ee; border-color: #c5e1cf; color: #1f7a4d; }
+.result-good { background: #f2faf5; border-color: #c5e1cf; }
+.result-bad { background: #fff5f4; border-color: #f0c9c6; }
+.danger-action { color: #b3261e; }
+.danger-action:hover { background: #fff4f3; border-color: #e8bbbb; color: #8f1d17; }
+.review-note, .disclaimer { background: #f5f5f5; }
+
+/* 表格 */
+.table-scroll thead { background: #f5f5f5; }
+.MuiTableCell-head { color: #555; }
+.MuiTableCell-root { border-color: #ececec; }
+.MuiTableBody-root .MuiTableRow-root:hover .MuiTableCell-root { background: #fafafa; }
+
+/* 頁尾 */
+.site-footer { background: #0b0b0b; border: 0; color: #a3a3a3; letter-spacing: .06em; padding: 36px 24px; }
+
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, .MuiButton-root:focus-visible { outline: 2px solid #0b0b0b; outline-offset: 2px; }
+
+@media (max-width: 1000px) {
+  .site-toolbar { grid-template-areas: "brand acct" "nav nav"; grid-template-columns: 1fr auto; }
+  .brand { justify-self: start; }
+  .primary-nav { order: 0; }
+}
+@media (max-width: 700px) {
+  .hero { padding: 52px 20px 64px; }
+  .page-shell > :not(.hero):first-child { margin-top: 32px; }
+}
+
+/* ===== 登入／註冊：左黑右白分割版面 ===== */
+.login-layout { align-items: stretch; gap: 0; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); margin: 0 0 0 calc(50% - 50vw); max-width: none; min-height: calc(100vh - 181px); width: 100vw; }
+.page-shell > .login-layout:first-child { margin-top: 0; }
+.page-shell:has(> .login-layout) { min-height: 0; padding-bottom: 0; }
+.login-intro { background: #0b0b0b; color: #fff; display: flex; flex-direction: column; isolation: isolate; justify-content: center; overflow: hidden; padding: clamp(56px, 8vw, 112px) clamp(28px, 6vw, 96px) clamp(72px, 9vw, 128px); position: relative; }
+.login-intro::before { background: repeating-conic-gradient(#0b0b0b 0 25%, #1c1c1c 0 50%) 0 0 / 56px 56px; content: ""; inset: 0; mask-image: linear-gradient(180deg, #000, transparent 90%); position: absolute; z-index: -1; }
+.login-intro::after { background: repeating-conic-gradient(#fff 0 25%, #0b0b0b 0 50%) 0 0 / 28px 28px; bottom: 0; content: ""; height: 14px; left: 0; position: absolute; right: 0; }
+.login-intro .eyebrow { color: #a8a8a8; }
+.login-intro .MuiTypography-h1 { color: #fff; font-size: clamp(2.4rem, 5vw, 4rem); line-height: 1.15; }
+.login-intro > p:last-child { color: #d0d0d0; max-width: 440px; }
+.page-shell .login-panel { align-self: center; background: #fff; border: 0; box-shadow: none; justify-self: center; max-width: 440px; padding: clamp(40px, 5vw, 64px) 24px; width: 100%; }
+.login-panel .MuiTypography-h5 { font-size: 1.6rem; }
+@media (max-width: 900px) {
+  .login-layout { grid-template-columns: 1fr; min-height: 0; }
+  .login-intro { padding: 48px 24px 64px; }
+  .page-shell .login-panel { padding: 40px 24px 56px; }
 }
