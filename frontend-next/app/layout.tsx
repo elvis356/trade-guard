@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Lato } from "next/font/google";
 import { AuthProvider } from "@/components/auth-provider";
+import { ReadinessGate } from "@/components/readiness-gate";
 import { SiteHeader } from "@/components/site-header";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
@@ -20,13 +21,15 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="zh-Hant">
       <body className={lato.variable}>
         <ThemeProvider>
-          <AuthProvider>
-            <SiteHeader />
-            <main className="page-shell">{children}</main>
-            <footer className="site-footer">
-              教學模擬平台，使用虛構資料；非真實交易系統，亦不構成投資建議。
-            </footer>
-          </AuthProvider>
+          <ReadinessGate>
+            <AuthProvider>
+              <SiteHeader />
+              <main className="page-shell">{children}</main>
+              <footer className="site-footer">
+                教學模擬平台，使用虛構資料；非真實交易系統，亦不構成投資建議。
+              </footer>
+            </AuthProvider>
+          </ReadinessGate>
         </ThemeProvider>
       </body>
     </html>

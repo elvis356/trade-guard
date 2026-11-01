@@ -94,7 +94,8 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/login", "/api/auth/register",
                                 "/api/auth/logout",
-                                "/api/health", "/api/health/status", "/favicon.ico",
+                                "/api/health", "/api/health/status", "/api/health/readiness",
+                                "/favicon.ico",
                                 "/internal/eod", "/error").permitAll()
                         .requestMatchers("/api/reports/**")
                                 .hasAnyRole("AUDITOR", "ADMIN")

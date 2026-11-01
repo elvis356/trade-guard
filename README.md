@@ -10,17 +10,18 @@ Next.js（MUI、Vercel）＋ Java 21 Spring Boot（Render）｜PostgreSQL（Neon
 |------|------|
 | 功能需求規格 | [docs/functional-requirements-specification.md](docs/functional-requirements-specification.md) |
 | 系統架構與設計圖 | https://elvis356.github.io/trade-guard/uml-workbench.html |
-| 後端服務檢查（部署於 Render，首次請先開啟，喚醒約需 1 分鐘） | https://tradeguard-api-e32l.onrender.com/api/health |
+| 後端服務狀態頁（人工檢查） | https://tradeguard-api-e32l.onrender.com/api/health |
+| 後端依賴就緒檢查（API、PostgreSQL、Redis） | https://tradeguard-api-e32l.onrender.com/api/health/readiness |
 | 前端（部署於 Vercel） | https://trade-guard-frontend-next.vercel.app |
 
 > 提示：在 GitHub 上，按住 `Ctrl`（Mac 上按 `⌘`）再點連結，可在新分頁開啟。
 
 ## ⚡ 1 分鐘線上體驗
 
-> Render 免費方案閒置 15 分鐘會休眠，首次請求約需 1 分鐘喚醒，請先做第 1 步。
+> Render 免費方案閒置 15 分鐘會休眠，首次連線可能需要約 1 分鐘喚醒。
 
-1. 開啟[後端服務檢查](https://tradeguard-api-e32l.onrender.com/api/health)頁面，看到「API 正常回應」代表後端已醒。
-2. 開啟[前端](https://trade-guard-frontend-next.vercel.app)，到 `/register` 建立 `TRADER` 帳號（帳號 3–50 字元；密碼 12–72 字元）。
+1. 開啟[前端](https://trade-guard-frontend-next.vercel.app)。首次載入會自動等待 API、PostgreSQL 與 Redis 就緒，不必先手動喚醒後端；服務準備期間會顯示檢查狀態並每 3 秒重試。
+2. 到 `/register` 建立 `TRADER` 帳號（帳號 3–50 字元；密碼 12–72 字元）。
 3. 到 `/trade` 下限價單，回到市場總覽與標的頁查看報價、委託簿與成交。
 4. 若市場總覽沒有報價，需由 `ADMIN` 先到 `/admin` 建立並啟用商品。
 5. 想體驗監控／稽核：由 `ADMIN` 建立 `SURVEILLANCE`、`AUDITOR` 帳號後登入，見下表。
