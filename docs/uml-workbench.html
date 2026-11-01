@@ -4,39 +4,40 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="favicon.ico" sizes="any">
   <title>TradeGuard UML 跨圖關聯工作台</title>
   <style>
     :root {
       color-scheme: light;
-      --bg: #f3f5f2;
-      --panel: #fbfcfa;
-      --panel-2: #eef2ed;
-      --line: #d3dbd1;
-      --ink: #1d2924;
-      --muted: #55645c;
-      --edge: #728078;
-      --green: #17684a;
-      --green-soft: #dcece1;
-      --orange: #bc6e21;
-      --orange-soft: #f5e8d7;
-      --blue: #336d8e;
-      --blue-soft: #deebf1;
-      --violet: #7353a5;
-      --violet-soft: #ece5f5;
-      --red: #a64447;
-      --red-soft: #f4e3e1;
-      --shadow: 0 14px 34px rgb(22 43 31 / 7%);
+      --bg: #fff;
+      --panel: #fff;
+      --panel-2: #f5f5f5;
+      --line: #e3e3e3;
+      --ink: #0b0b0b;
+      --muted: #666;
+      --edge: #777;
+      --green: #1f7a4d;
+      --green-soft: #eaf5ee;
+      --orange: #a66826;
+      --orange-soft: #f7eee2;
+      --blue: #536f7e;
+      --blue-soft: #e8eef1;
+      --violet: #75618f;
+      --violet-soft: #efebf4;
+      --red: #a84c46;
+      --red-soft: #f6eae8;
+      --shadow: 0 14px 34px rgb(0 0 0 / 8%);
       font-synthesis: none;
     }
     :root[data-theme="dark"] {
       color-scheme: dark;
-      --bg: #111916;
-      --panel: #19231f;
-      --panel-2: #202c26;
-      --line: #34443a;
-      --ink: #e4ece6;
-      --muted: #a3b2a8;
-      --edge: #8a9b90;
+      --bg: #111;
+      --panel: #191919;
+      --panel-2: #222;
+      --line: #363636;
+      --ink: #f2f2f2;
+      --muted: #aaa;
+      --edge: #999;
       --green: #72c69a;
       --green-soft: #263d30;
       --orange: #e9ae68;
@@ -55,16 +56,14 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      background:
-        radial-gradient(ellipse at 74% -18%, color-mix(in srgb, var(--green-soft) 64%, transparent), transparent 42rem),
-        var(--bg);
+      background: var(--bg);
       color: var(--ink);
       font: 13px/1.5 "Aptos", "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
     }
     button, input { color: inherit; font: inherit; }
     button {
       border: 1px solid var(--line);
-      border-radius: 8px;
+      border-radius: 2px;
       background: var(--panel);
       cursor: pointer;
       padding: 7px 10px;
@@ -81,7 +80,8 @@
       flex-wrap: wrap;
       padding: 10px 16px;
       border-bottom: 1px solid var(--line);
-      background: color-mix(in srgb, var(--panel) 92%, transparent);
+      background: #0b0b0b;
+      color: #fff;
       backdrop-filter: blur(14px);
     }
     .brand { display: flex; align-items: center; gap: 10px; min-width: 260px; flex: 1; }
@@ -90,25 +90,30 @@
       width: 34px;
       height: 34px;
       place-items: center;
-      border-radius: 10px 10px 10px 3px;
-      background: var(--green);
+      border: 1px solid #fff;
+      border-radius: 50%;
+      background: transparent;
       color: #fff;
       font-size: 11px;
       font-weight: 850;
       letter-spacing: -.06em;
     }
     h1 { margin: 0; font: 600 16px/1.2 Georgia, "Noto Serif TC", serif; letter-spacing: -.025em; }
-    .brand small { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+    .brand small { display: block; margin-top: 3px; color: #a3a3a3; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
     .toolbar { display: flex; align-items: center; gap: 7px; }
     .toolbar button { white-space: nowrap; }
+    header button { border-color: #363636; background: #0b0b0b; color: #f2f2f2; border-radius: 2px; }
+    header button:hover { border-color: #fff; background: #1c1c1c; }
+    header button:disabled { color: #777; }
     .search {
       width: min(250px, 42vw);
       border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--bg);
+      border-radius: 2px;
+      background: #111;
+      color: #fff;
       padding: 8px 10px;
     }
-    .search::placeholder { color: var(--muted); }
+    .search::placeholder { color: #a3a3a3; }
     .search-wrap { position: relative; }
     #results {
       position: absolute;
@@ -119,7 +124,7 @@
       max-height: 55vh;
       overflow: auto;
       border: 1px solid var(--line);
-      border-radius: 10px;
+      border-radius: 2px;
       background: var(--panel);
       padding: 6px;
       box-shadow: var(--shadow);
@@ -150,7 +155,7 @@
       text-align: left;
     }
     nav button:hover { background: var(--panel-2); }
-    nav button.on { border-color: color-mix(in srgb, var(--green) 22%, transparent); background: var(--green-soft); color: var(--green); }
+    nav button.on { border-color: var(--ink); background: var(--ink); color: var(--panel); }
     nav button strong { display: block; font-size: 12px; }
     nav button small { display: block; margin-top: 2px; color: var(--muted); font-size: 10px; }
     .canvas-wrap { position: relative; display: flex; min-width: 0; min-height: 0; flex-direction: column; overflow: hidden; }
@@ -162,7 +167,7 @@
       flex: 1;
       touch-action: none;
       cursor: grab;
-      background-image: radial-gradient(color-mix(in srgb, var(--line) 78%, transparent) 1px, transparent 1px);
+      background-image: radial-gradient(color-mix(in srgb, var(--line) 90%, transparent) 1px, transparent 1px);
       background-size: 22px 22px;
     }
     #cv.grabbing { cursor: grabbing; }
@@ -173,7 +178,7 @@
       max-width: calc(100% - 28px);
       overflow: hidden;
       border: 1px solid var(--line);
-      border-radius: 999px;
+      border-radius: 2px;
       background: color-mix(in srgb, var(--panel) 94%, transparent);
       padding: 5px 11px;
       color: var(--muted);
@@ -193,7 +198,7 @@
       overflow: auto;
       border: 1px solid var(--line);
       border-left: 3px solid var(--green);
-      border-radius: 7px;
+      border-radius: 2px;
       margin: 0 14px 8px;
       background: var(--panel);
       padding: 7px 10px;
@@ -213,7 +218,10 @@
     .svg-title { fill: var(--ink); font-size: 13px; font-weight: 750; pointer-events: none; }
     .svg-sub { fill: var(--muted); font-size: 10.5px; pointer-events: none; }
     .svg-field { fill: var(--ink); font: 10.5px ui-monospace, Consolas, monospace; pointer-events: none; }
-    .svg-edge-label { fill: var(--muted); font-size: 10px; paint-order: stroke; stroke: var(--bg); stroke-width: 4px; stroke-linejoin: round; pointer-events: none; }
+    .edge-label-group { pointer-events: none; transition: opacity .16s; }
+    .edge-label-group.dim { opacity: .14; }
+    .edge-label-back { fill: var(--panel); stroke: var(--line); stroke-width: 1; }
+    .svg-edge-label { fill: var(--ink); font-size: 10px; font-weight: 650; pointer-events: none; }
     .lifeline { stroke: var(--edge); stroke-width: 1.2; stroke-dasharray: 6 6; opacity: .65; }
     .activation { fill: var(--green-soft); stroke: var(--green); stroke-width: 1.4; }
     .message-line { stroke: var(--edge); stroke-width: 1.7; marker-end: url(#arrow); }
@@ -268,11 +276,11 @@
       display: none;
       align-items: center;
       justify-content: center;
-      background: rgb(7 18 12 / 55%);
+      background: rgb(7 7 7 / 55%);
       padding: 18px;
     }
     #matrix.open { display: flex; }
-    .matrix-card { display: flex; width: min(1120px, 100%); max-height: 88vh; flex-direction: column; overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); box-shadow: var(--shadow); }
+    .matrix-card { display: flex; width: min(1120px, 100%); max-height: 88vh; flex-direction: column; overflow: hidden; border: 1px solid var(--line); border-radius: 2px; background: var(--panel); box-shadow: var(--shadow); }
     .matrix-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--line); }
     .matrix-head h2 { margin: 0; font: 600 18px Georgia, serif; }
     .matrix-scroll { overflow: auto; padding: 10px 14px 16px; }
@@ -287,8 +295,8 @@
     .trace-table td { vertical-align: top; text-align: left; }
     .trace-table .chips { gap: 3px; }
     .trace-table .chip { padding: 2px 6px; border: 1px solid var(--line); font-size: 10px; }
-    footer { display: flex; justify-content: space-between; gap: 10px; padding: 7px 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; }
-    .toast { position: fixed; z-index: 10; right: 18px; bottom: 42px; display: none; border: 1px solid var(--line); border-radius: 9px; background: var(--panel); padding: 9px 12px; box-shadow: var(--shadow); color: var(--ink); }
+    footer { display: flex; justify-content: space-between; gap: 10px; padding: 10px 16px; border-top: 1px solid #222; background: #0b0b0b; color: #a3a3a3; font-size: 10px; }
+    .toast { position: fixed; z-index: 10; right: 18px; bottom: 42px; display: none; border: 1px solid var(--line); border-radius: 2px; background: var(--panel); padding: 9px 12px; box-shadow: var(--shadow); color: var(--ink); }
     .toast.show { display: block; }
     @media (max-width: 980px) {
       #app { grid-template-columns: 164px minmax(0, 1fr); grid-template-rows: minmax(480px, 1fr) auto; }
@@ -346,7 +354,7 @@
           <marker id="arrowOpen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M1 1 9 5 1 9" fill="none" stroke="var(--edge)" stroke-width="1.5"/></marker>
           <marker id="diamond" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 6 6 1 11 6 6 11z" fill="var(--panel)" stroke="var(--edge)"/></marker>
         </defs>
-        <g id="edges"></g><g id="nodes"></g>
+        <g id="edges"></g><g id="nodes"></g><g id="edgeLabels"></g>
       </svg>
       <div id="caption" class="diagram-caption" aria-live="polite"></div>
       <div id="hint">點選節點查看跨圖追溯 · 拖曳平移 · 滾輪縮放 · 數字鍵 1–9、0 切換圖表</div>
@@ -652,8 +660,9 @@
     const { TYPES, ENTITIES, TRACE, REL, LAYERS, DIAGRAMS } = window.UML_DATA;
     const $ = (s) => document.querySelector(s);
     const NS = "http://www.w3.org/2000/svg";
-    const cv = $("#cv"), edgeLayer = $("#edges"), nodeLayer = $("#nodes"), nav = $("#nav"), inspector = $("#inspector");
+    const cv = $("#cv"), edgeLayer = $("#edges"), nodeLayer = $("#nodes"), edgeLabelLayer = $("#edgeLabels"), nav = $("#nav"), inspector = $("#inspector");
     let current = "architecture", selected = null, history = [], view = {x:0,y:0,w:1200,h:760}, drag = null;
+    let edgeLabelBoxes = [];
     const byId = (id) => DIAGRAMS.find(d => d.id === id);
     const LAYOUT0 = new Map(DIAGRAMS.map(d => [d.id, d.nodes.map(n => ({x:n.x,y:n.y,h:n.h}))]));
     let suppressClick = false;
@@ -672,6 +681,43 @@
       t.textContent=text;
       return t;
     };
+    function drawEdgeLabel(x,y,text,anchor="middle",edge=null,avoidNodes=true) {
+      const group=svg("g",{
+        class:"edge-label-group",
+        ...(edge?{"data-a":edge.dataset.a,"data-b":edge.dataset.b}:{})
+      },edgeLabelLayer);
+      const textNode=label(group,x,y,text,"svg-edge-label",anchor);
+      const d=diagram(),nodeBoxes=avoidNodes
+        ? d.nodes.filter(n=>n.shape!=="container").map(n=>{
+          const entity=nodeData(n.id),fields=entity?.columns||entity?.fields||[];
+          const h=["class","table"].includes(n.shape)?Math.max(n.h,41+fields.length*18):n.h;
+          return {x:n.x,y:n.y,w:n.w,h};
+        })
+        : [];
+      const offsets=[[0,0]];
+      for(let distance=14;distance<=168;distance+=14)
+        offsets.push([0,-distance],[0,distance],[distance,0],[-distance,0]);
+      let bestBox=null,bestPosition=null,bestScore=Infinity;
+      for(const [dx,dy] of offsets) {
+        textNode.setAttribute("x",String(x+dx));
+        textNode.setAttribute("y",String(y+dy));
+        const box=textNode.getBBox();
+        const overlaps=(other,pad=4)=>box.x<other.x+other.w+pad&&box.x+box.width+pad>other.x&&box.y<other.y+other.h+pad&&box.y+box.height+pad>other.y;
+        const collisions=nodeBoxes.filter(n=>overlaps(n,2)).length+edgeLabelBoxes.filter(b=>overlaps(b)).length;
+        const score=collisions*10000+Math.abs(dx)+Math.abs(dy);
+        if(score<bestScore) {
+          bestScore=score;
+          bestPosition=[x+dx,y+dy];
+          bestBox={x:box.x-5,y:box.y-3,w:box.width+10,h:box.height+6};
+        }
+      }
+      textNode.setAttribute("x",String(bestPosition[0]));
+      textNode.setAttribute("y",String(bestPosition[1]));
+      const back=svg("rect",{x:bestBox.x,y:bestBox.y,width:bestBox.w,height:bestBox.h,rx:3,class:"edge-label-back"},group);
+      group.insertBefore(back,textNode);
+      edgeLabelBoxes.push(bestBox);
+      return group;
+    }
     function safeText(value) { return String(value ?? ""); }
     function palette(id) { return TYPES[nodeData(id)?.type]?.[1] || "var(--blue)"; }
     function edgeAnchor(a,b) {
@@ -688,8 +734,8 @@
     function drawCardinality(group,p,q,text,atEnd) {
       const from=atEnd?q:p,to=atEnd?p:q,dx=to[0]-from[0],dy=to[1]-from[1],length=Math.hypot(dx,dy)||1;
       const distance=Math.min(24,length*.28),offset=12,sign=atEnd?-1:1;
-      label(group,from[0]+dx/length*distance-dy/length*offset*sign,
-        from[1]+dy/length*distance+dx/length*offset*sign,text,"svg-edge-label");
+      drawEdgeLabel(from[0]+dx/length*distance-dy/length*offset*sign,
+        from[1]+dy/length*distance+dx/length*offset*sign,text,"middle",group);
     }
     function drawBoundary(b) {
       svg("rect",{x:b.x,y:b.y,width:b.w,height:b.h,rx:16,class:"boundary"},edgeLayer);
@@ -697,6 +743,8 @@
     }
     function redrawEdges() {
       edgeLayer.replaceChildren();
+      edgeLabelLayer.replaceChildren();
+      edgeLabelBoxes=[];
       const d=diagram();
       if(d.boundary)drawBoundary(d.boundary);
       (d.edges||[]).forEach(drawEdge);
@@ -723,7 +771,7 @@
         if(length>longestLength){longestLength=length;longest=[points[i-1],points[i]];}
       }
       if(e.label&&!(e.card&&["class","erd"].includes(d.id)))
-        label(group,(longest[0][0]+longest[1][0])/2,(longest[0][1]+longest[1][1])/2-5,e.label,"svg-edge-label");
+        drawEdgeLabel((longest[0][0]+longest[1][0])/2,(longest[0][1]+longest[1][1])/2-5,e.label,"middle",group);
     }
     function drawActor(g,n,id) {
       const cx=n.w/2,c=palette(id);
@@ -811,12 +859,12 @@
         const cls="message-line"+(kind==="return"?" return":"");
         if (from===to) {
           svg("path",{d:`M${x1+5} ${y}h35v19h-30`,fill:"none",class:cls},g);
-          label(g,x1+54,y+13,text,"svg-edge-label","start");
+          drawEdgeLabel(x1+54,y+13,text,"start",g,false);
           return;
         }
         const dir=x1<x2?1:-1;
         svg("line",{x1:x1+dir*2,y1:y,x2:x2-dir*2,y2:y,class:cls},g);
-        label(g,(x1+x2)/2,y-5,text,"svg-edge-label",x1<x2?"start":"end");
+        drawEdgeLabel((x1+x2)/2,y-5,text,x1<x2?"start":"end",g,false);
       });
     }
     function applySelection() {
@@ -839,6 +887,9 @@
         g.classList.toggle("dim",!active);
         g.classList.toggle("highlight",Boolean(selected&&active));
       });
+      edgeLabelLayer.querySelectorAll(".edge-label-group").forEach(g=>{
+        g.classList.toggle("dim",Boolean(selected&&g.dataset.a!==selected&&g.dataset.b!==selected));
+      });
     }
     function drawNav() {
       nav.innerHTML='<div class="nav-label">圖表目錄</div>';
@@ -851,7 +902,7 @@
       });
     }
     function draw() {
-      edgeLayer.replaceChildren();nodeLayer.replaceChildren();
+      edgeLayer.replaceChildren();nodeLayer.replaceChildren();edgeLabelLayer.replaceChildren();edgeLabelBoxes=[];
       const d=diagram();
       if(d.sequence) drawSequence(d);
       else {
