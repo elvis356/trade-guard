@@ -76,7 +76,8 @@ cd backend-java
 | [docs/functional-requirements-specification.md](docs/functional-requirements-specification.md) | 功能需求、角色權限、業務規則 |
 | [docs/uml-workbench.html](docs/uml-workbench.html) | 互動式 UML 工作台（[線上檢視](https://elvis356.github.io/trade-guard/uml-workbench.html)） |
 
-> 提示：在 GitHub 上，按住 `Ctrl`（Mac 上按 `⌘`）再點連結，可在新分頁開啟。就緒檢查連結會顯示符合前端主題的狀態頁並每 3 秒更新；前端則以 `Accept: application/json` 取得相同端點的機器可讀狀態。
+> 提示：在 GitHub 上，按住 `Ctrl`（Mac 上按 `⌘`）再點連結，可在新分頁開啟。
+> 就緒檢查連結會顯示符合前端主題的狀態頁並每 3 秒更新；前端則以 `Accept: application/json` 取得相同端點的機器可讀狀態。
 
 ## 專案結構
 
