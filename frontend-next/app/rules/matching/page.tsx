@@ -23,7 +23,9 @@ export default function MatchingRulesPage() {
       <Paper className="panel rule-list" component="section" elevation={0} variant="outlined">
         <Stack spacing={3}>
           <Box component="section">
-            <Typography component="h2" variant="h5">委託與撮合</Typography>
+            <Typography component="h2" variant="h5" gutterBottom>
+              委託與撮合
+            </Typography>
             <Stack component="ul" spacing={1} sx={{ pl: 3 }}>
               <Typography component="li" variant="body1">目前支援限價買進與賣出委託，並驗證交易時段、價格區間、升降單位及交易單位。</Typography>
               <Typography component="li" variant="body1">撮合採價格優先，再依商品序號決定時間優先；支援部分成交。</Typography>
@@ -31,7 +33,7 @@ export default function MatchingRulesPage() {
             </Stack>
           </Box>
           <Box component="section">
-            <Typography component="h2" variant="h5">市場監視與案件</Typography>
+            <Typography component="h2" variant="h5" gutterBottom>市場監視與案件</Typography>
             <Stack component="ul" spacing={1} sx={{ pl: 3 }}>
               <Typography component="li" variant="body1">規則式警示僅提供人工檢視線索，不代表違規認定。</Typography>
               <Typography component="li" variant="body1">案件提案與覆核須由不同監視使用者操作，以符合四眼原則。</Typography>
