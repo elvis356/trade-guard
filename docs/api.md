@@ -2,7 +2,7 @@
 
 ← [回 README](../README.md)
 
-Base URL：本機 `http://localhost:8080`；線上 `https://tradeguard-api-e32l.onrender.com`
+Base URL：本機 `http://localhost:8080`；線上 `https://tradeguard-api-vy1t.onrender.com`
 
 ## 驗證與使用者管理
 

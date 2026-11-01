@@ -5,8 +5,8 @@
 | 服務 | 網址 |
 |------|------|
 | 前端（Vercel） | https://trade-guard-frontend-next.vercel.app |
-| 後端（Render） | https://tradeguard-api-e32l.onrender.com |
-| 後端服務狀態頁 | https://tradeguard-api-e32l.onrender.com/api/health |
+| 後端（Render） | https://tradeguard-api-vy1t.onrender.com |
+| 後端服務狀態頁 | https://tradeguard-api-vy1t.onrender.com/api/health |
 | Render 機器健康檢查 | `/api/health/status`（JSON） |
 
 ## Render
@@ -30,7 +30,7 @@ Render Blueprint（`render.yaml`）將 Redis 和 Docker 化 API 設為免費方�
 
 - 專案名稱：`trade-guard-frontend-next`
 - Root Directory：`frontend-next`；Framework：Next.js
-- Production 環境變數 `BACKEND_URL` 設為 `https://tradeguard-api-e32l.onrender.com`，由 Next.js rewrite 將瀏覽器的同源 `/api/*` 請求轉送至後端。
+- 在 Vercel **Settings → Environment Variables** 將 Production 的 `BACKEND_URL` 設為 `https://tradeguard-api-vy1t.onrender.com`，儲存後重新部署，讓 Next.js rewrite 將瀏覽器的同源 `/api/*` 請求轉送至新後端。
 - Render 的 `CORS_ALLOWED_ORIGINS` 應設為 `https://trade-guard-frontend-next.vercel.app`（只含 scheme 與 host，不含路徑或結尾斜線）。
 - 目前沒有後端服務呼叫前端重新驗證路由，因此不需要設定 `REVALIDATE_SECRET`；未來新增受信任呼叫端時，再於 Vercel 與呼叫端設定相同的高熵密鑰。
 - CI 不會提交任何憑證，也不會執行外部部署。
@@ -39,7 +39,7 @@ Render Blueprint（`render.yaml`）將 Redis 和 Docker 化 API 設為免費方�
 
 `Daily EOD` workflow 會在平日 06:00 UTC（台灣時間 14:00）呼叫 `POST /internal/eod`，也可從 Actions 頁面手動執行並指定日期。請在 GitHub 儲存庫 **Settings → Secrets and variables → Actions** 設定：
 
-- Repository variable `EOD_API_URL`：後端 Render base URL，目前為 `https://tradeguard-api-e32l.onrender.com`。
+- Repository variable `EOD_API_URL`：後端 Render base URL，設為 `https://tradeguard-api-vy1t.onrender.com`。
 - Repository secret `EOD_TOKEN`：從 Render 後端服務環境變數安全複製的同一個 token。
 
 帳本核對成功時，工作會將 XML 報告存入 PostgreSQL 並回傳其 SHA-256 校驗和；核對失敗時不會發布報告，workflow 也會顯示失敗。若之前已在 Render 建立付費 EOD Cron Job，確認 GitHub Actions 執行成功後，請在 Render 刪除該 Cron Job，避免繼續計費。

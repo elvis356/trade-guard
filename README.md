@@ -37,8 +37,8 @@
 
 手動檢查後端狀態：
 
-- [後端服務狀態頁](https://tradeguard-api-e32l.onrender.com/api/health)
-- [後端依賴就緒檢查頁](https://tradeguard-api-e32l.onrender.com/api/health/readiness)：檢查後端 API、PostgreSQL、Redis 狀態，頁面每 3 秒自動更新。
+- [後端服務狀態頁](https://tradeguard-api-vy1t.onrender.com/api/health)
+- [後端依賴就緒檢查頁](https://tradeguard-api-vy1t.onrender.com/api/health/readiness)：檢查後端 API、PostgreSQL、Redis 狀態，頁面每 3 秒自動更新。
 
 ## 本地端啟動
 
