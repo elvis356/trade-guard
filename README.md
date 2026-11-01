@@ -13,6 +13,8 @@ Next.js（Vercel）＋ Java 21 Spring Boot（Render）｜PostgreSQL（Neon）｜
 | 後端服務檢查（首次請先開啟，喚醒約需 1 分鐘） | https://tradeguard-api-e32l.onrender.com/api/health |
 | 前端（Vercel） | https://trade-guard-frontend-next.vercel.app |
 
+> 提示：在 GitHub 上，按住 `Ctrl`（Mac 上按 `⌘`）再點連結，可在新分頁開啟。
+
 ## ⚡ 1 分鐘線上體驗
 
 > Render 免費方案閒置 15 分鐘會休眠，首次請求約需 1 分鐘喚醒，請先做第 1 步。
