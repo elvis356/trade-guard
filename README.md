@@ -4,21 +4,19 @@
 
 Next.js（MUI、Vercel）＋ Java 21 Spring Boot（Render）｜PostgreSQL（Neon）｜Redis
 
-## 快速連結
+## 線上測試
 
 | 項目 | 連結 |
 |------|------|
-| 功能需求規格 | [docs/functional-requirements-specification.md](docs/functional-requirements-specification.md) |
+| 前端 | https://trade-guard-frontend-next.vercel.app |
 | 系統架構與設計圖 | https://elvis356.github.io/trade-guard/uml-workbench.html |
 | 後端服務狀態頁（人工檢查） | https://tradeguard-api-e32l.onrender.com/api/health |
 | 後端依賴就緒檢查頁（人工檢查、自動更新；API、PostgreSQL、Redis） | https://tradeguard-api-e32l.onrender.com/api/health/readiness |
-| 前端（部署於 Vercel） | https://trade-guard-frontend-next.vercel.app |
+| 功能需求規格 | [docs/functional-requirements-specification.md](docs/functional-requirements-specification.md) |
 
 > 提示：在 GitHub 上，按住 `Ctrl`（Mac 上按 `⌘`）再點連結，可在新分頁開啟。
 
 > 就緒檢查連結會顯示符合前端主題的狀態頁並每 3 秒更新；前端則以 `Accept: application/json` 取得相同端點的機器可讀狀態。
-
-## 線上測試
 
 > Render 免費方案閒置 15 分鐘會休眠，首次連線可能需要約 1 分鐘喚醒。
 
@@ -105,7 +103,6 @@ docker-compose.yml  本機 PostgreSQL 16 + Redis 7 + 後端
 
 ## 授權
 
-```text
 MIT License
 
 Copyright (c) 2026 Elvis Peng
@@ -127,4 +124,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-```
