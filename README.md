@@ -6,21 +6,9 @@ Next.js（MUI、Vercel）＋ Java 21 Spring Boot（Render）｜PostgreSQL（Neon
 
 ## 線上測試
 
-| 項目 | 連結 |
-|------|------|
-| 前端 | https://trade-guard-frontend-next.vercel.app |
-| 系統架構與設計圖 | https://elvis356.github.io/trade-guard/uml-workbench.html |
-| 後端服務狀態頁（人工檢查） | https://tradeguard-api-e32l.onrender.com/api/health |
-| 後端依賴就緒檢查頁（人工檢查、自動更新；API、PostgreSQL、Redis） | https://tradeguard-api-e32l.onrender.com/api/health/readiness |
-| 功能需求規格 | [docs/functional-requirements-specification.md](docs/functional-requirements-specification.md) |
-
-> 提示：在 GitHub 上，按住 `Ctrl`（Mac 上按 `⌘`）再點連結，可在新分頁開啟。
-
-> 就緒檢查連結會顯示符合前端主題的狀態頁並每 3 秒更新；前端則以 `Accept: application/json` 取得相同端點的機器可讀狀態。
-
 > Render 免費方案閒置 15 分鐘會休眠，首次連線可能需要約 1 分鐘喚醒。
 
-1. 開啟[前端](https://trade-guard-frontend-next.vercel.app)。首次載入會自動等待 API、PostgreSQL 與 Redis 就緒，不必先手動喚醒後端；服務準備期間會顯示檢查狀態並每 3 秒重試。
+1. 開啟[前端](https://trade-guard-frontend-next.vercel.app)（按住 `Ctrl`（Mac 上按 `⌘`）再點連結，可在新分頁開啟）。首次載入會自動等待 API、PostgreSQL 與 Redis 就緒，不必先手動喚醒後端；服務準備期間會顯示檢查狀態並每 3 秒重試。
 2. 到 `/register` 建立 `TRADER` 帳號（帳號 3–50 字元；密碼 12–72 字元）。
 3. 到 `/trade` 下限價單，回到市場總覽與標的頁查看報價、委託簿與成交。
 4. 若市場總覽沒有報價，需由 `ADMIN` 先到 `/admin` 建立並啟用商品。
@@ -82,6 +70,16 @@ cd backend-java
 | [docs/limitations.md](docs/limitations.md) | 目前限制與後續工作 |
 | [docs/functional-requirements-specification.md](docs/functional-requirements-specification.md) | 功能需求、角色權限、業務規則 |
 | [docs/uml-workbench.html](docs/uml-workbench.html) | 互動式 UML 工作台（[線上檢視](https://elvis356.github.io/trade-guard/uml-workbench.html)） |
+
+| 項目 | 連結 |
+| --- | --- |
+| 前端 | [https://trade-guard-frontend-next.vercel.app](https://trade-guard-frontend-next.vercel.app/) |
+| 系統架構與設計圖 | [https://elvis356.github.io/trade-guard/uml-workbench.html](https://elvis356.github.io/trade-guard/uml-workbench.html) |
+| 後端服務狀態頁（人工檢查） | [https://tradeguard-api-e32l.onrender.com/api/health](https://tradeguard-api-e32l.onrender.com/api/health) |
+| 後端依賴就緒檢查頁（人工檢查、自動更新；API、PostgreSQL、Redis） | [https://tradeguard-api-e32l.onrender.com/api/health/readiness](https://tradeguard-api-e32l.onrender.com/api/health/readiness) |
+| 功能需求規格 | [docs/functional-requirements-specification.md](https://github.com/elvis356/trade-guard/blob/main/docs/functional-requirements-specification.md) |
+
+> 提示：在 GitHub 上，按住 `Ctrl`（Mac 上按 `⌘`）再點連結，可在新分頁開啟。就緒檢查連結會顯示符合前端主題的狀態頁並每 3 秒更新；前端則以 `Accept: application/json` 取得相同端點的機器可讀狀態。
 
 ## 專案結構
 
