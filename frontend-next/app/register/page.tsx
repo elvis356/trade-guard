@@ -53,8 +53,12 @@ export default function RegisterPage() {
         <Paper aria-live="polite" className="panel login-panel" component="section" elevation={0}>
           <Typography className="eyebrow" component="p" variant="overline">ACCOUNT READY</Typography>
           <Typography component="h2" sx={{ mb: 2 }} variant="h5">帳號已建立</Typography>
-          <Alert severity="success">交易員帳號 <strong>{registeredUsername}</strong> 已建立，現在可以登入。</Alert>
-          <Button className="register-login-link" component={Link} href="/login" variant="contained">前往登入</Button>
+          <Alert severity="success" sx={{ mb: 2 }}>
+            交易員帳號 <strong>{registeredUsername}</strong> 已建立，現在可以登入。
+          </Alert>
+          <Button className="register-login-link" component={Link} href="/login" variant="contained">
+            前往登入
+          </Button>
         </Paper>
       ) : (
         <Paper className="panel login-panel" component="form" elevation={0} onSubmit={submit}>
