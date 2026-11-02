@@ -29,15 +29,15 @@
 
 ## 使用 Docker Compose 啟動
 
-1. 將 `.env.example` 複製為 `.env`。
-2. 設定至少 32 位元組且唯一的 `JWT_SECRET`、`COOKIE_SECURE=false`（本機使用 HTTP），並設定一次性管理員初始帳號密碼。若此環境由多人共用，也請更換資料庫密碼。請勿將真實密鑰提交至 Git。
+1. 將 `.env.example` 複製為根目錄的 `.env.local`。若檔案已存在，不要重複複製，以免覆蓋原有設定。此範例含本機專用設定與 JWT 值，不可用於共用或部署環境。
+2. 如需建立初始管理員，設定 `BOOTSTRAP_ADMIN_USERNAME` 與 `BOOTSTRAP_ADMIN_PASSWORD`；若此環境由多人共用，也請更換資料庫密碼。請勿將真實密鑰提交至 Git。
 3. 啟動完整本機服務：
 
    ```
-   docker compose up --build -d
+   docker compose --env-file .env.local up --build -d
    ```
 
-   後端啟動後位於 `http://localhost:8080`。首次成功啟動並建立管理員後，請從 `.env` 移除 `BOOTSTRAP_ADMIN_USERNAME` 和 `BOOTSTRAP_ADMIN_PASSWORD`。
+   後端啟動後位於 `http://localhost:8080`。首次成功啟動並建立管理員後，請從 `.env.local` 移除 `BOOTSTRAP_ADMIN_USERNAME` 和 `BOOTSTRAP_ADMIN_PASSWORD`。
 4. 確認服務狀態：開啟 `http://localhost:8080/api/health` 查看品牌提示頁；Render 與自動化監控使用 `http://localhost:8080/api/health/status`（JSON）。
 
 ## 不使用容器啟動後端
@@ -77,7 +77,7 @@ cd backend-java
 
 Render Blueprint 不會建立 Render PostgreSQL；它會提示設定 `DB_HOST`、`DB_PORT`、`DB_NAME`、`DB_USERNAME`、`DB_PASSWORD`。在 Neon 專案的 **Connect** 視窗選擇資料庫與 role，將提供的 Host、Port、Database、Username、Password 分別填入這些變數。Render Blueprint 已將 `DB_SSLMODE` 設為 `require`，以符合 Neon 的 TLS 連線需求。請只在 Render 後端服務的環境變數中設定 Neon 密碼，不要提交到 Git 或放入前端變數。
 
-本機 Docker Compose 仍使用專案內的 PostgreSQL 容器，`DB_SSLMODE=disable`；若要從本機直接連 Neon，則在本機 `.env` 填入 Neon 的連線欄位並將 `DB_SSLMODE=require`。
+本機 Docker Compose 仍使用專案內的 PostgreSQL 容器，`DB_SSLMODE=disable`；若要從本機直接連 Neon，則在根目錄 `.env.local` 填入 Neon 的連線欄位並將 `DB_SSLMODE=require`。
 
 ## 啟動前端
 

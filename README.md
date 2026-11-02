@@ -44,14 +44,17 @@
 
 需求：Docker Desktop、Node.js 20.9+（JDK 21 僅「不用容器」或跑測試時需要）。
 
+若根目錄的 `.env.local` 已存在，請勿重複執行複製指令，以免覆蓋原有設定。
+根目錄 `.env.local` 提供 Docker Compose 使用；`frontend-next/.env.local` 則是前端設定，兩者不同。
+
 ```bash
 # 1. 準備環境變數
-cp .env.example .env
-#    編輯 .env：設定 JWT_SECRET（至少 32 bytes）、COOKIE_SECURE=false、
-#    BOOTSTRAP_ADMIN_USERNAME / BOOTSTRAP_ADMIN_PASSWORD
+cp .env.example .env.local
+#    如需建立初始 ADMIN，請在 .env.local 設定 BOOTSTRAP_ADMIN_USERNAME /
+#    BOOTSTRAP_ADMIN_PASSWORD（建立後移除這兩項）
 
 # 2. 啟動 PostgreSQL + Redis + 後端
-docker compose up --build -d
+docker compose --env-file .env.local up --build -d
 
 # 3. 驗證後端
 curl http://localhost:8080/api/health
@@ -63,7 +66,7 @@ npm install
 npm run dev          # http://localhost:3000
 ```
 
-首次啟動成功、管理員建立後，請從 `.env` 移除 `BOOTSTRAP_ADMIN_USERNAME` 與 `BOOTSTRAP_ADMIN_PASSWORD`。
+首次啟動成功、管理員建立後，請從 `.env.local` 移除 `BOOTSTRAP_ADMIN_USERNAME` 與 `BOOTSTRAP_ADMIN_PASSWORD`。
 Windows PowerShell、不使用 Docker 的啟動方式與全部環境變數，見 [本機開發](docs/local-development.md)。
 
 ## 驗證
