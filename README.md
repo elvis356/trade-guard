@@ -21,9 +21,9 @@
 > Render 免費方案閒置 15 分鐘會休眠，首次連線可能需要約 1 分鐘喚醒。
 
 1. 開啟[前端](https://trade-guard-frontend-next.vercel.app)（按住 Ctrl 或 Mac 上的 ⌘ 鍵再點連結，可在新分頁開啟）。首次載入會自動等待 API、PostgreSQL 與 Redis 就緒，不必先手動喚醒後端；服務準備期間會顯示檢查狀態並每 3 秒重試。
-2. 到 [`/register`](https://trade-guard-frontend-next.vercel.app/register) 建立 `TRADER` 帳號（帳號 3–50 字元；密碼 12–72 字元）。
-3. 到 [`/trade`](https://trade-guard-frontend-next.vercel.app/trade) 下限價單，回到市場總覽與標的頁查看報價、委託簿與成交。
-4. 若市場總覽沒有報價，需由 `ADMIN` 先到 [`/admin`](https://trade-guard-frontend-next.vercel.app/admin) 建立並啟用商品。
+2. 到[註冊頁面](https://trade-guard-frontend-next.vercel.app/register)建立 `TRADER` 帳號（帳號 3–50 字元；密碼 12–72 字元）。
+3. 到[交易頁面](https://trade-guard-frontend-next.vercel.app/trade)下限價單，回到市場總覽與標的頁查看報價、委託簿與成交。
+4. 若市場總覽沒有報價，需由 `ADMIN` 先到[管理頁面](https://trade-guard-frontend-next.vercel.app/admin)建立並啟用商品。
 5. 想體驗監控／稽核：由 `ADMIN` 建立 `SURVEILLANCE`、`AUDITOR` 帳號後登入，見下表。
 
 | 角色 | 前端路徑 | 可做什麼 |
