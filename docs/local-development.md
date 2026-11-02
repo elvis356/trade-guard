@@ -39,7 +39,7 @@
    ```
 
    後端啟動後位於 `http://localhost:8080`。
-5. 確認服務狀態：開啟 `http://localhost:8080/api/health` 查看品牌提示頁；Render 與自動化監控使用 `http://localhost:8080/api/health/status`（JSON）。
+5. 確認服務狀態：開啟 `http://localhost:8080/api/health`（頁面）或 `http://localhost:8080/api/health/status`（JSON）。
 
 ## 不使用容器啟動後端
 

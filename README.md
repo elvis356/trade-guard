@@ -64,7 +64,8 @@ docker compose --env-file .env.local up --build -d
 cd frontend-next
 cp .env.example .env.local
 npm install
-npm run dev          # http://localhost:3000
+npm run dev
+# 在瀏覽器開啟 http://localhost:3000，檢視前端畫面
 ```
 
 Windows PowerShell、不使用 Docker 的啟動方式與全部環境變數，見[本機開發](docs/local-development.md)。
