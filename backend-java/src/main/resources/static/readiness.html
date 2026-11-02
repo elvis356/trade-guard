@@ -203,7 +203,7 @@
 </head>
 <body>
   <header class="topbar">
-    <a aria-label="TradeGuard" class="brand" href="https://trade-guard-frontend-next.vercel.app">
+    <a aria-label="TradeGuard" class="brand" data-workbench-link href="https://trade-guard-frontend-next.vercel.app">
       <span class="brand-mark" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none">
           <path d="M3 18h18M4 15l5-5 4 3 7-8" stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
@@ -258,12 +258,21 @@
 
     <div class="bottom-row">
       <p class="bottom-note">狀態頁每 3 秒更新一次。全部服務顯示「已就緒」時，即可返回 TradeGuard 前端工作台。</p>
-      <a class="home-link" href="https://trade-guard-frontend-next.vercel.app">前往 TradeGuard 工作台&nbsp; ↗</a>
+      <a class="home-link" data-workbench-link href="https://trade-guard-frontend-next.vercel.app">前往 TradeGuard 工作台&nbsp; ↗</a>
     </div>
   </main>
   <footer>教育用途 · 虛構市場資料 · 非真實交易系統或投資建議</footer>
 
   <script>
+    const isLocal = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+    const workbenchUrl = isLocal
+      ? "http://localhost:3000"
+      : "https://trade-guard-frontend-next.vercel.app";
+    if (isLocal) document.querySelector(".bottom-row")?.remove();
+    document.querySelectorAll("[data-workbench-link]").forEach((link) => {
+      link.href = workbenchUrl;
+    });
+
     const services = ["api", "database", "redis"];
     const labels = { UP: "已就緒", DOWN: "尚未就緒", CHECKING: "檢查中" };
     const states = {};
