@@ -84,7 +84,6 @@ cd backend-java
 backend-java/     Spring Boot REST API、Flyway、撮合與稽核
 frontend-next/    Next.js App Router 前端
 docs/             詳細文件與 UML 工作台
-render.yaml       Render Blueprint
 docker-compose.yml  本機 PostgreSQL 16 + Redis 7 + 後端
 ```
 
