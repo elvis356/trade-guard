@@ -30,15 +30,16 @@
 ## 使用 Docker Compose 啟動
 
 1. 將 `.env.example` 複製為根目錄的 `.env.local`。若檔案已存在，不要重複複製，以免覆蓋原有設定。此範例含本機專用設定與 JWT 值，不可用於共用或部署環境。
-2. 如需建立初始管理員，設定 `BOOTSTRAP_ADMIN_USERNAME` 與 `BOOTSTRAP_ADMIN_PASSWORD`；若此環境由多人共用，也請更換資料庫密碼。請勿將真實密鑰提交至 Git。
-3. 啟動完整本機服務：
+2. `.env.example` 已附本機測試用的初始管理員帳號；複製後即可使用。如需更改，編輯 `.env.local` 中的 `BOOTSTRAP_ADMIN_USERNAME` 與 `BOOTSTRAP_ADMIN_PASSWORD`。這組公開範例帳密僅供本機測試，不可用於部署或可由網際網路存取的環境。
+3. 啟動 Docker Desktop，等待 Docker Engine 顯示正在執行，並確認使用 Linux containers。可在 PowerShell 執行 `docker info` 確認 Docker CLI 能連線。
+4. 啟動完整本機服務：
 
    ```
    docker compose --env-file .env.local up --build -d
    ```
 
-   後端啟動後位於 `http://localhost:8080`。首次成功啟動並建立管理員後，請從 `.env.local` 移除 `BOOTSTRAP_ADMIN_USERNAME` 和 `BOOTSTRAP_ADMIN_PASSWORD`。
-4. 確認服務狀態：開啟 `http://localhost:8080/api/health` 查看品牌提示頁；Render 與自動化監控使用 `http://localhost:8080/api/health/status`（JSON）。
+   後端啟動後位於 `http://localhost:8080`。
+5. 確認服務狀態：開啟 `http://localhost:8080/api/health` 查看品牌提示頁；Render 與自動化監控使用 `http://localhost:8080/api/health/status`（JSON）。
 
 ## 不使用容器啟動後端
 
@@ -53,7 +54,7 @@ cd backend-java
 .\mvnw.cmd spring-boot:run
 ```
 
-建立第一個管理員帳號後，請從處理程序環境變數移除 `BOOTSTRAP_ADMIN_USERNAME` 和 `BOOTSTRAP_ADMIN_PASSWORD`。Docker Compose 會讀取 `.env`，但 PowerShell 不會自動載入該檔案；若直接啟動 Spring Boot，請在後端處理程序中設定所需的環境變數。部署時必須設定唯一的 `JWT_SECRET`（至少 32 位元組）及 `COOKIE_SECURE=true`。
+Docker Compose 會讀取 `.env`，但 PowerShell 不會自動載入該檔案；若直接啟動 Spring Boot，請在後端處理程序中設定所需的環境變數。部署時必須設定唯一的 `JWT_SECRET`（至少 32 位元組）及 `COOKIE_SECURE=true`。
 
 ## 後端環境變數說明
 
@@ -61,23 +62,17 @@ cd backend-java
 
 | 變數 | 用途 |
 |------|------|
-| `DB_HOST` | PostgreSQL Hostname；Compose 容器內使用服務名稱 `postgres`，本機直連預設為 `localhost`。使用 Neon 時填 Neon 提供的 Host。 |
-| `DB_PORT` | PostgreSQL port，預設為 `5432`。 |
-| `DB_NAME` | PostgreSQL Database，預設為 `tradeguard`；使用 Neon 時填 Neon 提供的 Database。 |
-| `DB_USERNAME`、`DB_PASSWORD` | PostgreSQL Username、Password；使用 Neon 時填 Neon 提供的 Role 與密碼。 |
-| `DB_SSLMODE` | PostgreSQL TLS 模式；本機 Docker 預設 `disable`，Neon 必須設為 `require`。 |
+| `DB_HOST` | PostgreSQL 主機名稱；Compose 容器內使用服務名稱 `postgres`，本機直連預設為 `localhost`。 |
+| `DB_PORT` | PostgreSQL 連接埠，預設為 `5432`。 |
+| `DB_NAME` | PostgreSQL 資料庫名稱，預設為 `tradeguard`。 |
+| `DB_USERNAME`、`DB_PASSWORD` | PostgreSQL 使用者名稱與密碼。 |
+| `DB_SSLMODE` | PostgreSQL TLS 模式；本機 Docker 預設為 `disable`。 |
 | `REDIS_HOST`、`REDIS_PORT`、`REDIS_PASSWORD` | Redis 主機、埠號與密碼；本機未啟用密碼時可留空。 |
 | `JWT_SECRET` | 簽署及驗證登入 JWT 的密鑰。部署時設定唯一的高熵值，至少 32 位元組。 |
 | `COOKIE_SECURE` | 設為 `true` 時，登入 Cookie 僅透過 HTTPS 傳送；本機純 HTTP 開發可設為 `false`。 |
 | `CORS_ALLOWED_ORIGINS` | 允許呼叫 API 的前端來源網址，需包含協定，例如 `https://example.com`。 |
 | `EOD_TOKEN` | 日終作業 API 的共享憑證；呼叫 `/internal/eod` 時放在 `X-EOD-Token` 標頭。 |
-| `BOOTSTRAP_ADMIN_USERNAME`、`BOOTSTRAP_ADMIN_PASSWORD` | 首次啟動時建立初始 `ADMIN` 帳號；兩者都要設定，帳號建立後移除。 |
-
-## 使用 Neon PostgreSQL
-
-Render Blueprint 不會建立 Render PostgreSQL；它會提示設定 `DB_HOST`、`DB_PORT`、`DB_NAME`、`DB_USERNAME`、`DB_PASSWORD`。在 Neon 專案的 **Connect** 視窗選擇資料庫與 role，將提供的 Host、Port、Database、Username、Password 分別填入這些變數。Render Blueprint 已將 `DB_SSLMODE` 設為 `require`，以符合 Neon 的 TLS 連線需求。請只在 Render 後端服務的環境變數中設定 Neon 密碼，不要提交到 Git 或放入前端變數。
-
-本機 Docker Compose 仍使用專案內的 PostgreSQL 容器，`DB_SSLMODE=disable`；若要從本機直接連 Neon，則在根目錄 `.env.local` 填入 Neon 的連線欄位並將 `DB_SSLMODE=require`。
+| `BOOTSTRAP_ADMIN_USERNAME`、`BOOTSTRAP_ADMIN_PASSWORD` | 首次啟動時建立初始 `ADMIN` 帳號；如需建立，兩者都要設定。已存在的同名帳號不會重複建立。 |
 
 ## 啟動前端
 

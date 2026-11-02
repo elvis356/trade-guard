@@ -4,23 +4,23 @@
 
 證券交易模擬器：限價撮合、市場監控、防竄改稽核鏈。
 
-> ⚠️ 僅供教育與學習用途，非真實交易系統，不構成投資建議。
+> ⚠️ 僅供學習用途，非真實交易系統，不構成投資建議。
 
 ## 核心功能
 
-- **撮合**：價格／時間優先、部分成交、1,000 股整股單位、台北平日交易時段驗證。
-- **事件重播**：啟動時重建未結委託；序號與資料庫不一致時拒絕啟動。
-- **監控**：同帳戶洗售、價格／成交量警示；案件提報與審核須由不同人執行。
-- **稽核**：SHA-256 鏈式稽核紀錄，與業務寫入同一筆交易；可驗證鏈與三方帳本對帳。
+- **撮合**：價格／時間優先、部分成交、以 1,000 股為一張、驗證台北平日交易時段。
+- **事件重播**：啟動時重建未結委託；事件序號與資料庫不一致時拒絕啟動。
+- **監控**：偵測同帳戶洗售、價格／成交量異常；案件的提報者與審核者不得為同一人。
+- **稽核**：SHA-256 鏈式稽核紀錄，與業務資料寫入位於同一個資料庫交易（transaction）中；可驗證鏈的完整性，並對委託、成交、委託事件三方資料進行對帳（核對已成交數量、成交數量與委託序號連續性）。
 - **日終報告**：每日 XML 報表，由 GitHub Actions 排程產生。
 
 ## 線上測試
 
 前端部署於 Vercel，後端部署於 Render，資料庫使用 Neon PostgreSQL。
 
-> Render 免費方案閒置 15 分鐘會休眠，首次連線可能需要約 1 分鐘喚醒。
+> Render 免費方案閒置 15 分鐘會休眠，首次連線約需 1 分鐘喚醒。
 
-1. 開啟[前端](https://trade-guard-frontend-next.vercel.app)（按住 Ctrl 或 Mac 上的 ⌘ 鍵再點連結，可在新分頁開啟）。首次載入會自動等待 API、PostgreSQL 與 Redis 就緒，不必先手動喚醒後端；服務準備期間會顯示檢查狀態並每 3 秒重試。
+1. 開啟[前端](https://trade-guard-frontend-next.vercel.app)（按住 Ctrl 或 Mac 上的 ⌘ 鍵再點連結，可在新分頁開啟）。首次載入會自動等待 API、PostgreSQL 與 Redis 就緒，不必先手動喚醒後端；服務準備期間會顯示檢查狀態，並每 3 秒自動重試。
 2. 到[註冊頁面](https://trade-guard-frontend-next.vercel.app/register)建立 `TRADER` 帳號（帳號 3–50 字元；密碼 12–72 字元）。
 3. 到[交易頁面](https://trade-guard-frontend-next.vercel.app/trade)下限價單，回到市場總覽與標的頁查看報價、委託簿與成交。
 4. 若市場總覽沒有報價，需由 `ADMIN` 先到[管理頁面](https://trade-guard-frontend-next.vercel.app/admin)建立並啟用商品。
@@ -30,44 +30,44 @@
 |------|----------|----------|
 | `TRADER` | [`/trade`](https://trade-guard-frontend-next.vercel.app/trade) | 下單、查詢自己的委託、取消未成交委託 |
 | `SURVEILLANCE` | [`/surveillance`](https://trade-guard-frontend-next.vercel.app/surveillance) | 看警示、提報案件、審核他人提報的案件 |
-| `AUDITOR` | [`/audit`](https://trade-guard-frontend-next.vercel.app/audit)、[`/reports/daily`](https://trade-guard-frontend-next.vercel.app/reports/daily) | 驗證稽核鏈、帳本對帳、檢視每日 XML 報表 |
+| `AUDITOR` | [`/audit`](https://trade-guard-frontend-next.vercel.app/audit)、[`/reports/daily`](https://trade-guard-frontend-next.vercel.app/reports/daily) | 驗證稽核鏈、三方資料對帳、檢視每日 XML 報表 |
 | `ADMIN` | [`/admin`](https://trade-guard-frontend-next.vercel.app/admin) | 管理商品與帳號，並擁有稽核權限 |
 
-完整頁面權限請見 [前端說明](docs/frontend.md)。
+各頁面完整權限請見[前端說明](docs/frontend.md)。
 
 手動檢查後端狀態：
 
-- [後端服務狀態頁](https://tradeguard-api-vy1t.onrender.com/api/health)
-- [後端依賴就緒檢查頁](https://tradeguard-api-vy1t.onrender.com/api/health/readiness)：檢查後端 API、PostgreSQL、Redis 狀態，頁面每 3 秒自動更新。
+- [後端依賴服務檢查](https://tradeguard-api-vy1t.onrender.com/api/health/readiness)：檢查後端 API、PostgreSQL、Redis 狀態，頁面每 3 秒自動更新。
 
-## 本地端啟動
+## 本機啟動
 
-需求：Docker Desktop、Node.js 20.9+（JDK 21 僅「不用容器」或跑測試時需要）。
+需求：Docker Desktop、Node.js 20.9+（JDK 21 僅在不使用 Docker 或執行測試時需要）。
 
-若根目錄的 `.env.local` 已存在，請勿重複執行複製指令，以免覆蓋原有設定。
-根目錄 `.env.local` 提供 Docker Compose 使用；`frontend-next/.env.local` 則是前端設定，兩者不同。
+若根目錄已有 `.env.local`，請跳過複製指令，以免覆蓋既有設定。
+根目錄的 `.env.local` 供 Docker Compose 使用；`frontend-next/.env.local` 則是前端設定，兩者不同。
+執行 Compose 前，請先啟動 Docker Desktop，等待 Docker Engine 顯示執行中（使用 Linux containers），並在 PowerShell 執行 `docker info` 確認可連線。
 
 ```bash
 # 1. 準備環境變數
 cp .env.example .env.local
-#    如需建立初始 ADMIN，請在 .env.local 設定 BOOTSTRAP_ADMIN_USERNAME /
-#    BOOTSTRAP_ADMIN_PASSWORD（建立後移除這兩項）
+#    範例已附本機測試用 ADMIN 帳號；若要更改，請編輯 .env.local 中 BOOTSTRAP_ADMIN_USERNAME /
+#    BOOTSTRAP_ADMIN_PASSWORD
 
-# 2. 啟動 PostgreSQL + Redis + 後端
+# 2. 啟動 Docker Desktop
+
+# 3. 使用 Docker Compose 啟動 PostgreSQL + Redis + 後端
 docker compose --env-file .env.local up --build -d
 
-# 3. 驗證後端
-curl http://localhost:8080/api/health
+# 4. 驗證後端（在瀏覽器開啟 http://localhost:8080/api/health/readiness，檢查是否顯示「所有服務正常」）
 
-# 4. 啟動前端
+# 5. 啟動前端
 cd frontend-next
 cp .env.example .env.local
 npm install
 npm run dev          # http://localhost:3000
 ```
 
-首次啟動成功、管理員建立後，請從 `.env.local` 移除 `BOOTSTRAP_ADMIN_USERNAME` 與 `BOOTSTRAP_ADMIN_PASSWORD`。
-Windows PowerShell、不使用 Docker 的啟動方式與全部環境變數，見 [本機開發](docs/local-development.md)。
+Windows PowerShell、不使用 Docker 的啟動方式與全部環境變數，見[本機開發](docs/local-development.md)。
 
 ## 驗證
 
@@ -76,7 +76,7 @@ cd backend-java
 ./mvnw test          # Windows: .\mvnw.cmd test
 ```
 
-測試使用 H2（PostgreSQL 相容模式），不需 Docker；也涵蓋 Redis 中斷時的 PostgreSQL 備援路徑。CI 內容見 [測試與 CI](docs/testing-and-ci.md)。
+測試使用 H2（PostgreSQL 相容模式），不需 Docker；也涵蓋 Redis 中斷時的 PostgreSQL 備援路徑。CI 內容見[測試與 CI](docs/testing-and-ci.md)。
 
 ## 專案結構
 
@@ -94,7 +94,7 @@ docker-compose.yml  本機 PostgreSQL 16 + Redis 7 + 後端
 |------|------|
 | [docs/functional-requirements-specification.md](docs/functional-requirements-specification.md) | 功能需求、角色權限、業務規則 |
 | [docs/uml-workbench.html](docs/uml-workbench.html) | 互動式 UML 工作台，系統架構與設計圖（[線上檢視](https://elvis356.github.io/trade-guard/uml-workbench.html)） |
-| [docs/local-development.md](docs/local-development.md) | 本機啟動、不使用容器、環境變數表、Neon 設定 |
+| [docs/local-development.md](docs/local-development.md) | 本機啟動、不使用 Docker、環境變數表 |
 | [docs/api.md](docs/api.md) | 驗證、市場／委託、監控案件、稽核與每日報告 API |
 | [docs/frontend.md](docs/frontend.md) | 前端頁面、角色權限、環境變數、報表快取策略 |
 | [docs/deployment.md](docs/deployment.md) | Render、Vercel、GitHub Actions 日終排程 |

@@ -24,7 +24,7 @@ Render Blueprint（`render.yaml`）將 Redis 和 Docker 化 API 設為免費方�
 - 將 `CORS_ALLOWED_ORIGINS` 設為 Vercel 部署來源的精確網址。
 - 初次佈建時，請提供 `BOOTSTRAP_ADMIN_USERNAME` 及唯一的 `BOOTSTRAP_ADMIN_PASSWORD`；管理員建立後請移除這兩項設定。
 - Render 會產生 `JWT_SECRET` 和 `EOD_TOKEN`；請將 `EOD_TOKEN` 安全地複製到 GitHub Actions secret（見下方）。
-- 資料庫連線欄位（Neon）請見 [本機開發：使用 Neon PostgreSQL](local-development.md#使用-neon-postgresql)。
+- 在 Neon 專案的 **Connect** 視窗選擇資料庫與 role，將提供的 Host、Port、Database、Username、Password 設為 Render 後端服務的 `DB_HOST`、`DB_PORT`、`DB_NAME`、`DB_USERNAME`、`DB_PASSWORD`；`DB_SSLMODE` 設為 `require`。請勿將資料庫密碼提交到 Git 或放入前端環境變數。
 
 ## Vercel
 
