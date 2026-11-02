@@ -16,7 +16,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
-  const [registeredUsername, setRegisteredUsername] = useState("");
+  const [registeredUsername, setRegisteredUsername] = useState("test_trader");
   const [busy, setBusy] = useState(false);
 
   async function submit(event: FormEvent<HTMLFormElement>) {

@@ -166,7 +166,7 @@ export function ReadinessGate({ children }: { children: ReactNode }) {
             正在確認服務狀態
           </Typography>
           <Typography sx={{ color: "#d0d0d0", lineHeight: 1.8, mt: 1.5, maxWidth: 620 }}>
-            首次連線可能需要喚醒後端。待 API、資料庫與 Redis 都正常後，將自動載入您要前往的頁面。
+            首次連線可能需要 1-2 分鐘喚醒後端。待 API、資料庫與 Redis 都正常後，將自動載入您要前往的頁面。
           </Typography>
         </Box>
       </Box>
