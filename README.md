@@ -101,6 +101,7 @@ docker-compose.yml  本機 PostgreSQL 16 + Redis 7 + 後端
 | [docs/frontend.md](docs/frontend.md) | 前端頁面、角色權限、環境變數、報表快取策略 |
 | [docs/user-guide.md](docs/user-guide.md) | 訪客與各角色的前端體驗流程及操作說明 |
 | [docs/owasp-mapping.md](docs/owasp-mapping.md) | OWASP Top 10:2025 對照、程式位置與目前差距 |
+| [docs/nonstop-tandem.md](docs/nonstop-tandem.md) | TradeGuard 與 NonStop Tandem 交易一致性、復原及高可用概念的對照與差距 |
 | [docs/deployment.md](docs/deployment.md) | Render、Vercel、GitHub Actions 日終排程 |
 | [docs/testing-and-ci.md](docs/testing-and-ci.md) | 測試方式、CI 與安全檢查 |
 | [docs/limitations.md](docs/limitations.md) | 目前限制與後續工作 |
