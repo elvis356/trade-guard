@@ -33,8 +33,8 @@ public class OriginValidationFilter extends OncePerRequestFilter {
         if (request.getRequestURI().startsWith("/api/")
                 && UNSAFE_METHODS.contains(request.getMethod())
                 && origin != null && !allowedOrigins.contains(origin)) {
-            errorWriter.write(response, HttpStatus.FORBIDDEN,
-                    "請求來源不在允許清單中。", request.getRequestURI());
+            errorWriter.writeSecurityEvent(request, response, HttpStatus.FORBIDDEN,
+                    "請求來源不在允許清單中。");
             return;
         }
         filterChain.doFilter(request, response);

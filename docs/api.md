@@ -8,6 +8,8 @@ Base URL：本機 `http://localhost:8080`；線上 `https://tradeguard-api-vy1t.
 
 使用 `POST /api/auth/register` 公開建立交易員帳號，或由管理員建立其他角色；公開註冊固定建立 `TRADER`，不接受角色選擇。帳號需為 3 至 50 個英數字或 `._-`，密碼需為 12 至 72 個字元（UTF-8 編碼最多 72 bytes）。使用 `POST /api/auth/login` 登入；API 會設定短效 HttpOnly、SameSite=Lax Cookie。`POST /api/auth/logout` 會在 Redis 撤銷權杖並清除 Cookie。
 
+登入依來源 IP 限制每分鐘 20 次，公開註冊依來源 IP 限制每小時 10 次；超限回 `429 Too Many Requests`，Redis 無法檢查時回 `503 Service Unavailable`。若部署於反向代理後，來源 IP 取決於可信任代理提供的 forwarding headers；代理必須覆寫外部請求帶入的相關標頭。
+
 以初始管理員身分登入後，可透過 `POST /api/admin/users` 建立特定角色帳戶（`TRADER`、`SURVEILLANCE`、`AUDITOR` 或 `ADMIN`）。管理員可使用 `GET /api/admin/users` 分頁瀏覽帳戶，或以 `GET /api/admin/users/{id}` 取得單一帳戶。
 
 `GET /api/auth/me` 需登入，回傳目前帳號與角色，供前端初始化登入狀態。
@@ -22,7 +24,7 @@ Base URL：本機 `http://localhost:8080`；線上 `https://tradeguard-api-vy1t.
 
 委託請求須包含 UUID 格式的 `client_order_id`、標的代碼、方向（`B`／`S`）、限價及數量。同一交易者重複提交相同的用戶端委託 ID 時，會取得原委託；若重用 ID 但委託內容不同，則回傳 `409`。
 
-市場讀取及健康檢查為公開端點；標的資料寫入及使用者管理須具備 `ADMIN` 角色。委託清單支援分頁（`page`、`size`、`sort`；`size` 上限為 100）。受保護的交易、監控及稽核路由會依 `SecurityConfiguration` 中的角色對應規則限制存取。帶有 `Origin` 標頭的非安全 `/api` 請求，只接受來自 `CORS_ALLOWED_ORIGINS` 的來源。錯誤採用共用 JSON 格式，包含 `timestamp`、`status`、`error`、`message`、`path` 及可選的 `details`。
+市場讀取及健康檢查為公開端點；標的資料寫入及使用者管理須具備 `ADMIN` 角色。分頁支援 `page`、`size`、`sort`，`size` 上限為 100；排序欄位使用白名單：使用者為 `username`、標的為 `symbol`、個人委託及近期交易為 `id`、警示為 `occurredAt`、案件為 `createdAt`。不允許的 `sort` 欄位回 `400 Bad Request`。受保護的交易、監控及稽核路由會依 `SecurityConfiguration` 中的角色對應規則限制存取。帶有 `Origin` 標頭的非安全 `/api` 請求，只接受來自 `CORS_ALLOWED_ORIGINS` 的來源。錯誤採用共用 JSON 格式，包含 `timestamp`、`status`、`error`、`message`、`path` 及可選的 `details`。
 
 ### 成功回應狀態碼
 

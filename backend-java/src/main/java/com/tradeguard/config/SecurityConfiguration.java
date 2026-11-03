@@ -1,6 +1,7 @@
 package com.tradeguard.config;
 
 import com.tradeguard.security.JwtCookieAuthenticationFilter;
+import com.tradeguard.security.AuthRateLimitFilter;
 import com.tradeguard.security.OriginValidationFilter;
 import com.tradeguard.security.SecurityErrorWriter;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -47,6 +48,15 @@ public class SecurityConfiguration {
     }
 
     @Bean
+    FilterRegistrationBean<AuthRateLimitFilter> authRateLimitFilterServletRegistration(
+            AuthRateLimitFilter filter) {
+        FilterRegistrationBean<AuthRateLimitFilter> registration =
+                new FilterRegistrationBean<>(filter);
+        registration.setEnabled(false);
+        return registration;
+    }
+
+    @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);
     }
@@ -70,6 +80,7 @@ public class SecurityConfiguration {
             HttpSecurity http,
             JwtCookieAuthenticationFilter jwtFilter,
             OriginValidationFilter originFilter,
+            AuthRateLimitFilter rateLimitFilter,
             SecurityErrorWriter errorWriter) throws Exception {
         http
                 .cors(Customizer.withDefaults())
@@ -131,7 +142,8 @@ public class SecurityConfiguration {
                                 .hasAnyRole("AUDITOR", "ADMIN")
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(originFilter, JwtCookieAuthenticationFilter.class);
+                .addFilterBefore(originFilter, JwtCookieAuthenticationFilter.class)
+                .addFilterAfter(rateLimitFilter, OriginValidationFilter.class);
         return http.build();
     }
 }

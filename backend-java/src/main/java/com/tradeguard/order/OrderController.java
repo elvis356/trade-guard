@@ -1,5 +1,6 @@
 package com.tradeguard.order;
 
+import com.tradeguard.common.PageableSortValidator;
 import com.tradeguard.instrument.dto.PageResponse;
 import com.tradeguard.order.dto.CreateOrderRequest;
 import com.tradeguard.order.dto.OrderResponse;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -46,6 +48,7 @@ public class OrderController {
             @PageableDefault(size = 20, sort = "id",
                     direction = org.springframework.data.domain.Sort.Direction.DESC)
             Pageable pageable) {
+        PageableSortValidator.requireAllowed(pageable, Set.of("id"));
         return ResponseEntity.ok(PageResponse.from(
                 orderService.findMine(authentication.getName(), pageable)));
     }

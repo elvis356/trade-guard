@@ -1,5 +1,6 @@
 package com.tradeguard.market;
 
+import com.tradeguard.common.PageableSortValidator;
 import com.tradeguard.instrument.InstrumentService;
 import com.tradeguard.instrument.dto.InstrumentResponse;
 import com.tradeguard.order.OrderService;
@@ -11,6 +12,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/market")
@@ -49,6 +52,7 @@ public class MarketController {
                     sort = "id",
                     direction = org.springframework.data.domain.Sort.Direction.DESC)
             Pageable pageable) {
+        PageableSortValidator.requireAllowed(pageable, Set.of("id"));
         return ResponseEntity.ok(TradeResponse.Page.from(
                 orderService.findTrades(symbol, pageable)));
     }

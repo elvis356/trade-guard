@@ -2,7 +2,10 @@ package com.tradeguard.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tradeguard.common.ApiError;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -14,6 +17,7 @@ import java.io.IOException;
 @Component
 public class SecurityErrorWriter {
 
+    private static final Logger log = LoggerFactory.getLogger(SecurityErrorWriter.class);
     private final ObjectMapper objectMapper;
 
     public SecurityErrorWriter(ObjectMapper objectMapper) {
@@ -21,15 +25,21 @@ public class SecurityErrorWriter {
     }
 
     public AuthenticationEntryPoint authenticationEntryPoint() {
-        return (request, response, exception) ->
-                write(response, HttpStatus.UNAUTHORIZED, "需要登入才能使用此功能。",
-                        request.getRequestURI());
+        return (request, response, exception) -> writeSecurityEvent(request, response,
+                HttpStatus.UNAUTHORIZED, "需要登入才能使用此功能。");
     }
 
     public AccessDeniedHandler accessDeniedHandler() {
-        return (request, response, exception) ->
-                write(response, HttpStatus.FORBIDDEN, "目前角色沒有執行此操作的權限。",
-                        request.getRequestURI());
+        return (request, response, exception) -> writeSecurityEvent(request, response,
+                HttpStatus.FORBIDDEN, "目前角色沒有執行此操作的權限。");
+    }
+
+    public void writeSecurityEvent(HttpServletRequest request, HttpServletResponse response,
+                                   HttpStatus status, String message) throws IOException {
+        log.warn("Security request rejected status={} method={} path={} remoteAddr={}",
+                status.value(), request.getMethod(), request.getRequestURI(),
+                request.getRemoteAddr());
+        write(response, status, message, request.getRequestURI());
     }
 
     public void write(HttpServletResponse response, HttpStatus status,

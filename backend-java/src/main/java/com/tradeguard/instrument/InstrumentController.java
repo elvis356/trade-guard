@@ -1,5 +1,6 @@
 package com.tradeguard.instrument;
 
+import com.tradeguard.common.PageableSortValidator;
 import com.tradeguard.instrument.dto.InstrumentPatchRequest;
 import com.tradeguard.instrument.dto.InstrumentRequest;
 import com.tradeguard.instrument.dto.InstrumentResponse;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/market/instruments")
@@ -44,6 +46,7 @@ public class InstrumentController {
     @GetMapping
     public ResponseEntity<PageResponse<InstrumentResponse>> findAll(
             @PageableDefault(size = 10, sort = "symbol") Pageable pageable) {
+        PageableSortValidator.requireAllowed(pageable, Set.of("symbol"));
         return ResponseEntity.ok(PageResponse.from(service.findAll(pageable)));
     }
 

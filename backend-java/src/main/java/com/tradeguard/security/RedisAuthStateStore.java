@@ -15,11 +15,18 @@ import java.util.HexFormat;
 public class RedisAuthStateStore implements AuthStateStore {
 
     private static final String LOGIN_PREFIX = "tradeguard:login:fail:";
+    private static final String RATE_LIMIT_PREFIX = "tradeguard:rate:";
     private static final String REVOKED_PREFIX = "tradeguard:jwt:deny:";
     private static final DefaultRedisScript<Long> INCREMENT_WITH_EXPIRY = new DefaultRedisScript<>(
             "local count = redis.call('INCR', KEYS[1]); "
                     + "if count == 1 then redis.call('EXPIRE', KEYS[1], ARGV[1]); end; "
                     + "return count;",
+            Long.class);
+    private static final DefaultRedisScript<Long> INCREMENT_RATE_LIMIT = new DefaultRedisScript<>(
+            "local count = redis.call('INCR', KEYS[1]); "
+                    + "if count == 1 then redis.call('EXPIRE', KEYS[1], ARGV[1]); end; "
+                    + "if count <= tonumber(ARGV[2]) then return 1; end; "
+                    + "return 0;",
             Long.class);
 
     private final StringRedisTemplate redis;
@@ -55,6 +62,22 @@ public class RedisAuthStateStore implements AuthStateStore {
     }
 
     @Override
+    public boolean allowRequest(String bucket, int limit, Duration window) {
+        try {
+            long expirySeconds = Math.max(1, window.toSeconds());
+            Long allowed = redis.execute(INCREMENT_RATE_LIMIT,
+                    java.util.List.of(rateLimitKey(bucket)),
+                    Long.toString(expirySeconds), Integer.toString(limit));
+            if (allowed == null) {
+                throw new AuthStateUnavailableException("無法更新流量限制計數。");
+            }
+            return allowed == 1;
+        } catch (DataAccessException ex) {
+            throw new AuthStateUnavailableException("無法更新流量限制計數。", ex);
+        }
+    }
+
+    @Override
     public void clearLoginFailures(String username) {
         try {
             redis.delete(loginKey(username));
@@ -85,10 +108,18 @@ public class RedisAuthStateStore implements AuthStateStore {
     }
 
     private String loginKey(String username) {
+        return LOGIN_PREFIX + hash(username);
+    }
+
+    private String rateLimitKey(String bucket) {
+        return RATE_LIMIT_PREFIX + hash(bucket);
+    }
+
+    private String hash(String value) {
         try {
             byte[] digest = MessageDigest.getInstance("SHA-256")
-                    .digest(username.getBytes(StandardCharsets.UTF_8));
-            return LOGIN_PREFIX + HexFormat.of().formatHex(digest);
+                    .digest(value.getBytes(StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(digest);
         } catch (NoSuchAlgorithmException ex) {
             throw new IllegalStateException("SHA-256 is required by the Java runtime.", ex);
         }

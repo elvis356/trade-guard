@@ -5,6 +5,8 @@ import com.tradeguard.config.AuthProperties;
 import com.tradeguard.user.AppUser;
 import com.tradeguard.user.AppUserRepository;
 import com.tradeguard.user.dto.UserResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +19,7 @@ import java.util.UUID;
 @Service
 public class AuthService {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
     private final AppUserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
@@ -43,6 +46,7 @@ public class AuthService {
         }
         if (authStateStore.isLoginLocked(normalizedUsername,
                 properties.getLoginFailureThreshold())) {
+            log.warn("Login rejected for a locked account.");
             throw new LoginLockedException();
         }
 
@@ -50,8 +54,10 @@ public class AuthService {
         String hash = user == null ? dummyPasswordHash : user.getPasswordHash();
         boolean passwordMatches = passwordEncoder.matches(password, hash);
         if (user == null || !user.isEnabled() || !passwordMatches) {
-            if (authStateStore.recordLoginFailure(normalizedUsername,
-                    properties.getLoginFailureThreshold(), properties.getLoginLockDuration())) {
+            boolean locked = authStateStore.recordLoginFailure(normalizedUsername,
+                    properties.getLoginFailureThreshold(), properties.getLoginLockDuration());
+            log.warn("Login failed; lockout={}", locked);
+            if (locked) {
                 throw new LoginLockedException();
             }
             throw new AuthenticationFailedException();

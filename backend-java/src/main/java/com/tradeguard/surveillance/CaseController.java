@@ -1,5 +1,6 @@
 package com.tradeguard.surveillance;
 
+import com.tradeguard.common.PageableSortValidator;
 import com.tradeguard.instrument.dto.PageResponse;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/cases")
@@ -28,6 +31,7 @@ public class CaseController {
             @PageableDefault(size = 20, sort = "createdAt",
                     direction = org.springframework.data.domain.Sort.Direction.DESC)
             Pageable pageable) {
+        PageableSortValidator.requireAllowed(pageable, Set.of("createdAt"));
         return ResponseEntity.ok(PageResponse.from(surveillance.findCases(pageable)));
     }
 

@@ -8,6 +8,8 @@ public interface AuthStateStore {
 
     boolean recordLoginFailure(String username, int threshold, Duration lockDuration);
 
+    boolean allowRequest(String bucket, int limit, Duration window);
+
     void clearLoginFailures(String username);
 
     boolean isTokenRevoked(String tokenId);

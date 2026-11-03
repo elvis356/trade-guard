@@ -19,10 +19,15 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.time.Duration;
+
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.startsWith;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -69,6 +74,7 @@ class AuthApiIntegrationTest {
         when(authStateStore.isLoginLocked(anyString(), anyInt())).thenReturn(false);
         when(authStateStore.recordLoginFailure(anyString(), anyInt(),
                 org.mockito.ArgumentMatchers.any())).thenReturn(false);
+        when(authStateStore.allowRequest(anyString(), anyInt(), any())).thenReturn(true);
         when(authStateStore.isTokenRevoked(anyString())).thenReturn(false);
     }
 
@@ -307,6 +313,70 @@ class AuthApiIntegrationTest {
                                 """))
                 .andExpect(status().isServiceUnavailable())
                 .andExpect(jsonPath("$.status").value(503));
+    }
+
+    @Test
+    void rateLimitsLoginRequestsBySourceAddress() throws Exception {
+        when(authStateStore.allowRequest(startsWith("login:"), eq(20), any()))
+                .thenReturn(false);
+
+        mockMvc.perform(post("/api/auth/login")
+                        .with(request -> {
+                            request.setRemoteAddr("203.0.113.10");
+                            return request;
+                        })
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"username":"trader1","password":"wrong-password"}
+                                """))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(header().string("Retry-After", "60"))
+                .andExpect(jsonPath("$.message").value("請求次數過多，請稍後再試。"));
+
+        verify(authStateStore).allowRequest("login:203.0.113.10", 20, Duration.ofMinutes(1));
+    }
+
+    @Test
+    void rateLimitsRegistrationRequestsBySourceAddress() throws Exception {
+        when(authStateStore.allowRequest(startsWith("register:"), eq(10), any()))
+                .thenReturn(false);
+
+        mockMvc.perform(post("/api/auth/register")
+                        .with(request -> {
+                            request.setRemoteAddr("203.0.113.11");
+                            return request;
+                        })
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"username":"newtrader","password":"correct-horse-battery-12"}
+                                """))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(header().string("Retry-After", "3600"));
+
+        verify(authStateStore).allowRequest("register:203.0.113.11", 10,
+                Duration.ofHours(1));
+    }
+
+    @Test
+    void rateLimitFailsClosedWhenRedisIsUnavailable() throws Exception {
+        when(authStateStore.allowRequest(anyString(), anyInt(), any()))
+                .thenThrow(new AuthStateUnavailableException("Redis unavailable."));
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"username":"trader1","password":"wrong-password"}
+                                """))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.status").value(503));
+    }
+
+    @Test
+    void rejectsSensitiveAdminSortProperties() throws Exception {
+        mockMvc.perform(get("/api/admin/users?sort=passwordHash")
+                        .with(user("admin").roles("ADMIN")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("不允許使用此排序欄位。"));
     }
 
     private void createUser(String username, String password, Role role) {

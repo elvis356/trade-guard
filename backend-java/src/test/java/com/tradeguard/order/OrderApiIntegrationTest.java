@@ -74,6 +74,8 @@ class OrderApiIntegrationTest {
         when(authStateStore.isLoginLocked(anyString(), anyInt())).thenReturn(false);
         when(authStateStore.recordLoginFailure(anyString(), anyInt(), any()))
                 .thenReturn(false);
+        when(authStateStore.allowRequest(anyString(), anyInt(), any()))
+                .thenReturn(true);
         createUser("trader1");
         createUser("trader2");
         instruments.saveAndFlush(new Instrument("TEST01", "測試商品", true,
@@ -147,6 +149,26 @@ class OrderApiIntegrationTest {
         mockMvc.perform(delete("/api/orders/{id}", buyId)
                         .with(user("trader1").roles("TRADER")))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void traderCannotReadOrCancelAnotherUsersOrder() throws Exception {
+        long orderId = orderId(createOrder("trader2", "TEST01", "S", "50.00", 1000,
+                UUID.randomUUID()));
+
+        mockMvc.perform(get("/api/orders/mine")
+                        .with(user("trader1").roles("TRADER")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isEmpty());
+
+        mockMvc.perform(delete("/api/orders/{id}", orderId)
+                        .with(user("trader1").roles("TRADER")))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(get("/api/orders/mine")
+                        .with(user("trader2").roles("TRADER")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].order_id").value(orderId));
     }
 
     @Test

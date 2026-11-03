@@ -18,6 +18,10 @@ public class AuthProperties {
     private List<String> allowedOrigins = new ArrayList<>();
     private int loginFailureThreshold = 5;
     private Duration loginLockDuration = Duration.ofMinutes(15);
+    private int loginRateLimit = 20;
+    private Duration loginRateWindow = Duration.ofMinutes(1);
+    private int registrationRateLimit = 10;
+    private Duration registrationRateWindow = Duration.ofHours(1);
 
     public String getJwtSecret() {
         return jwtSecret;
@@ -75,6 +79,38 @@ public class AuthProperties {
         this.loginLockDuration = loginLockDuration;
     }
 
+    public int getLoginRateLimit() {
+        return loginRateLimit;
+    }
+
+    public void setLoginRateLimit(int loginRateLimit) {
+        this.loginRateLimit = loginRateLimit;
+    }
+
+    public Duration getLoginRateWindow() {
+        return loginRateWindow;
+    }
+
+    public void setLoginRateWindow(Duration loginRateWindow) {
+        this.loginRateWindow = loginRateWindow;
+    }
+
+    public int getRegistrationRateLimit() {
+        return registrationRateLimit;
+    }
+
+    public void setRegistrationRateLimit(int registrationRateLimit) {
+        this.registrationRateLimit = registrationRateLimit;
+    }
+
+    public Duration getRegistrationRateWindow() {
+        return registrationRateWindow;
+    }
+
+    public void setRegistrationRateWindow(Duration registrationRateWindow) {
+        this.registrationRateWindow = registrationRateWindow;
+    }
+
     @PostConstruct
     void validateConfiguration() {
         if (tokenLifetime == null || tokenLifetime.compareTo(Duration.ofSeconds(1)) < 0
@@ -84,6 +120,12 @@ public class AuthProperties {
         if (loginFailureThreshold < 1 || loginLockDuration == null
                 || loginLockDuration.isZero() || loginLockDuration.isNegative()) {
             throw new IllegalStateException("Login lock settings must be positive.");
+        }
+        if (loginRateLimit < 1 || loginRateWindow == null || loginRateWindow.isZero()
+                || loginRateWindow.isNegative() || registrationRateLimit < 1
+                || registrationRateWindow == null || registrationRateWindow.isZero()
+                || registrationRateWindow.isNegative()) {
+            throw new IllegalStateException("Authentication rate limits must be positive.");
         }
         if (cookieName == null || !cookieName.matches("[A-Za-z0-9_-]+")) {
             throw new IllegalStateException("JWT cookie name contains unsupported characters.");

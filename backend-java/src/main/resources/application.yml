@@ -26,6 +26,7 @@ spring:
     throw-exception-if-no-handler-found: true
 server:
   port: ${PORT:8080}
+  forward-headers-strategy: framework
   error:
     include-message: never
 market:
@@ -51,6 +52,10 @@ tradeguard:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
     login-failure-threshold: 5
     login-lock-duration: 15m
+    login-rate-limit: 20
+    login-rate-window: 1m
+    registration-rate-limit: 10
+    registration-rate-window: 1h
   bootstrap:
     admin:
       username: ${BOOTSTRAP_ADMIN_USERNAME:}

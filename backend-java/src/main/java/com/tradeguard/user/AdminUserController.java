@@ -1,5 +1,6 @@
 package com.tradeguard.user;
 
+import com.tradeguard.common.PageableSortValidator;
 import com.tradeguard.user.dto.CreateUserRequest;
 import com.tradeguard.user.dto.UserResponse;
 import com.tradeguard.user.dto.UserPageResponse;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/admin/users")
@@ -40,6 +42,7 @@ public class AdminUserController {
     @GetMapping
     public ResponseEntity<UserPageResponse> findAll(
             @PageableDefault(size = 20, sort = "username") Pageable pageable) {
+        PageableSortValidator.requireAllowed(pageable, Set.of("username"));
         return ResponseEntity.ok(UserPageResponse.from(userService.findAll(pageable)));
     }
 
