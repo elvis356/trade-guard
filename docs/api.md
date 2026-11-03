@@ -24,7 +24,7 @@ Base URL：本機 `http://localhost:8080`；線上 `https://tradeguard-api-vy1t.
 
 委託請求須包含 UUID 格式的 `client_order_id`、標的代碼、方向（`B`／`S`）、限價及數量。同一交易者重複提交相同的用戶端委託 ID 時，會取得原委託；若重用 ID 但委託內容不同，則回傳 `409`。
 
-市場讀取及健康檢查為公開端點；標的資料寫入及使用者管理須具備 `ADMIN` 角色。分頁支援 `page`、`size`、`sort`，`size` 上限為 100；排序欄位使用白名單：使用者為 `username`、標的為 `symbol`、個人委託及近期交易為 `id`、警示為 `occurredAt`、案件為 `createdAt`。不允許的 `sort` 欄位回 `400 Bad Request`。受保護的交易、監控及稽核路由會依 `SecurityConfiguration` 中的角色對應規則限制存取。帶有 `Origin` 標頭的非安全 `/api` 請求，只接受來自 `CORS_ALLOWED_ORIGINS` 的來源。錯誤採用共用 JSON 格式，包含 `timestamp`、`status`、`error`、`message`、`path` 及可選的 `details`。
+市場讀取及服務狀態端點為公開端點；標的資料寫入及使用者管理須具備 `ADMIN` 角色。分頁支援 `page`、`size`、`sort`，`size` 上限為 100；排序欄位使用白名單：使用者為 `username`、標的為 `symbol`、個人委託及近期交易為 `id`、警示為 `occurredAt`、案件為 `createdAt`。不允許的 `sort` 欄位回 `400 Bad Request`。受保護的交易、監控及稽核路由會依 `SecurityConfiguration` 中的角色對應規則限制存取。帶有 `Origin` 標頭的非安全 `/api` 請求，只接受來自 `CORS_ALLOWED_ORIGINS` 的來源。錯誤採用共用 JSON 格式，包含 `timestamp`、`status`、`error`、`message`、`path` 及可選的 `details`。
 
 ### 成功回應狀態碼
 
@@ -55,10 +55,10 @@ Base URL：本機 `http://localhost:8080`；線上 `https://tradeguard-api-vy1t.
 
 日終排程（`POST /internal/eod`，以 `X-EOD-Token` 驗證）的設定見 [部署說明](deployment.md#github-actions-日終排程)。帳本核對成功時，工作會將 XML 報告存入 PostgreSQL 並回傳其 SHA-256 校驗和；核對失敗時不會發布報告。
 
-## 健康檢查
+## 服務狀態與就緒狀態
 
 | 端點 | 用途 | 回應 |
 |------|------|------|
-| `GET /api/health` | 人類檢視的基本健康頁面。 | `200 OK` HTML。 |
+| `GET /api/health` | 提供服務狀態資訊供人員檢視。 | `200 OK` HTML。 |
 | `GET /api/health/status` | 僅檢查 API 程序，供機器監控。 | `200 OK` JSON，例如 `{"status":"UP"}`。 |
 | `GET /api/health/readiness` | 檢查 API、PostgreSQL 與 Redis 是否就緒。 | `Accept: text/html` 時回 `200 OK` HTML 頁面；`Accept: application/json` 時依依賴狀態回 `200 OK` 或 `503 Service Unavailable` JSON。 |

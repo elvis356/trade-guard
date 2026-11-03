@@ -396,7 +396,7 @@
       auth: {name:"身分驗證",type:"service",desc:"登入、註冊、登出、JWT Cookie、登入失敗鎖定及 token 撤銷。",meta:["AuthController","AuthService","SecurityConfiguration"]},
       userModule: {name:"使用者管理模組",type:"service",desc:"管理員建立及查詢應用程式帳號與角色。",meta:["user/UserService","AdminUserController","app_users"]},
       instrumentModule: {name:"商品管理模組",type:"service",desc:"管理員建立、更新、啟用／停用及刪除商品主檔。",meta:["instrument/InstrumentService","InstrumentController","instruments"]},
-      health: {name:"健康檢查模組",type:"service",desc:"提供健康狀態端點供平台檢查服務存活。",meta:["health/HealthController","GET /api/health"]},
+      health: {name:"服務狀態模組",type:"service",desc:"提供服務狀態端點供平台檢查服務存活。",meta:["health/HealthController","GET /api/health"]},
       market: {name:"商品與市場查詢",type:"service",desc:"商品主檔 CRUD、行情、委託簿及近期成交查詢。",meta:["InstrumentController","MarketController"]},
       matching: {name:"委託與撮合",type:"service",desc:"驗證限價委託、價格／時間優先撮合、部分成交及取消。",meta:["OrderController","OrderService","OrderValidator"]},
       surveillance: {name:"市場監視",type:"service",desc:"成交後檢查 WASH_TRADE 與 CLOSING_MARKUP 規則並保存警示；警示僅為人工調查線索。",meta:["SurveillanceService","TradeSurveillanceListener"]},

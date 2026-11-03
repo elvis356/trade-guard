@@ -7,7 +7,7 @@
 | 前端（Vercel） | https://trade-guard-frontend-next.vercel.app |
 | 後端（Render） | https://tradeguard-api-vy1t.onrender.com |
 | 後端服務狀態頁 | https://tradeguard-api-vy1t.onrender.com/api/health |
-| Render 機器健康檢查 | `/api/health/status`（JSON） |
+| Render 服務存活狀態檢查 | `/api/health/status`（JSON） |
 
 ## Render
 
