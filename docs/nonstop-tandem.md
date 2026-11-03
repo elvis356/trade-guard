@@ -19,7 +19,7 @@ TradeGuard 沒有實作 NonStop 的 process pair、平台級故障切換、TMF �
 | NonStop／交易系統常見關注點 | TradeGuard 的相關實作 | 相似之處 | 重要差異 |
 |---|---|---|---|
 | 交易原子性與一致性 | Spring `@Transactional`、PostgreSQL | 一次委託操作中的相關資料以資料庫交易維持一致，失敗時由資料庫交易回滾。 | 使用一般 PostgreSQL 與應用程式交易，不是 NonStop TMF；未提供跨系統分散式交易協調。 |
-| 穩定的交易先後順序 | 商品資料列的 pessimistic write lock、資料庫配置的 `seq_no` | 同一商品的委託透過鎖定與遞增序號形成可重現的處理順序。 | 這不是 NonStop 的全域交易序號服務，也不代表多個獨立撮合節點可安全並行。 |
+| 穩定的交易先後順序 | 商品資料列的 pessimistic write lock、`instruments.last_seq_no` | 鎖定商品資料列後，由應用程式遞增 `instruments.last_seq_no` 配置 `seq_no`；同一商品的委託依此形成處理順序。 | 這不是 PostgreSQL SEQUENCE，也不是 NonStop 的全域交易序號服務；多實例部署行為尚未設計及驗證。 |
 | 持久化交易事件 | `order_events` 表記錄委託接受、成交及取消 | 事件可用來檢查交易狀態如何形成，並與委託資料互相核對。 | 事件表是 PostgreSQL 應用層資料，不是 Enscribe，也未由資料庫權限或不可變儲存保護免於管理者修改。 |
 | 啟動恢復與一致性檢查 | `OrderEventReplayer`、`OrderEventReplayStartup` | 啟動時重播事件，檢查委託投影與商品序號是否與持久化資料一致；不一致時啟動失敗。 | 撮合仍以 PostgreSQL 委託表為準；重播產生的未結委託集合目前主要供恢復驗證，並未取代撮合所讀取的資料。這不是平台級自動故障切換。 |
 | 帳務與稽核 | SHA-256 稽核鏈、委託／成交／事件對帳、日終報告 | 可發現部分資料差異或稽核鏈內容遭更動的情況，支援事後檢查。 | 雜湊鏈不是不可竄改儲存；有資料庫寫入權限者仍可能重算資料及鏈。對帳也不等同 NonStop 上的帳務或營運控制。 |
@@ -34,17 +34,30 @@ sequenceDiagram
     participant API as Spring Boot API
     participant DB as PostgreSQL
     participant Audit as 稽核鏈
+    participant Events as Spring 事件
+    participant Surveillance as 監控 listener
     Trader->>API: 建立限價委託
+    API->>DB: 檢查使用者與 client_order_id 冪等性
+    alt 相同請求已存在
+        DB-->>API: 回傳原委託
+        API-->>Trader: 回傳既有委託結果
+    else 新委託
     API->>DB: 鎖定商品資料列、配置 seq_no
     API->>DB: 寫入 ORDER_ACCEPTED 事件及委託
+    API->>Audit: 記錄 ORDER_ACCEPTED
     API->>DB: 依價格／時間優先撮合
-    API->>DB: 寫入成交事件、委託狀態與成交資料
-    API->>Audit: 同一資料庫交易內記錄重要操作
+    loop 每筆成交
+        API->>DB: 寫入成交事件、委託狀態與成交資料
+        API->>Audit: 記錄 TRADE_EXECUTED
+        API->>Events: 發布 TradeCommittedEvent
+    end
     DB-->>API: 提交交易
+    Events->>Surveillance: 提交後處理 TradeCommittedEvent
     API-->>Trader: 回傳委託結果
+    end
 ```
 
-實際程式中，委託接受、撮合及稽核寫入均使用 PostgreSQL 交易；有成交時亦會更新成交雙方委託並保存成交和事件。這種設計著重應用層交易一致性及事後可驗證性，但**不代表**具備 NonStop 平台提供的硬體／程序容錯能力。
+實際程式中，冪等檢查在取得商品列鎖之前執行；新委託接受後、撮合前記錄 `ORDER_ACCEPTED` 稽核，每筆成交則記錄 `TRADE_EXECUTED` 稽核並發布 `TradeCommittedEvent`。委託接受、撮合及稽核寫入均在 PostgreSQL 交易內完成；監控 listener 在交易提交後處理已發布事件。這種設計著重應用層交易一致性及事後可驗證性，但**不代表**具備 NonStop 平台提供的硬體／程序容錯能力。
 
 ## 主要程式位置
 
@@ -60,7 +73,7 @@ sequenceDiagram
 
 ## 已有驗證
 
-- [OrderApiIntegrationTest](../backend-java/src/test/java/com/tradeguard/order/OrderApiIntegrationTest.java)：`supportsPartialFillsCancellationAndIdempotentRetries` 驗證部分成交、取消與相同委託請求重送；`replaysAppendOnlyEventsIntoOpenOrderBookAndChecksDatabaseProjection` 驗證重播投影與資料庫狀態；`replayFailsClosedWhenAnAcceptedOrderEventIsMissing` 驗證必要事件缺失時啟動／重播失敗。
+- [OrderApiIntegrationTest](../backend-java/src/test/java/com/tradeguard/order/OrderApiIntegrationTest.java)：`supportsPartialFillsCancellationAndIdempotentRetries` 驗證部分成交、取消與相同委託請求重送；`replaysAppendOnlyEventsIntoOpenOrderBookAndChecksDatabaseProjection` 驗證重播投影與資料庫狀態；`replayFailsClosedWhenAnAcceptedOrderEventIsMissing` 驗證缺少 `ORDER_ACCEPTED` 事件時 `replay()` 會丟出 `IllegalStateException`。啟動時由 `ApplicationRunner` 呼叫重播，但啟動失敗路徑本身沒有獨立測試。
 - [AuditEodApiIntegrationTest](../backend-java/src/test/java/com/tradeguard/audit/AuditEodApiIntegrationTest.java)：`verifiesHashChainAndReportsTampering` 驗證稽核鏈篡改可被偵測；`reconcilesThreeLedgersAndProducesProtectedDailyXmlAndEodResult` 驗證對帳與日終流程。
 
 這些測試驗證指定程式情境，不代表硬體故障切換、雙機持續營運、資料中心災難復原、負載下可用性或 NonStop 相容性已通過測試。
@@ -68,7 +81,8 @@ sequenceDiagram
 ## TradeGuard 目前未提供的 NonStop 等級能力
 
 - 沒有 NonStop 硬體／作業系統、process pair、TMF、Guardian、Pathway 或 Enscribe。
-- 沒有 active-active／多實例分散式撮合；同一商品序號及撮合依賴資料庫鎖與單一應用程式的處理模型。
+- 未設計也未測試多實例部署。同一商品的序號與撮合順序由資料庫列鎖保護，但多實例下的行為（包括啟動重播與併發寫入同時發生）尚未驗證。
+- 啟動重播會在唯讀交易中依序讀取事件、委託及商品序號；在 PostgreSQL 預設隔離層級下，各查詢可能使用不同快照。重播期間若同時有委託寫入，是否可能觀察到不一致狀態尚未驗證，不應視為已確認缺陷。
 - 沒有跨區域自動故障切換、零停機升級、經驗證的災難復原時間／資料復原點目標，或端到端高可用 SLA。
 - Redis 的登入鎖定、限流與撤銷資料可能因服務重啟而遺失；事件及稽核表也沒有 DB 層級防 UPDATE／DELETE 保護。
 - Compose、本機整合測試和雲端部署的可用性特性不同；教學用交易一致性測試不能作為金融級營運承諾。
