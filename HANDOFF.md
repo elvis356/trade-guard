@@ -1,72 +1,20 @@
-# TradeGuard — 代處理與後續工作
+# TradeGuard — 目前狀態與後續工作
 
-更新時間：2026-10-28（本機時間，Asia/Taipei）
+更新日期：2026-11-03
 
-## 今日交付目標與預估
+## 目前狀態
 
-目標是在今天 16:00 前完成一個可驗證階段。階段 1–6 後端已完成；階段 7 前端已建立首個可執行垂直切片，尚未完成整階段。
+- 後端以 Java 21、Spring Boot、PostgreSQL 與 Redis 提供認證、角色授權、限價撮合、行情、監視、稽核及日終報表 API。
+- 前端以 Next.js 提供公開市場總覽與標的頁；`/trade`、管理、監視及稽核工作區依角色限制。
+- 本機 Compose 提供 PostgreSQL、Redis 與後端；Vercel／Render 部署設定及 CI 工作流程位於專案內。正式雲端端到端驗證仍需另行執行。
+- 啟動時會重播委託事件並驗證 PostgreSQL 持久化狀態一致性；撮合直接使用 PostgreSQL 委託資料。
 
-| 階段 | 範圍 | 預估投入 | 狀態 |
-|---|---|---:|---|
-| 1. 後端骨架與商品主檔 CRUD | Java 21 / Spring Boot、Postgres、Flyway、分頁 CRUD、DTO 驗證、統一例外處理、整合測試 | 3–4 小時 | 已完成；H2 整合測試 4 項全數通過 |
-| 2. 認證、RBAC 與安全基線 | 使用者/角色、登入登出、密碼雜湊、JWT Cookie、授權、CORS/Security Headers | 6–10 小時 | 已完成程式與 H2 測試；待真實 Redis/Postgres 整合驗證 |
-| 3. 委託、驗證與撮合 | 訂單 CRUD/取消、規則驗證、價格/時間優先、部分成交、成交紀錄 | 12–18 小時 | 已完成程式與 H2 測試；待真實 Postgres 驗證 |
-| 4. 事件日誌、冪等與重播 | Postgres 序號、append-only order events、冪等鍵、委託簿重建 | 8–12 小時 | 已完成程式與 H2 測試；待真實 Postgres 驗證 |
-| 5. 行情、Redis 與市場監視 | 行情/委託簿查詢、快取、滑動視窗、異常規則、警示與案件雙人覆核 | 8–12 小時 | 已完成程式與 H2 測試；待真實 Redis/Postgres 驗證 |
-| 6. 稽核與日終作業 | 雜湊鏈、驗證 API、三方對帳、Cron 入口、XML 日報表 | 6–9 小時 | 已完成程式與 H2 測試；待真實 Postgres 驗證 |
-| 7. Next.js 前端與 API 串接 | 導覽、首頁、行情、下單、警示/案件/稽核頁、SSR/SSG/串流策略 | 12–20 小時 | 前端工作區已完成；尚待雲端端到端驗證 |
-| 8. 整合、資安掃描與部署 | Docker、CI、OWASP 檢核、測試、Render/Vercel 設定與部署 | 6–10 小時 | 進行中：全端 Compose、Render Blueprint、CI/CodeQL 已建立；雲端與容器整合待環境驗證 |
-| 選配擴充 | Python 模擬資料/RAG、Ollama、C# 對帳工具、Roadmap 功能 | 8–16 小時 | 未開始 |
+## 已知限制與後續工作
 
-核心功能（階段 1–8）粗估約 **61–95 小時**；選配項目另加約 **8–16 小時**。估時以單人熟悉 Java/Spring/React、需求不變、依賴與部署服務可用為前提；不包含等候雲端審核、網路下載及需求變更。
+1. 監視目前只有 `WASH_TRADE` 與 `CLOSING_MARKUP`；量價異常及 spoofing 規則尚未實作。
+2. 密碼重設與帳號停用管理尚未提供；帳號及商品管理清單仍有單頁筆數上限。
+3. 委託事件與稽核鏈的不可變性目前由應用程式介面維持，尚未加上 PostgreSQL 權限或觸發器層級的防竄改保護；Redis 冪等快速路徑也尚未實作。
+4. 完整 Compose 堆疊及正式 Vercel／Render 登入流程仍需在目標環境驗證；部署與本機設定須使用各自獨立的秘密。
+5. `/api/revalidate` 尚無受信任的後端呼叫端；不需設定 `REVALIDATE_SECRET`，除非未來真的啟用該呼叫流程。
 
-## 本次已建立
-
-- `backend-java/`：Maven Spring Boot 3 專案，採 package-by-feature。
-- 商品主檔 `Instrument`：新增、分頁查詢、單筆查詢、整筆修改、部分修改、刪除；另提供 TradeGuard 計畫中的 `GET /api/market/{symbol}/info`。
-- DTO 與 Bean Validation；Entity 不直接作為 HTTP request/response。
-- Controller → Service → Repository 分層；新增回 `201` 與 `Location`，找不到 `404`、重複 `409`、驗證錯誤 `400`，統一錯誤 JSON。
-- 認證與權限：BCrypt 密碼雜湊、短效 HS256 JWT（HttpOnly/SameSite Cookie）、安全登出 token 撤銷、Redis 登入失敗鎖定、CORS 白名單、unsafe Origin 驗證及安全回應標頭。
-- RBAC：`TRADER`、`SURVEILLANCE`、`AUDITOR`、`ADMIN`，管理者透過 `/api/admin/users` 建立帳號；首位管理員以一次性環境變數建立，不提供弱預設帳密。
-- 委託與撮合：限價買賣單新增、本人委託分頁查詢、取消及公開成交查詢；使用 Postgres 交易與每商品資料列鎖序列化併發委託，先鎖商品資料列再分配單調遞增 `seq_no`。
-- 驗證漲跌幅、升降單位、交易單位與臺北時區週一至週五交易時間；以價格優先、`seq_no` 時間優先、多檔成交、先到委託價成交並保留部分成交量。
-- 以 `(user_id, client_order_id)` 唯一約束與相同 payload 重送回原結果，payload 不一致回 `409`；Redis 冪等快速路徑尚未加入。
-- 階段 4：新增 V4 migration，將既有委託/成交狀態回填至 `order_events`，並以 `instruments.last_seq_no` 作每商品持久序號；在既有商品列鎖及同一交易內分配序號。
-- 新委託接受、成交、取消事件依序在委託/成交狀態變更前寫入同一資料庫交易；事件 repository 僅提供新增與讀取操作。
-- 啟動後依事件 ID 重播，重建開放委託快照並比對 `orders` 投影和序號計數；事件遺漏、投影差異或序號不一致時啟動失敗，不以成功狀態掩蓋資料不一致。
-- 既有冪等唯一約束與重送回應保持有效；Redis `SET NX EX` 快速路徑尚未實作。事件表的不可變限制目前由應用 repository 介面維持，尚未加上 PostgreSQL 權限/觸發器層級的防竄改保護。
-- Flyway V1–V8 migrations；本機 Postgres 16 與 Redis 7 Compose 設定。
-- H2 整合測試涵蓋 CRUD、分頁、驗證、重複代碼、錯誤格式及無效排序。
-- `README.md`、`.env.example` 與本文件。
-- 後端 23 項 H2 測試全數通過（4 CRUD、7 認證/RBAC、7 委託/事件/行情、2 規則驗證、1 監視與案件 API、2 稽核/EOD）；`clean verify` 成功並產生 JAR。
-- 階段 5：新增公開 `GET /api/market/quotes` 與 `GET /api/market/{symbol}/book`，行情與委託簿使用 15 秒 Redis 快取；Redis 不可用或快取 JSON 損壞時記錄警告並回源 Postgres。
-- 新增 Redis Sorted Set 成交滑動視窗，Redis 不可用時以已持久化成交回源計算；成交提交後執行監視，啟動時掃描歷史成交補處理，警示寫入 Postgres 並以成交/規則唯一鍵避免重複。
-- 實作 `WASH_TRADE`（同帳戶買賣）及可設定門檻的 `CLOSING_MARKUP`（尾盤時窗、參考價偏離、單一買方數量）警示；警示僅是線索，不代表違規。
-- 新增警示與案件分頁 API、提案/覆核 API；建立案件需監視角色，並以資料列鎖及不同帳號檢查實施四眼原則。
-- 測試覆蓋 Redis 不可用時行情/委託簿回源，以及警示權限、提案、同人覆核拒絕、異人覆核成功。
-- 階段 6：新增 V6 migration 與 SHA-256 稽核鏈；以 singleton chain-head row 的資料列鎖序列化併發 append，並在下單、成交、取消及案件提案/覆核的同一資料庫交易寫入稽核列。雜湊包含前一雜湊、user ID、actor、action、detail 與截斷至微秒的 UTC 時間。
-- `GET /api/audit/verify` 驗證逐列 hash、前後連結及 chain head；竄改時回 `409` 並指出首個損壞列。
-- `GET /api/audit/reconcile` 比對 orders、trades、order_events 的成交量、訂單接受/取消狀態、成交對手數量及商品序號連續性；不平衡回 `409` 並列出差異。
-- `GET /api/reports/daily.xml?date=YYYY-MM-DD` 依 `market.zone` 提供 XML 成交明細，限 AUDITOR/ADMIN；V7 `eod_reports` 以業務日期保存已產生日報表及 SHA-256。
-- 新增 `POST /internal/eod?date=YYYY-MM-DD` Cron 入口；未設定或 Token 不符回 `401`，使用 constant-time 比較 `X-EOD-Token`；每次執行均由 V8 `eod_runs` 保存對帳結果與差異，只有三方對帳平衡才生成/保存 XML 並回成功，結果含報表 checksum，且會寫入 EOD 稽核事件。
-- 後端 23 項 H2 測試全數通過（4 CRUD、7 認證/RBAC、7 委託/事件/行情、2 規則驗證、1 監視與案件、2 稽核/EOD），包含鏈竄改偵測、對帳差異、XML 權限與 EOD Token 驗證。
-- 階段 7 已新增 `frontend-next/` Next.js App Router 專案：首頁 SSR 行情總覽及五秒輪詢、商品頁 SSR 外殼與 Suspense 載入委託簿/成交、兩秒委託簿與五秒成交輪詢、商品基本資料 24 小時資料快取、SSG 撮合規則頁。
-- 瀏覽器使用同源 `/api/*` rewrites 連到後端；日終報表由瀏覽器使用同源請求並自動附上 HttpOnly Cookie，仍由後端執行 AUDITOR/ADMIN 授權，避免伺服器轉送及共用快取洩漏受保護資料。新增密鑰保護的 `/api/revalidate` handler；報表內容採每請求讀取，不採 ISR，以符合目前後端權限設計。
-- 階段 7 前端工作流程：新增登入／登出與 HttpOnly Cookie 狀態、依角色顯示導覽、受角色限制的管理／交易／監控／稽核工作區。管理員可管理商品和建立帳號；交易員可建立及取消委託；監控人員可提報案件並審核他人案件；稽核員／管理員可驗證稽核鏈、執行對帳及依日期檢視／下載日報 XML。瀏覽器操作皆呼叫同源 `/api`，後端授權仍為最終依據。
-- 前端既有 Node.js 24.22.1 環境曾完成 `npm audit`，本次更新後 `npm run lint`、`npm run build` 與 `git diff --check` 通過。使用臨時 Docker PostgreSQL 16／Redis 7 和本機後端完成瀏覽器 E2E：四種角色登入及導覽、商品 CRUD/啟用停用、角色帳號建立、委託建立／取消／撮合、警示提報、雙人覆核、稽核鏈驗證、對帳、日期 XML 報表檢視／下載、角色拒絕、登出及自我覆核拒絕皆通過。測試發現報表 SSR 無法取得 Path=/api Cookie，已改為瀏覽器同源請求並重新驗證成功。測試容器與本機前後端已停止；尚未在正式 Vercel／Render 執行端到端驗證。
-- 階段 8 已加入 `backend-java/Dockerfile`（非 root Java 21 runtime，含安全預設啟動腳本及 Cron 所需 curl）、全端 `docker-compose.yml` backend service、Render Blueprint（Postgres、private Redis、API、臺北時間平日 14:00 EOD Cron）、GitHub Actions backend/frontend CI、Java/TypeScript CodeQL、Dependabot 與高風險 Dependency Review；Spring Boot 監聽 Render 注入的 `PORT`。
-- 本次變更後後端 `clean verify` 23 項測試通過；前端 lint/build 通過，`npm audit` 為 0 vulnerabilities；Docker Compose、Render、CI/CodeQL/Dependabot YAML 均通過語法解析。此環境沒有 Docker CLI、Docker Desktop 與 Render/Vercel 憑證，因此容器建置、Compose 健康啟動、真實 PostgreSQL/Redis、Render Blueprint 部署、Cron 執行及 OWASP ZAP DAST 均未能實測；不得視為已部署。雲端首次部署需設定精確 `CORS_ALLOWED_ORIGINS` 和一次性管理員帳密，建立管理員後移除 bootstrap secrets。
-
-## 待處理清單（依序建議）
-
-1. 安裝/啟用 Docker Desktop 後執行 `docker compose up -d postgres redis`，驗證 V1–V8 migrations、V4 舊資料回填、Postgres 撮合/事件投影/稽核鎖、日報表與 EOD 對帳結果儲存，以及真實 Redis 快取、Sorted Set 成交視窗、登入鎖定與 JWT 撤銷。
-2. 市場監視尚缺 `VOL_PRICE_ANOMALY`：先決定/建立日線行情來源與 20 日均量資料，再實作量價偏離規則；現有 `CLOSING_MARKUP` 是可調門檻的示意規則，須以測試情境校正，非正式市場監管判定。
-3. 正式環境強化 `order_events` 與 `audit_entries` 防竄改：配置最小權限 DB role 或 PostgreSQL trigger/權限，確保應用外部也不能 UPDATE/DELETE；另評估加入 Redis 冪等快速路徑，保留 Postgres 唯一約束為最終保障。
-4. 為階段 7 執行正式 Vercel／Render 登入 Cookie、rewrite 與後端端到端驗證；本機隔離 PostgreSQL／Redis 瀏覽器 E2E 已完成。日終報表不使用 ISR，避免跨角色共用受保護資料。另使用 Docker 驗證後端 image／Compose，執行 OWASP dependency/ZAP 掃描並部署 Render/Vercel；正式環境設定精確 `CORS_ALLOWED_ORIGINS`，建立管理員後移除 bootstrap secrets。
-5. RAG、XML 擴充、模擬器及 C# 對帳工具可在核心流程完成後依時間選做；RAG 僅本機開啟且不得用於違規判定。
-
-## 尚未驗證的環境限制
-
-開始時本機可找到 JDK 21；目前 Docker Desktop 引擎已可用。已透過 Maven Wrapper 完成 clean verify；共 23 項 H2 測試全數通過。另以臨時 Docker PostgreSQL 16／Redis 7 啟動後端，實際瀏覽器 E2E 覆蓋認證、RBAC、交易、監控、稽核及每日報告；測試完成已停止並移除臨時容器及本機服務。V1–V8 migration、真實 PostgreSQL／Redis 及其主要流程已由此測試涵蓋，但仍未以 Docker 建置正式 backend image 或完整 Compose 全堆疊。`VOL_PRICE_ANOMALY` 因缺少 20 日日線資料來源尚未實作；現有監視規則只產生待人工判讀的警示。事件與稽核表目前由應用層 insert-only repository 維持，不具 PostgreSQL 權限/觸發器防竄改保護。EOD endpoint 預設因未設定 `EOD_TOKEN` 而拒絕請求；部署 Cron 前需設定高熵秘密。日終報表已改為瀏覽器同源請求以支援 Path=/api HttpOnly Cookie；報表不使用共用 ISR 快取，revalidation handler 已建立但尚無受信任呼叫端。階段 8 已提供本機與 Render 設定、CI/Dependency Review；CodeQL workflow 已停用。正式 Vercel／Render 登入及部署、Render Cron 與 ZAP DAST 尚未驗證。Wrapper JAR 已納入專案；首次執行需連線下載 Maven 發行版與相依套件。登入設定需至少 32-byte `JWT_SECRET`；部署需使用獨立秘密，並在初始化後移除 bootstrap 管理員憑證。
-
-附件規格來源：`TradeGuard.md` 與 `Spring Boot RESTful CRUD Guide.md`。請以這兩份規格及本文件的待處理清單接續實作。
+功能需求以 [功能需求規格](docs/functional-requirements-specification.md) 為準；測試及 CI 說明見 [測試文件](docs/testing-and-ci.md)，部署設定見 [部署文件](docs/deployment.md)。

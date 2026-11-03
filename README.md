@@ -9,8 +9,8 @@
 ## 核心功能
 
 - **撮合**：價格／時間優先、部分成交、以 1,000 股為一張、驗證台北平日交易時段。
-- **事件重播**：啟動時重建未結委託；事件序號與資料庫不一致時拒絕啟動。
-- **監控**：偵測同帳戶洗售、價格／成交量異常；案件的提報者與審核者不得為同一人。
+- **事件重播**：啟動時重播事件並驗證持久化狀態一致性；事件序號與資料庫不一致時拒絕啟動。
+- **監控**：偵測同帳戶洗售（`WASH_TRADE`）及尾盤價格拉抬（`CLOSING_MARKUP`）；案件的提報者與審核者不得為同一人。
 - **稽核**：SHA-256 鏈式稽核紀錄，與業務資料寫入位於同一個資料庫交易（transaction）中；可驗證鏈的完整性，並對委託、成交、委託事件三方資料進行對帳（核對已成交數量、成交數量與委託序號連續性）。
 - **日終報告**：每日 XML 報表，由 GitHub Actions 排程產生。
 
@@ -20,9 +20,9 @@
 
 > Render 免費方案閒置 15 分鐘會休眠，首次連線約需 1 分鐘喚醒。
 
-1. 開啟[前端](https://trade-guard-frontend-next.vercel.app)（按住 Ctrl 或 Mac 上的 ⌘ 鍵再點連結，可在新分頁開啟）。首次載入會自動等待 API、PostgreSQL 與 Redis 就緒，不必先手動喚醒後端；服務準備期間會顯示檢查狀態，並每 3 秒自動重試。
-2. 到[註冊頁面](https://trade-guard-frontend-next.vercel.app/register)建立 `TRADER` 帳號（帳號 3–50 字元；密碼 12–72 字元）。
-3. 到[交易頁面](https://trade-guard-frontend-next.vercel.app/trade)下限價單，回到市場總覽與標的頁查看報價、委託簿與成交。
+1. 開啟[前端](https://trade-guard-frontend-next.vercel.app)（按住 Ctrl 或 Mac 上的 ⌘ 鍵再點連結，可在新分頁開啟）。首頁是公開市場總覽，首次載入會自動等待 API、PostgreSQL 與 Redis 就緒，不必先手動喚醒後端；服務準備期間會顯示檢查狀態，並每 3 秒自動重試。
+2. 在市場總覽選取報價卡，可前往標的頁查看委託簿與近期成交。
+3. 到[註冊頁面](https://trade-guard-frontend-next.vercel.app/register)建立 `TRADER` 帳號（帳號 3–50 字元；密碼 12–72 字元），登入後前往[交易頁面](https://trade-guard-frontend-next.vercel.app/trade)下限價單。
 4. 若市場總覽沒有報價，需由 `ADMIN` 先到[管理頁面](https://trade-guard-frontend-next.vercel.app/admin)建立並啟用商品。
 5. 想體驗監控／稽核：由 `ADMIN` 建立 `SURVEILLANCE`、`AUDITOR` 帳號後登入，見下表。
 
@@ -52,6 +52,7 @@
 cp .env.example .env.local
 #    範例已附本機測試用 ADMIN 帳號；若要更改，請編輯 .env.local 中 BOOTSTRAP_ADMIN_USERNAME /
 #    BOOTSTRAP_ADMIN_PASSWORD
+#    範例帳密僅供本機測試，不可用於 Render 等可從網際網路存取的環境。
 
 # 2. 啟動 Docker Desktop
 

@@ -26,3 +26,8 @@ replay_pid*
 # plan
 Spring Boot RESTful CRUD.md
 TradeGuard.md
+
+# Local environment files
+.env
+.env.*
+!.env.example

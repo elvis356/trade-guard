@@ -129,7 +129,6 @@ public class SecurityConfiguration {
                                 .hasRole("SURVEILLANCE")
                         .requestMatchers("/api/audit/**")
                                 .hasAnyRole("AUDITOR", "ADMIN")
-                        .requestMatchers("/api/regulations/**").authenticated()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(originFilter, JwtCookieAuthenticationFilter.class);

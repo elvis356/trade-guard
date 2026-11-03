@@ -8,7 +8,7 @@
 
 `backend-java/` 使用 Java 21、Spring Boot REST API、Flyway 管理的 PostgreSQL 結構，並提供標的 CRUD、JWT Cookie 驗證及角色型授權。
 
-限價單依可設定的參考價格區間、示意性升降單位表、1,000 股整股交易單位及台北平日交易時段進行驗證。撮合採價格／時間優先、做市方價格、部分成交及 PostgreSQL 交易機制。委託接受、取消及成交會在同一筆交易中寫入僅附加的應用程式事件紀錄。啟動時系統會重播事件以重建未結委託狀態；若委託或各標的序號計數器與 PostgreSQL 不一致，系統會拒絕啟動。
+限價單依可設定的參考價格區間、示意性升降單位表、1,000 股整股交易單位及台北平日交易時段進行驗證。撮合採價格／時間優先、做市方價格、部分成交及 PostgreSQL 交易機制。委託接受、取消及成交會在同一筆交易中寫入僅附加的應用程式事件紀錄。啟動時系統會重播事件並驗證委託投影與序號的一致性；撮合仍直接讀取 PostgreSQL 委託資料。
 
 ### 市場監控與稽核
 
@@ -18,8 +18,8 @@
 
 ### 其他專案檔案
 
-- `docker-compose.yml`：本機 PostgreSQL 16 與 Redis 7 服務；Redis 用於登入鎖定及 JWT 撤銷。
-- `HANDOFF.md`：階段估算、目前交付狀態及尚待完成的實作清單。
+- `docker-compose.yml`：本機 PostgreSQL 16、Redis 7 與後端服務；Redis 用於登入鎖定及 JWT 撤銷。
+- `HANDOFF.md`：目前狀態摘要與後續工作。
 - `docs/functional-requirements-specification.md`：依目前程式實作整理的功能需求、角色權限、業務規則與已知限制。
 - `docs/uml-workbench.html`：互動式 UML 工作台；圖表資料集中於 HTML 的 `uml-data` 區塊，含架構、後端模組、使用案例、活動、時序、類別、ERD、狀態與部署／CI 流程圖，支援跨圖追溯、跨圖搜尋與清單檢視。修改資料後執行 `node docs/uml-workbench.check.js` 驗證。線上檢視：<https://elvis356.github.io/trade-guard/uml-workbench.html>
 
@@ -39,7 +39,7 @@
    ```
 
    後端啟動後位於 `http://localhost:8080`。
-5. 確認服務狀態：開啟 `http://localhost:8080/api/health`（頁面）或 `http://localhost:8080/api/health/status`（JSON）。
+5. 確認服務依賴狀態：開啟 `http://localhost:8080/api/health/readiness`。人類檢視使用 readiness HTML 頁面；監控程式可傳送 `Accept: application/json` 取得 JSON（服務未就緒時回 `503`）。`/api/health/status` 是供機器檢查 API 本身的 JSON 端點，不檢查資料庫或 Redis。
 
 ## 不使用容器啟動後端
 
@@ -54,7 +54,7 @@ cd backend-java
 .\mvnw.cmd spring-boot:run
 ```
 
-Docker Compose 會讀取 `.env`，但 PowerShell 不會自動載入該檔案；若直接啟動 Spring Boot，請在後端處理程序中設定所需的環境變數。部署時必須設定唯一的 `JWT_SECRET`（至少 32 位元組）及 `COOKIE_SECURE=true`。
+Docker Compose 指令需明確使用 `--env-file .env.local`；Compose 讀取該檔案中的 `DB_NAME`、`DB_USERNAME`、`DB_PASSWORD`、`REDIS_PASSWORD` 等設定。Compose 內部資料庫與 Redis 主機仍分別使用服務名稱 `postgres`、`redis` 和容器連接埠 `5432`、`6379`。PostgreSQL 的 `POSTGRES_*` 初始化設定只在資料目錄首次建立時生效；若 named volume 已初始化，修改 `.env.local` 不會自動建立新使用者、改資料庫名稱或更新既有密碼，需先妥善遷移／調整資料庫角色，勿直接刪除 volume 以免遺失資料。Redis 密碼會同時設定 Compose Redis 伺服器與後端連線；本機預設留空。若直接啟動 Spring Boot，請在後端處理程序中設定所需的環境變數。部署時必須設定唯一的 `JWT_SECRET`（至少 32 位元組）及 `COOKIE_SECURE=true`。
 
 ## 後端環境變數說明
 
@@ -62,12 +62,12 @@ Docker Compose 會讀取 `.env`，但 PowerShell 不會自動載入該檔案；�
 
 | 變數 | 用途 |
 |------|------|
-| `DB_HOST` | PostgreSQL 主機名稱；Compose 容器內使用服務名稱 `postgres`，本機直連預設為 `localhost`。 |
-| `DB_PORT` | PostgreSQL 連接埠，預設為 `5432`。 |
-| `DB_NAME` | PostgreSQL 資料庫名稱，預設為 `tradeguard`。 |
+| `DB_HOST` | PostgreSQL 主機名稱；Compose 內固定使用服務名稱 `postgres`，直接在本機執行後端時使用 `localhost`。 |
+| `DB_PORT` | PostgreSQL 連接埠；Compose 內固定使用容器連接埠 `5432`，直接在本機執行後端時使用 `5432`。 |
+| `DB_NAME` | PostgreSQL 資料庫名稱；Compose 同時用於初始化 PostgreSQL 與後端連線，預設為 `tradeguard`。 |
 | `DB_USERNAME`、`DB_PASSWORD` | PostgreSQL 使用者名稱與密碼。 |
 | `DB_SSLMODE` | PostgreSQL TLS 模式；本機 Docker 預設為 `disable`。 |
-| `REDIS_HOST`、`REDIS_PORT`、`REDIS_PASSWORD` | Redis 主機、埠號與密碼；本機未啟用密碼時可留空。 |
+| `REDIS_HOST`、`REDIS_PORT`、`REDIS_PASSWORD` | Compose 內 Redis 主機及連接埠固定為 `redis:6379`；`REDIS_PASSWORD` 會同時啟用 Redis 認證並供後端使用，預設留空。直接在本機執行後端時，主機使用 `localhost`。 |
 | `JWT_SECRET` | 簽署及驗證登入 JWT 的密鑰。部署時設定唯一的高熵值，至少 32 位元組。 |
 | `COOKIE_SECURE` | 設為 `true` 時，登入 Cookie 僅透過 HTTPS 傳送；本機純 HTTP 開發可設為 `false`。 |
 | `CORS_ALLOWED_ORIGINS` | 允許呼叫 API 的前端來源網址，需包含協定，例如 `https://example.com`。 |
