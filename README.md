@@ -94,12 +94,12 @@ docker-compose.yml  本機 PostgreSQL 16 + Redis 7 + 後端
 
 | 文件 | 內容 |
 |------|------|
+| [docs/user-guide.md](docs/user-guide.md) | 訪客與各角色的前端體驗流程及操作說明 |
 | [docs/functional-requirements-specification.md](docs/functional-requirements-specification.md) | 功能需求、角色權限、業務規則 |
 | [docs/uml-workbench.html](docs/uml-workbench.html) | 互動式 UML 工作台，系統架構與設計圖（[線上檢視](https://elvis356.github.io/trade-guard/uml-workbench.html)） |
 | [docs/local-development.md](docs/local-development.md) | 本機啟動、不使用 Docker、環境變數表 |
 | [docs/api.md](docs/api.md) | 驗證、市場／委託、監控案件、稽核與每日報告 API |
 | [docs/frontend.md](docs/frontend.md) | 前端頁面、角色權限、環境變數、報表快取策略 |
-| [docs/user-guide.md](docs/user-guide.md) | 訪客與各角色的前端體驗流程及操作說明 |
 | [docs/owasp-mapping.md](docs/owasp-mapping.md) | OWASP Top 10:2025 對照、程式位置與目前差距 |
 | [docs/nonstop-tandem.md](docs/nonstop-tandem.md) | TradeGuard 與 NonStop Tandem 交易一致性、復原及高可用概念的對照與差距 |
 | [docs/deployment.md](docs/deployment.md) | Render、Vercel、GitHub Actions 日終排程 |
