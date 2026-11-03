@@ -8,18 +8,18 @@ TradeGuard 是教學用途的虛構證券交易模擬平台，不應用來處理
 
 ## 對照摘要
 
-| OWASP Top 10:2025 | 等級 | 主要差距 |
+| OWASP Top 10:2025 | 覆蓋等級 | 主要差距 |
 |---|---|---|
-| A01: Broken Access Control（存取控制失效） | ✔ 有 | 持續為新增端點補上物件擁有權測試；`/internal/eod` 使用獨立 token，不走角色授權。 |
-| A02: Security Misconfiguration（安全設定錯誤） | ◐ 部分 | CSP 為支援 Next.js hydration 使用 `unsafe-inline`；readiness 公開依賴狀態，部署代理仍須正確清理轉送標頭。 |
-| A03: Software Supply Chain Failures（軟體供應鏈失效） | ◐ 部分 | Actions 使用版本 tag、Docker base image 未固定 digest；沒有產物簽章或建置來源證明。 |
-| A04: Cryptographic Failures（加密失效） | ◐ 部分 | 金鑰儲存、輪替、TLS 與備份保護仍依賴部署平台。 |
-| A05: Injection（注入） | ✔ 有 | 動態排序採欄位白名單；新增查詢仍須審查與測試。 |
-| A06: Insecure Design（不安全設計） | ◐ 部分 | 以 IP 限流及帳號鎖定降低濫用；尚無正式威脅模型或容量設計證據。 |
-| A07: Authentication Failures（驗證失效） | ◐ 部分 | 鎖定狀態及限流依賴 Redis；JWT 角色在簽發時固定，帳號狀態變動不會即時反映。 |
-| A08: Software or Data Integrity Failures（軟體或資料完整性失效） | ◐ 部分 | 尚無資料庫層級稽核／事件防竄改或簽署部署產物。 |
-| A09: Security Logging and Alerting Failures（安全記錄與警示失效） | ◐ 部分 | 新增安全事件應用日誌，但未進稽核鏈，亦無集中告警或 SIEM。 |
-| A10: Mishandling of Exceptional Conditions（例外狀況處理不當） | ◐ 部分 | Redis 故障 fail-closed；資源耗盡、逾時及復原情境仍需部署層級測試。 |
+| A01: Broken Access Control（存取控制失效） | ✔ 有措施 | 持續為新增端點補上物件擁有權測試；`/internal/eod` 使用獨立 token，不走角色授權。 |
+| A02: Security Misconfiguration（安全設定錯誤） | ◐ 部分涵蓋 | CSP 為支援 Next.js hydration 使用 `unsafe-inline`；readiness 公開依賴狀態，部署代理仍須正確清理轉送標頭。 |
+| A03: Software Supply Chain Failures（軟體供應鏈失效） | ◐ 部分涵蓋 | Actions 使用版本 tag、Docker base image 未固定 digest；沒有產物簽章或建置來源證明。 |
+| A04: Cryptographic Failures（加密失效） | ◐ 部分涵蓋 | 金鑰儲存、輪替、TLS 與備份保護仍依賴部署平台。 |
+| A05: Injection（注入） | ✔ 有措施 | 動態排序採欄位白名單；新增查詢仍須審查與測試。 |
+| A06: Insecure Design（不安全設計） | ◐ 部分涵蓋 | 以 IP 限流及帳號鎖定降低濫用；尚無正式威脅模型或容量設計證據。 |
+| A07: Authentication Failures（驗證失效） | ◐ 部分涵蓋 | 鎖定狀態及限流依賴 Redis；JWT 角色在簽發時固定，帳號狀態變動不會即時反映。 |
+| A08: Software or Data Integrity Failures（軟體或資料完整性失效） | ◐ 部分涵蓋 | 尚無資料庫層級稽核／事件防竄改或簽署部署產物。 |
+| A09: Security Logging and Alerting Failures（安全記錄與警示失效） | ◐ 部分涵蓋 | 新增安全事件應用日誌，但未進稽核鏈，亦無集中告警或 SIEM。 |
+| A10: Mishandling of Exceptional Conditions（例外狀況處理不當） | ◐ 部分涵蓋 | Redis 故障 fail-closed；資源耗盡、逾時及復原情境仍需部署層級測試。 |
 
 ## 各類別
 
