@@ -1,7 +1,6 @@
 package com.tradeguard.audit;
 
 import java.time.Instant;
-import java.util.List;
 
 public record AuditVerification(boolean valid, long entriesChecked, Long brokenEntryId,
                                 String reason, Instant verifiedAt) {
