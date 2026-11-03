@@ -34,6 +34,7 @@
 | `ADMIN` | [`/admin`](https://trade-guard-frontend-next.vercel.app/admin) | 管理商品與帳號，並擁有稽核權限 |
 
 各頁面完整權限請見[前端說明](docs/frontend.md)。
+依角色操作市場、委託、監控案件與稽核報表的逐步說明，請見[前端使用者操作指南](docs/user-guide.md)。
 
 手動檢查後端狀態：
 
@@ -98,6 +99,7 @@ docker-compose.yml  本機 PostgreSQL 16 + Redis 7 + 後端
 | [docs/local-development.md](docs/local-development.md) | 本機啟動、不使用 Docker、環境變數表 |
 | [docs/api.md](docs/api.md) | 驗證、市場／委託、監控案件、稽核與每日報告 API |
 | [docs/frontend.md](docs/frontend.md) | 前端頁面、角色權限、環境變數、報表快取策略 |
+| [docs/user-guide.md](docs/user-guide.md) | 訪客與各角色的前端體驗流程及操作說明 |
 | [docs/deployment.md](docs/deployment.md) | Render、Vercel、GitHub Actions 日終排程 |
 | [docs/testing-and-ci.md](docs/testing-and-ci.md) | 測試方式、CI 與安全檢查 |
 | [docs/limitations.md](docs/limitations.md) | 目前限制與後續工作 |
