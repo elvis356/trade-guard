@@ -4,7 +4,7 @@
 
 ## 後端與資料
 
-本機 PostgreSQL／Redis 主要流程已透過隔離的測試服務驗證，但完整 Compose 堆疊仍需另行驗收。監視目前僅實作 `WASH_TRADE` 與 `CLOSING_MARKUP`；量價異常規則需要 20 日每日 K 線資料來源。事件與稽核資料表的資料庫層級寫入保護，以及 Redis 冪等性加速仍屬後續強化工作。
+本機 PostgreSQL／Redis 主要流程已透過隔離的測試服務驗證，但完整 Compose 堆疊仍需另行驗收。監控目前僅實作 `WASH_TRADE` 與 `CLOSING_MARKUP`；量價異常規則需要 20 日每日 K 線資料來源。事件與稽核資料表的資料庫層級寫入保護，以及 Redis 冪等性加速仍屬後續強化工作。
 
 ## 前端
 

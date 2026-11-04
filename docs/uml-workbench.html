@@ -399,10 +399,10 @@
       health: {name:"服務狀態模組",type:"service",desc:"提供服務狀態端點供平台檢查服務存活。",meta:["health/HealthController","GET /api/health"]},
       market: {name:"商品與市場查詢",type:"service",desc:"商品主檔 CRUD、行情、委託簿及近期成交查詢。",meta:["InstrumentController","MarketController"]},
       matching: {name:"委託與撮合",type:"service",desc:"驗證限價委託、價格／時間優先撮合、部分成交及取消。",meta:["OrderController","OrderService","OrderValidator"]},
-      surveillance: {name:"市場監視",type:"service",desc:"成交後檢查 WASH_TRADE 與 CLOSING_MARKUP 規則並保存警示；警示僅為人工調查線索。",meta:["SurveillanceService","TradeSurveillanceListener"]},
+      surveillance: {name:"市場監控",type:"service",desc:"成交後檢查 WASH_TRADE 與 CLOSING_MARKUP 規則並保存警示；警示僅為人工調查線索。",meta:["SurveillanceService","TradeSurveillanceListener"]},
       audit: {name:"稽核與日終",type:"service",desc:"SHA-256 稽核鏈、帳本對帳、受保護 EOD 入口及每日 XML 報表。",meta:["AuditService","ReconciliationService","EodService"]},
       pg: {name:"PostgreSQL",type:"data",desc:"持久化事實來源；Flyway V1–V8 建立 schema。",meta:["orders / trades / order_events","users / instruments","alerts / cases / audit / EOD"]},
-      redis: {name:"Redis / Key Value",type:"data",desc:"暫態登入狀態、token 撤銷、行情快取及監視短期視窗。不是交易帳本。",meta:["登入鎖定","JWT 撤銷","行情快取／監視視窗"]},
+      redis: {name:"Redis / Key Value",type:"data",desc:"暫態登入狀態、token 撤銷、行情快取及監控短期視窗。不是交易帳本。",meta:["登入鎖定","JWT 撤銷","行情快取／監控視窗"]},
       gh: {name:"GitHub Actions",type:"external",desc:"CI、Dependency Review 及排程／手動 EOD 呼叫；不負責 Render/Vercel 自動部署。",meta:["ci.yml","dependency-review.yml","daily-eod.yml"]},
       render: {name:"Render",type:"external",desc:"Docker Web Service 託管後端。實際 region、Primary URL 及環境變數依 Render 專案設定。",meta:["Dockerfile","/api/health","Auto-Deploy 設定"]},
       neon: {name:"外部 PostgreSQL 託管",type:"external",desc:"部署設定可連接外部 PostgreSQL（例如 Neon）；此圖不假設當前 Production DB 供應商。",meta:["DB_HOST / DB_PORT / DB_NAME","DB_USERNAME / DB_PASSWORD","DB_SSLMODE"]},
@@ -415,7 +415,7 @@
       order: {name:"TradingOrder",type:"domain",desc:"限價買賣委託；每筆委託保存用戶端冪等 ID 及系統序號。",fields:["id: Long · PK","userId: Long · FK","symbol: String · FK","clientOrderId: UUID","seqNo: long","side / limitPrice","original / remainingQuantity","status / createdAt"],meta:["orders","UNIQUE(user_id, client_order_id)","UNIQUE(symbol, seq_no)"]},
       trade: {name:"Trade",type:"domain",desc:"撮合產生的成交，關聯買方及賣方委託。",fields:["id: Long · PK","symbol: String · FK","buyOrderId: Long · FK","sellOrderId: Long · FK","price: Decimal","quantity: long","createdAt: Instant"],meta:["trades","每次部分撮合可形成成交"]},
       orderEvent: {name:"OrderEvent",type:"domain",desc:"委託接受、成交、取消事件；用於啟動重播與帳本核對。",fields:["id: Long · PK","eventType","symbol · FK","orderSeqNo","counterpartySeqNo?","userId? / clientOrderId?","side? / limitPrice? / quantity?","createdAt"],meta:["order_events","ORDER_ACCEPTED / TRADE_EXECUTED / ORDER_CANCELED"]},
-      alert: {name:"Alert",type:"domain",desc:"由監視規則產生、關聯成交的警示。",fields:["id: Long · PK","alertKey: String (unique)","ruleCode","symbol · FK","severity","tradeId · FK","description","occurredAt"],meta:["surveillance_alerts"]},
+      alert: {name:"Alert",type:"domain",desc:"由監控規則產生、關聯成交的警示。",fields:["id: Long · PK","alertKey: String (unique)","ruleCode","symbol · FK","severity","tradeId · FK","description","occurredAt"],meta:["surveillance_alerts"]},
       case: {name:"SurveillanceCase",type:"domain",desc:"關聯單一警示的提報／覆核案件。",fields:["id: Long · PK","alertId · FK (unique)","proposedBy","status","reviewedBy?","reviewNote?","createdAt / reviewedAt?"],meta:["surveillance_cases","提報者與覆核者不可相同"]},
       auditEntry: {name:"AuditEntry",type:"domain",desc:"重要操作的 SHA-256 鏈式稽核列。",fields:["id: Long · PK","userId?","actor / action","detail","createdAt","previousHash","rowHash (unique)"],meta:["audit_entries","單例 audit_chain_state 保存鏈頭"]},
       auditChainState: {name:"AuditChainState",type:"domain",desc:"單例稽核鏈頭狀態；V6 以 CHECK 約束 id 固定為 1，初始雜湊為 64 個 0。",fields:["id: Long · PK (CHECK id = 1)","lastHash: String(64)"],meta:["audit_chain_state","單例鏈頭狀態，與 audit_entries 無 FK"]},
@@ -432,8 +432,8 @@
       matchStep: {name:"價格／時間優先撮合",type:"step",desc:"OrderService.match 依價格排序及 seq_no 時間優先選取對手委託；不跨價時停止。",meta:["OrderService.match","OrderService.crosses"]},
       crossDecision: {name:"存在可成交對手？",type:"step",desc:"若無可成交對手，保留未成交量於委託簿。"},
       fillStep: {name:"記錄成交與更新餘量",type:"step",desc:"每次撮合寫 TRADE_EXECUTED 事件及 Trade；TradingOrder.fill 將餘量歸零時設 FILLED，否則設 PARTIALLY_FILLED。",meta:["OrderService.match","TradingOrder.fill"]},
-      publish: {name:"提交後發布成交事件",type:"step",desc:"交易提交後通知監視處理器檢查成交。"},
-      alertDecision: {name:"命中監視規則？",type:"step",desc:"檢查同帳戶買賣及尾盤價格／數量條件。"},
+      publish: {name:"提交後發布成交事件",type:"step",desc:"交易提交後通知監控處理器檢查成交。"},
+      alertDecision: {name:"命中監控規則？",type:"step",desc:"檢查同帳戶買賣及尾盤價格／數量條件。"},
       recordAlert: {name:"保存警示",type:"step",desc:"保存唯一 alert_key 的警示及系統稽核紀錄。"},
       rest: {name:"保留剩餘委託",type:"step",desc:"未成交餘量維持在委託簿，交易員可稍後取消。"},
       finish: {name:"回傳委託結果",type:"step",desc:"回傳委託編號、狀態及成交結果。"},
@@ -552,7 +552,7 @@
         L("reqApi","reqAuthz","«include»","dep"),L("reqCancel","reqAuthz","«include»","dep"),
         L("reqCases","reqAuthz","«include»","dep"),L("reqAudit","reqAuthz","«include»","dep"),L("reqManage","reqAuthz","«include»","dep")
       ],caption:"虛線 «include»：所有需登入的使用案例都包含角色授權檢查。前端角色閘門用於 UX；每個受保護 API 仍由 Spring Security 強制授權。"},
-      {id:"activity",name:"委託活動圖",type:"Activity",summary:"由 API 接收委託至冪等處理、驗證、撮合及成交後監視。",nodes:[
+      {id:"activity",name:"委託活動圖",type:"Activity",summary:"由 API 接收委託至冪等處理、驗證、撮合及成交後監控。",nodes:[
         N("start",45,335,28,28,"start"),N("request",105,305,160,64,"round"),N("duplicate",320,305,160,64,"round"),N("duplicateDecision",530,280,150,90,"diamond"),
         N("validate",750,305,190,64,"round"),N("validDecision",990,280,150,90,"diamond"),N("persist",990,445,175,64,"round"),
         N("matchStep",750,445,190,64,"round"),N("crossDecision",530,430,150,90,"diamond"),N("fillStep",320,445,175,64,"round"),
@@ -568,7 +568,7 @@
         L("recordAlert","finish","","solid",[[615,695],[1030,695]]),L("rest","finish"),
         L("finish","endOk"),L("conflict","endConflict"),L("sRejected","endRejected")
       ],caption:"同一 client_order_id 但 payload 不同會回傳 409；規則驗證失敗時回傳錯誤且不建立委託。"},
-      {id:"sequence",name:"下單時序圖",type:"Sequence",summary:"呈現 API、交易服務、資料庫及交易提交後監視事件的主要訊息順序。",sequence:true,
+      {id:"sequence",name:"下單時序圖",type:"Sequence",summary:"呈現 API、交易服務、資料庫及交易提交後監控事件的主要訊息順序。",sequence:true,
         nodes:["trader","browser","seqController","seqService","pg","seqListener","redis"].map((id,i)=>N(id,22+i*145,34,116,46)),
         participants:["trader","browser","seqController","seqService","pg","seqListener","redis"],
         messages:[
@@ -577,10 +577,10 @@
           ["seqService","pg","6. 寫 ORDER_ACCEPTED + orders + audit"],["seqService","pg","7. 寫 TRADE_EXECUTED + trades + audit"],
           ["seqService","seqService","8. 更新雙方餘量／狀態"],["seqService","seqController","9. transaction commit","return"],
           ["seqController","seqListener","10. after-commit TradeCommittedEvent"],["seqListener","redis","11. 更新短期成交視窗"],
-          ["seqListener","pg","12. 保存命中警示／監視 audit"],["seqController","browser","13. 201 + OrderResponse","return"],["browser","trader","14. 更新委託清單","return"]
+          ["seqListener","pg","12. 保存命中警示／監控 audit"],["seqController","browser","13. 201 + OrderResponse","return"],["browser","trader","14. 更新委託清單","return"]
         ],
         activations:[["seqService",2,8],["pg",3,6],["seqListener",9,11],["pg",11,11]],
-        caption:"無可成交對手時不會執行成交／監視訊息；交易資料庫交易與 after-commit 監視處理分開。"},
+        caption:"無可成交對手時不會執行成交／監控訊息；交易資料庫交易與 after-commit 監控處理分開。"},
       {id:"class",name:"領域類別圖",type:"Class",summary:"主要領域類別及概念關係；Repository、DTO 等基礎設施類別未全部列出。",nodes:[
         N("user",40,90,230,178,"class"),N("role",40,330,230,112,"class"),N("instrument",350,90,245,178,"class"),N("order",665,90,280,200,"class"),
         N("trade",1010,90,160,178,"class"),N("orderEvent",350,360,260,190,"class"),N("alert",665,390,220,155,"class"),N("case",965,390,205,178,"class"),
