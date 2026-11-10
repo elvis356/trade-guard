@@ -43,16 +43,20 @@
 
 ## 不使用容器啟動後端
 
-若要直接在本機執行 Spring Boot，請先設定本機環境變數，再啟動 Maven Wrapper（PowerShell）：
+若要直接在本機執行 Spring Boot，需先準備可連線的 PostgreSQL 與 Redis（連線設定見〈後端環境變數說明〉），再設定本機環境變數並啟動 Maven Wrapper：
 
 ```powershell
 $env:SPRING_PROFILES_ACTIVE = "local"
 $env:BOOTSTRAP_ADMIN_USERNAME = "admin"
 $env:BOOTSTRAP_ADMIN_PASSWORD = Read-Host "Set a unique admin password (at least 12 characters)"
-$env:JWT_SECRET = [Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+$bytes = New-Object byte[] 32
+[Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
+$env:JWT_SECRET = [Convert]::ToBase64String($bytes)
 cd backend-java
 .\mvnw.cmd spring-boot:run
 ```
+
+上述寫法相容於 Windows PowerShell 5.1；若使用 PowerShell 7，可直接以 `[Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))` 產生 `JWT_SECRET`。`SPRING_PROFILES_ACTIVE=local` 不可省略：未啟用時 `COOKIE_SECURE` 預設為 `true`，純 HTTP 登入不會送出 Cookie。
 
 Docker Compose 指令需明確使用 `--env-file .env.local`；Compose 讀取該檔案中的 `DB_NAME`、`DB_USERNAME`、`DB_PASSWORD`、`REDIS_PASSWORD` 等設定。Compose 內部資料庫與 Redis 主機仍分別使用服務名稱 `postgres`、`redis` 和容器連接埠 `5432`、`6379`。PostgreSQL 的 `POSTGRES_*` 初始化設定只在資料目錄首次建立時生效；若 named volume 已初始化，修改 `.env.local` 不會自動建立新使用者、改資料庫名稱或更新既有密碼，需先妥善遷移／調整資料庫角色，勿直接刪除 volume 以免遺失資料。Redis 密碼會同時設定 Compose Redis 伺服器與後端連線；本機預設留空。若直接啟動 Spring Boot，請在後端處理程序中設定所需的環境變數。部署時必須設定唯一的 `JWT_SECRET`（至少 32 位元組）及 `COOKIE_SECURE=true`。
 
