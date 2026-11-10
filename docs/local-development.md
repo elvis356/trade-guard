@@ -74,6 +74,72 @@ Docker Compose 指令需明確使用 `--env-file .env.local`；Compose 讀取該
 | `EOD_TOKEN` | 日終作業 API 的共享憑證；呼叫 `/internal/eod` 時放在 `X-EOD-Token` 標頭。 |
 | `BOOTSTRAP_ADMIN_USERNAME`、`BOOTSTRAP_ADMIN_PASSWORD` | 首次啟動時建立初始 `ADMIN` 帳號；如需建立，兩者都要設定。已存在的同名帳號不會重複建立。 |
 
+## 使用 DBeaver 檢視 PostgreSQL
+
+DBeaver Community 是免費的資料庫管理工具，可連線 Compose 啟動的 PostgreSQL，檢視 Flyway 建立的結構與資料。
+
+- 下載：<https://dbeaver.io/download/>（Windows 可選安裝檔或 ZIP，另有 macOS、Linux 版本）。也可用 `choco install dbeaver` 安裝。
+- 在 DBeaver 新增 PostgreSQL 連線，填入下列設定：
+
+| 欄位 | 值 |
+|------|------|
+| Host | `localhost` |
+| Port | `5432` |
+| Database | `tradeguard`（`DB_NAME`） |
+| Username | `tradeguard`（`DB_USERNAME`） |
+| Password | `.env.local` 的 `DB_PASSWORD`，預設為 `tradeguard_local_only` |
+
+Compose 只把 5432 綁定在 `127.0.0.1`，因此僅能從本機連線。若連不上，先確認 `docker compose --env-file .env.local ps` 顯示 postgres 正在執行。
+
+常用的檢視起點：
+
+- `flyway_schema_history`：已套用的 migration 版本與時間。
+- 業務資料表：`instruments`、`app_users`、`orders`、`trades`、`order_events`、`surveillance_alerts`、`surveillance_cases`、`audit_entries`、`audit_chain_state`、`eod_reports`、`eod_runs`。
+
+```sql
+SELECT id, symbol, side, status, created_at
+FROM orders
+ORDER BY created_at DESC
+LIMIT 20;
+
+SELECT seq, event_type, created_at
+FROM audit_entries
+ORDER BY seq DESC
+LIMIT 20;
+```
+
+使用限制：
+
+- 以唯讀方式使用，只執行 `SELECT`。直接修改業務資料表會讓委託投影、事件帳本與稽核鏈不一致，後續核對與鏈驗證會失敗。
+- 不要以手動新增 `app_users` 資料列的方式建立帳號；密碼以雜湊儲存，角色與稽核流程需經 API 完成。交易員帳號由 `/register` 建立，其他角色由管理員 API 建立。
+- `audit_entries` 僅附加，任何修改都會讓鏈驗證失敗。
+
+## 使用 Redis Insight 檢視 Redis
+
+Redis Insight 是 Redis 官方提供的免費 GUI，可瀏覽鍵值、TTL 與內容，適合確認快取與登入狀態。
+
+- 下載：<https://redis.io/insight/>（Windows、macOS、Linux）。
+- 連線設定：Host `localhost`、Port `6379`；`REDIS_PASSWORD` 留空時不需要密碼，若 `.env.local` 有設定則填入該值。
+
+本專案使用的鍵：
+
+| 鍵樣式 | 內容 | 有效期 |
+|--------|------|--------|
+| `tradeguard:login:fail:<sha256>` | 帳號連續登入失敗次數，達 5 次即鎖定 | 15 分鐘（`login-lock-duration`） |
+| `tradeguard:rate:<sha256>` | 登入與註冊的請求計數 | 1 分鐘、1 小時（`login-rate-window`、`registration-rate-window`） |
+| `tradeguard:jwt:deny:<jti>` | 已撤銷的 JWT | 至該權杖到期為止 |
+| `tradeguard:quote:<symbol>`、`tradeguard:book:<symbol>` | 報價與委託簿快照快取 | 15 秒 |
+| `tradeguard:surveillance:window:<symbol>` | 監控時間窗內的成交（sorted set，score 為 epoch 毫秒） | 監控視窗加 1 分鐘 |
+
+鍵名中的 `<sha256>` 是帳號或來源的雜湊值，無法直接對應回使用者名稱，這是刻意設計。
+
+使用限制：
+
+- 可安全刪除 `tradeguard:quote:*`、`tradeguard:book:*`，後端會回源 PostgreSQL 重建。
+- 不要刪除 `tradeguard:jwt:deny:*`，否則已撤銷的權杖會恢復可用。
+- 刪除 `tradeguard:login:fail:*` 等於解除該帳號的登入鎖定，僅在測試時使用。
+- Redis 以 AOF（`--appendonly yes`）保存，重啟容器不會清掉上述狀態。
+
 ## 啟動前端
 
 請確認後端正在執行，接著（PowerShell）：
