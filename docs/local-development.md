@@ -158,10 +158,7 @@ FROM orders
 ORDER BY created_at DESC
 LIMIT 20;
 
-SELECT seq, event_type, created_at
-FROM audit_entries
-ORDER BY seq DESC
-LIMIT 20;
+SELECT * FROM audit_entries LIMIT 20;
 ```
 
 使用限制：
