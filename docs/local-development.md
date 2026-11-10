@@ -25,21 +25,20 @@
 
 ## 啟動方式總覽
 
-本機有兩種啟動方式，擇一即可：
+本機有兩種啟動方式，都以 Docker 提供 PostgreSQL 與 Redis，擇一即可：
 
-| 方式 | 需要安裝 | 適合情境 |
-| ---- | -------- | -------- |
-| [使用 Docker Compose 啟動](#使用-docker-compose-啟動) | JDK 21、Docker Desktop | 一鍵啟動 PostgreSQL、Redis 與後端 |
-| [不使用容器啟動後端](#不使用容器啟動後端) | JDK 21、PostgreSQL 16、Redis 7 | 不想安裝 Docker，或想直接除錯 Spring Boot |
+| 方式 | 後端執行位置 | 適合情境 |
+| ---- | ------------ | -------- |
+| [使用 Docker Compose 啟動](#使用-docker-compose-啟動) | Docker 容器 | 一鍵啟動 PostgreSQL、Redis 與後端 |
+| [本機執行後端並以 Docker 提供 PostgreSQL 與 Redis](#本機執行後端並以-docker-提供-postgresql-與-redis) | 本機 Spring Boot | 想直接除錯後端，或修改程式後快速重啟 |
 
-兩種方式的 PostgreSQL 與 Redis 都開在 `localhost`，因此 [DBeaver](#5-使用-dbeaver-檢視-postgresql) 與 [Redis Insight](#6-使用-redis-insight-檢視-redis) 的檢視步驟相同。前端的啟動方式見[啟動前端](#啟動前端)。
+兩種方式的 PostgreSQL 與 Redis 都開在 `localhost`，因此 [DBeaver](#4-使用-dbeaver-檢視-postgresql) 與 [Redis Insight](#5-使用-redis-insight-檢視-redis) 的檢視步驟相同。前端的啟動方式見[啟動前端](#啟動前端)。
 
 ## 必要條件
 
 - 後端：JDK 21，以及首次執行 Maven Wrapper 時所需的網路連線。
 - 前端：Node.js 20.9 或更新版本。
-- 使用 Docker Compose 時：另需 Docker Desktop。
-- 不使用容器時：改為需要 PostgreSQL 16 與 Redis 7（詳見[不使用容器啟動後端](#不使用容器啟動後端)），不需要 Docker。
+- 兩種啟動方式都需要 Docker Desktop，用來執行 PostgreSQL 與 Redis。
 
 ## 使用 Docker Compose 啟動
 
@@ -61,59 +60,48 @@
 
 Docker Compose 指令需明確使用 `--env-file .env.local`；Compose 讀取該檔案中的 `DB_NAME`、`DB_USERNAME`、`DB_PASSWORD`、`REDIS_PASSWORD` 等設定。Compose 內部資料庫與 Redis 主機仍分別使用服務名稱 `postgres`、`redis` 和容器連接埠 `5432`、`6379`。PostgreSQL 的 `POSTGRES_*` 初始化設定只在資料目錄首次建立時生效；若 named volume 已初始化，修改 `.env.local` 不會自動建立新使用者、改資料庫名稱或更新既有密碼，需先妥善遷移／調整資料庫角色，勿直接刪除 volume 以免遺失資料。Redis 密碼會同時設定 Compose Redis 伺服器與後端連線；本機預設留空。Compose 只把 PostgreSQL 的 5432 綁定在 `127.0.0.1`，因此僅能從本機連線。
 
-## 不使用容器啟動後端
+## 本機執行後端並以 Docker 提供 PostgreSQL 與 Redis
 
-完全不使用 Docker 時，需要自行在本機安裝 PostgreSQL 16 與 Redis 7，再啟動後端。整個流程為：安裝 PostgreSQL → 建立資料庫 → 安裝 Redis → 啟動後端 → 以 DBeaver／Redis Insight 檢視資料。
+此方式只用 Docker Compose 啟動 `postgres` 與 `redis` 兩個服務，後端改由本機的 Maven Wrapper 執行。因為資料庫與 Redis 由 Compose 建立，使用者、資料庫與初始設定都會自動就緒，不需要手動安裝 PostgreSQL 或 Redis，也不需要手動建立資料庫。整個流程為：啟動容器 → 確認服務 → 設定環境變數並啟動後端 → 以 DBeaver／Redis Insight 檢視資料。
 
-### 1. 安裝 PostgreSQL 16
+### 1. 啟動 PostgreSQL 與 Redis 容器
 
-- 從 [postgresql.org/download](https://www.postgresql.org/download/windows/) 下載 Windows 安裝程式，或執行 `winget install PostgreSQL.PostgreSQL.16`。
-- 安裝時記下 `postgres` 超級使用者密碼，連接埠維持 `5432`。
-- 安裝後確認服務正在執行：
+1. 完成〈使用 Docker Compose 啟動〉的步驟 1 至 3：複製 `.env.example` 為 `.env.local`，並確認 Docker Desktop 正在執行。
+
+2. 只啟動資料庫與 Redis，**不要啟動 `backend` 服務**，否則容器內的後端會佔用 `8080` 連接埠，本機後端將無法啟動：
+
+   ```
+   docker compose --env-file .env.local up -d postgres redis
+   ```
+
+3. 確認兩個容器都處於執行狀態：
+
+   ```
+   docker compose --env-file .env.local ps
+   ```
+
+> 若本機曾以安裝程式安裝過 PostgreSQL，其 Windows 服務會佔用 `5432` 連接埠，容器將無法啟動。請先以系統管理員身分在 PowerShell 停止該服務（服務名稱以 `Get-Service postgresql*` 查詢為準）：
+>
+> ```
+> Stop-Service postgresql-x64-16
+> ```
+
+### 2. 確認資料庫與 Redis 可連線
+
+以下指令使用 `.env.example` 的預設值（使用者與資料庫 `tradeguard`、Redis 無密碼）；若你修改過 `.env.local`，請改成對應的值：
 
 ```
-Get-Service postgresql*
+docker compose --env-file .env.local exec postgres psql -U tradeguard -d tradeguard -c "SELECT 1;"
+docker compose --env-file .env.local exec redis redis-cli ping
 ```
 
-### 2. 建立專用資料庫與使用者
+PostgreSQL 應回傳一筆結果，Redis 應回傳 `PONG`。若 Redis 設有密碼，請在 `redis-cli` 後加上 `-a <REDIS_PASSWORD>`。
 
-以超級使用者進入 `psql`（路徑視安裝位置調整；若找不到指令，請使用安裝目錄下 `bin` 內的 `psql.exe`）：
+資料表結構由後端啟動時的 Flyway 自動建立，不需手動匯入。
 
-```
-psql -h localhost -U postgres
-```
+### 3. 設定環境變數並啟動後端
 
-執行下列 SQL。使用者名稱、密碼與資料庫名稱刻意與 `application.yml` 的預設值一致，後端不需額外設定連線變數：
-
-```
-CREATE ROLE tradeguard LOGIN PASSWORD 'tradeguard_local_only';
-CREATE DATABASE tradeguard OWNER tradeguard;
-```
-
-資料表結構由後端啟動時的 Flyway 自動建立，不需手動匯入。此密碼僅供本機使用，不可用於共用或部署環境。
-
-### 3. 安裝 Redis 7
-
-Redis 官方沒有提供原生 Windows 版本，請擇一（兩者都不需要 Docker）：
-
-- **WSL2（建議）**：在 WSL 的 Ubuntu 內安裝並啟動。
-
-  ```
-  wsl --install
-  sudo apt update && sudo apt install -y redis-server
-  redis-server --appendonly yes --daemonize yes
-  redis-cli ping
-  ```
-
-  `redis-cli ping` 應回傳 `PONG`。WSL2 預設會將 `localhost:6379` 轉送到 Windows。每次重新開機後需再次啟動 `redis-server`。
-
-- **Memurai Developer**：Windows 原生、相容 Redis 協定的免費開發版，從 [memurai.com](https://www.memurai.com/) 下載安裝，安裝後會以 Windows 服務執行於 `6379`。
-
-Redis 用於登入鎖定、JWT 撤銷與報價快取，後端需要它才能完整運作。
-
-### 4. 設定環境變數並啟動後端
-
-`application.yml` 已為資料庫與 Redis 連線提供本機預設值（見〈後端環境變數說明〉），只要依步驟 2、3 建立服務，就只需設定下列必要變數。PowerShell 不會自動載入 `.env.local`，請在啟動後端的同一個視窗設定：
+`application.yml` 已為資料庫與 Redis 連線提供本機預設值（見〈後端環境變數說明〉），預設值與 Compose 容器對外開放的 `localhost:5432`、`localhost:6379` 一致，因此只需設定下列必要變數。PowerShell 不會自動載入 `.env.local`，請在啟動後端的同一個視窗設定：
 
 ```
 $env:SPRING_PROFILES_ACTIVE = "local"
@@ -129,43 +117,35 @@ cd backend-java
 - 上述寫法相容於 Windows PowerShell 5.1；若使用 PowerShell 7，可直接以 `[Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))` 產生 `JWT_SECRET`。
 - `SPRING_PROFILES_ACTIVE=local` 不可省略：未啟用時 `COOKIE_SECURE` 預設為 `true`，純 HTTP 登入不會送出 Cookie。
 - `CORS_ALLOWED_ORIGINS` 預設為 `http://localhost:3000`；前端若使用其他埠，請在啟動後端前設定 `$env:CORS_ALLOWED_ORIGINS` 為該來源網址。
-- 若資料庫或 Redis 的位置、帳號、密碼與步驟 2、3 不同，請另外設定對應變數，例如：
+- 若你修改過 `.env.local` 的資料庫或 Redis 帳號密碼，請在啟動後端前另外設定對應變數，例如：
 
   ```
-  $env:DB_HOST = "localhost"
-  $env:DB_PORT = "5432"
-  $env:DB_NAME = "tradeguard"
-  $env:DB_USERNAME = "tradeguard"
-  $env:DB_PASSWORD = "<你的資料庫密碼>"
-  $env:REDIS_HOST = "localhost"
-  $env:REDIS_PORT = "6379"
-  $env:REDIS_PASSWORD = "<Redis 密碼，未設定可省略>"
+  $env:DB_USERNAME = "<DB_USERNAME>"
+  $env:DB_PASSWORD = "<DB_PASSWORD>"
+  $env:DB_NAME = "<DB_NAME>"
+  $env:REDIS_PASSWORD = "<REDIS_PASSWORD>"
   ```
 
 - 部署時必須設定唯一的 `JWT_SECRET`（至少 32 位元組）及 `COOKIE_SECURE=true`。
 
 確認啟動成功：開啟 `http://localhost:8080/api/health/readiness`，PostgreSQL 與 Redis 都應顯示正常。
 
-### 5. 使用 DBeaver 檢視 PostgreSQL
+### 4. 使用 DBeaver 檢視 PostgreSQL
 
-DBeaver Community 是免費的資料庫管理工具，可連線本機 PostgreSQL，檢視 Flyway 建立的結構與資料。
+DBeaver Community 是免費的資料庫管理工具，可連線 Compose 啟動的 PostgreSQL，檢視 Flyway 建立的結構與資料。
 
 - 下載：[https://dbeaver.io/download/](https://dbeaver.io/download/)（Windows 可選安裝檔或 ZIP，另有 macOS、Linux 版本）。也可用 `choco install dbeaver` 安裝。
 - 在 DBeaver 新增 PostgreSQL 連線，填入下列設定：
 
-| 欄位     | 值                                                              |
-| -------- | -------------------------------------------------------------- |
-| Host     | `localhost`                                                    |
-| Port     | `5432`                                                         |
-| Database | `tradeguard`（`DB_NAME`）                                      |
-| Username | `tradeguard`（`DB_USERNAME`）                                  |
-| Password | 步驟 2 設定的密碼（`DB_PASSWORD`），範例為 `tradeguard_local_only` |
+| 欄位     | 值                                                        |
+| -------- | -------------------------------------------------------- |
+| Host     | `localhost`                                              |
+| Port     | `5432`                                                   |
+| Database | `tradeguard`（`DB_NAME`）                                |
+| Username | `tradeguard`（`DB_USERNAME`）                            |
+| Password | `.env.local` 的 `DB_PASSWORD`，預設為 `tradeguard_local_only` |
 
-若連不上，先確認 PostgreSQL 服務正在執行，並用 `psql` 測試連線（使用 Docker Compose 時，改以 `docker compose --env-file .env.local ps` 確認 postgres 容器狀態）：
-
-```
-psql -h localhost -U tradeguard -d tradeguard -c "SELECT 1;"
-```
+Compose 只把 5432 綁定在 `127.0.0.1`，因此僅能從本機連線。若連不上，先確認 `docker compose --env-file .env.local ps` 顯示 postgres 正在執行，且本機沒有其他程式佔用 `5432`。
 
 常用的檢視起點：
 
@@ -190,17 +170,12 @@ LIMIT 20;
 - 不要以手動新增 `app_users` 資料列的方式建立帳號；密碼以雜湊儲存，角色與稽核流程需經 API 完成。交易員帳號由 `/register` 建立，其他角色由管理員 API 建立。
 - `audit_entries` 僅附加，任何修改都會讓鏈驗證失敗。
 
-### 6. 使用 Redis Insight 檢視 Redis
+### 5. 使用 Redis Insight 檢視 Redis
 
 Redis Insight 是 Redis 官方提供的免費 GUI，可瀏覽鍵值、TTL 與內容，適合確認快取與登入狀態。
 
 - 下載：[https://redis.io/insight/](https://redis.io/insight/)（Windows、macOS、Linux）。
-- 連線設定：Host `localhost`、Port `6379`；`REDIS_PASSWORD` 留空時不需要密碼，若有設定則填入該值。
-- 連不上時先確認 Redis 正在執行：
-
-```
-redis-cli ping
-```
+- 連線設定：Host `localhost`、Port `6379`；`REDIS_PASSWORD` 留空時不需要密碼，若 `.env.local` 有設定則填入該值。
 
 本專案使用的鍵：
 
@@ -219,7 +194,17 @@ redis-cli ping
 - 可安全刪除 `tradeguard:quote:*`、`tradeguard:book:*`，後端會回源 PostgreSQL 重建。
 - 不要刪除 `tradeguard:jwt:deny:*`，否則已撤銷的權杖會恢復可用。
 - 刪除 `tradeguard:login:fail:*` 等於解除該帳號的登入鎖定，僅在測試時使用。
-- 重啟後是否保留這些鍵，取決於 Redis 的持久化設定。Docker Compose 的 Redis 與上述 WSL 指令都啟用 AOF（`--appendonly yes`），重啟後不會清掉上述狀態；使用 Memurai 時請依其持久化設定為準。
+- Redis 以 AOF（`--appendonly yes`）保存，重啟容器不會清掉上述狀態。
+
+### 6. 停止與清理
+
+停止後端時，在執行 `spring-boot:run` 的視窗按 `Ctrl+C`。要停止 PostgreSQL 與 Redis 容器：
+
+```
+docker compose --env-file .env.local stop postgres redis
+```
+
+下次再執行 `up -d postgres redis` 即可繼續使用原有資料。`docker compose down` 會移除容器但保留資料；**不要加上 `-v` 參數**，否則會刪除 PostgreSQL 與 Redis 的資料 volume，所有資料將遺失。
 
 ## 後端環境變數說明
 
